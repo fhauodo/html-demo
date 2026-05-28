@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>异常关单-少收关单原型</title>
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --line: #e8edf5;
+        --text: #1f2a44;
+        --sub: #6b7a99;
+        --primary: #2f7bff;
+        --danger: #e34d59;
+        --ok: #16a34a;
+        --input: #f8faff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 1360px;
+        margin: 24px auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: 0 6px 24px rgba(37, 56, 88, 0.06);
+        overflow: hidden;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .tag {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: #fff;
+        background: #f59e0b;
+      }
+
+      .section {
+        padding: 14px 20px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section:last-of-type {
+        border-bottom: none;
+      }
+
+      .section h3 {
+        margin: 0 0 12px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(240px, 1fr));
+        gap: 10px 16px;
+        margin-bottom: 10px;
+      }
+
+      .field label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        color: var(--sub);
+      }
+
+      .input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: var(--input);
+        border-radius: 6px;
+        height: 34px;
+        padding: 0 10px;
+        font-size: 13px;
+        color: var(--text);
+      }
+
+      textarea {
+        height: 66px;
+        padding: 8px 10px;
+        resize: vertical;
+      }
+
+      .readonly {
+        background: #f2f5fb;
+        color: #5f6f92;
+      }
+
+      .required::after {
+        content: " *";
+        color: var(--danger);
+      }
+
+      .table-wrap {
+        width: 100%;
+        max-height: 360px;
+        overflow-x: auto;
+        overflow-y: auto;
+        margin: 6px 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .table-wrap::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+
+      .table-wrap::-webkit-scrollbar-track {
+        background: #f1f4fa;
+        border-radius: 10px;
+      }
+
+      .table-wrap::-webkit-scrollbar-thumb {
+        background: #c6d3ea;
+        border-radius: 10px;
+      }
+
+      .table-wrap::-webkit-scrollbar-thumb:hover {
+        background: #aebfdd;
+      }
+
+      .table-wrap {
+        scrollbar-width: thin;
+        scrollbar-color: #c6d3ea #f1f4fa;
+      }
+
+      table {
+        width: 100%;
+        min-width: 720px;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 9px 8px;
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      th {
+        background: #f7f9fe;
+        color: #4d5e82;
+        font-weight: 600;
+      }
+
+      .diff-high {
+        color: var(--danger);
+        font-weight: 600;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: var(--sub);
+      }
+
+      .pagination-left,
+      .pagination-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .page-chip {
+        min-width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .page-chip.active {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+
+      .page-chip:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .page-input {
+        width: 56px;
+        height: 28px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0 8px;
+        font-size: 12px;
+        background: #fff;
+      }
+
+      .page-size-select {
+        height: 28px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-size: 12px;
+        background: #fff;
+      }
+
+      .tips {
+        font-size: 12px;
+        color: var(--sub);
+        line-height: 1.5;
+        margin: 0 0 4px;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: #fbfcff;
+        border-top: 1px solid var(--line);
+      }
+
+      .msg {
+        font-size: 12px;
+        color: var(--sub);
+        min-height: 18px;
+      }
+
+      .msg.error {
+        color: var(--danger);
+      }
+
+      .btns {
+        display: flex;
+        gap: 10px;
+      }
+
+      button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        border-radius: 6px;
+        padding: 8px 14px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .primary {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+
+      .field-block {
+        margin-bottom: 12px;
+      }
+
+      .modal-mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.35);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        z-index: 1000;
+      }
+
+      .modal-mask.show {
+        display: flex;
+      }
+
+      .modal {
+        width: 100%;
+        max-width: 480px;
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+      }
+
+      .modal-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+        font-weight: 600;
+      }
+
+      .modal-content {
+        padding: 18px 16px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 12px 16px 16px;
+      }
+
+      .btn-secondary {
+        background: #fff;
+      }
+
+      @media (max-width: 1100px) {
+        .grid {
+          grid-template-columns: repeat(2, minmax(240px, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div class="title">异常关单</div>
+        <span class="tag">手动关单原型</span>
+      </div>
+
+      <!-- 一、基本信息 -->
+      <div class="section">
+        <h3>基本信息</h3>
+        <div class="grid">
+          <div class="field">
+            <label>调拨单号</label>
+            <input class="input readonly" value="WA2605080002" readonly />
+          </div>
+          <div class="field">
+            <label>调拨发货单号</label>
+            <input class="input readonly" value="AS2604210004" readonly />
+          </div>
+          <div class="field">
+            <label>始发仓</label>
+            <input class="input readonly" value="越南仓" readonly />
+          </div>
+          <div class="field">
+            <label>目的仓</label>
+            <input class="input readonly" value="英国谷仓" readonly />
+          </div>
+        </div>
+      </div>
+
+      <!-- 二、关单信息 -->
+      <div class="section">
+        <h3>关单信息</h3>
+        <div class="grid">
+          <div class="field">
+            <label>业务异常标签</label>
+            <input class="input readonly" value="少收" readonly />
+          </div>
+          <div class="field">
+            <label class="required">关单原因</label>
+            <select id="reason" class="input">
+              <option value="">请选择原因</option>
+              <option>始发仓少发</option>
+              <option>在途丢失</option>
+              <option>海外仓原因少收</option>
+              <option>其他（需备注）</option>
+            </select>
+          </div>
+        </div>
+        <div class="field field-block">
+          <label>备注</label>
+          <textarea id="remark" placeholder="请输入补充说明"></textarea>
+        </div>
+      </div>
+
+      <!-- 三、关单明细 -->
+      <div class="section">
+        <h3>关单明细</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>产品名称</th>
+                <th>调拨数量</th>
+                <th>实际收货数量</th>
+                <th>差异数量</th>
+              </tr>
+            </thead>
+            <tbody id="detailRows"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <div class="pagination-left">
+            <span id="totalInfo">共 0 条</span>
+            <select id="pageSize" class="page-size-select">
+              <option value="10">10 条/页</option>
+              <option value="20">20 条/页</option>
+              <option value="50">50 条/页</option>
+            </select>
+          </div>
+          <div class="pagination-right">
+            <button id="prevPage" class="page-chip" type="button">‹</button>
+            <div id="pageNumbers" style="display: inline-flex; gap: 6px;"></div>
+            <button id="nextPage" class="page-chip" type="button">›</button>
+            <span>前往</span>
+            <input id="gotoPage" class="page-input" type="number" min="1" />
+            <span>页</span>
+            <button id="gotoBtn" class="page-chip" type="button">GO</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div id="msg" class="msg">请确认少收原因后提交；明细支持滚动与分页查看。</div>
+        <div class="btns">
+          <button type="button">取消</button>
+          <button id="submitBtn" class="primary" type="button">确认关单</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirmModal" class="modal-mask" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal">
+        <div id="confirmTitle" class="modal-header">二次确认</div>
+        <div class="modal-content">
+          关单后调拨单状态将变更为完成，请确认是否进行关单。
+        </div>
+        <div class="modal-footer">
+          <button id="cancelConfirmBtn" type="button" class="btn-secondary">取消</button>
+          <button id="okConfirmBtn" type="button" class="primary">确认关单</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const rows = Array.from({ length: 58 }, (_, i) => {
+        const idx = i + 1;
+        const alloc = 4 + (idx % 7) * 2;
+        const recv = idx % 5 === 0 ? alloc - 2 : alloc - (idx % 3 === 0 ? 1 : 0);
+        return {
+          sku: "E310-ST-P-UK-" + String(100 + idx),
+          name: "Shokz OpenDots SKU-" + String(idx).padStart(2, "0"),
+          alloc: alloc,
+          recv: Math.max(recv, 0),
+        };
+      }).sort((a, b) => {
+        const diffA = Math.max(a.alloc - a.recv, 0);
+        const diffB = Math.max(b.alloc - b.recv, 0);
+        return diffB - diffA;
+      });
+
+      const body = document.getElementById("detailRows");
+      const totalInfo = document.getElementById("totalInfo");
+      const pageSizeEl = document.getElementById("pageSize");
+      const pageNumbers = document.getElementById("pageNumbers");
+      const prevPageBtn = document.getElementById("prevPage");
+      const nextPageBtn = document.getElementById("nextPage");
+      const gotoPageEl = document.getElementById("gotoPage");
+      const gotoBtn = document.getElementById("gotoBtn");
+      const confirmModal = document.getElementById("confirmModal");
+      const cancelConfirmBtn = document.getElementById("cancelConfirmBtn");
+      const okConfirmBtn = document.getElementById("okConfirmBtn");
+
+      let totalAlloc = 0;
+      let totalRecv = 0;
+      let totalDiff = 0;
+      let currentPage = 1;
+      let pageSize = Number(pageSizeEl.value);
+      let totalPages = 1;
+
+      rows.forEach((r) => {
+        const diff = Math.max(r.alloc - r.recv, 0);
+        totalAlloc += r.alloc;
+        totalRecv += r.recv;
+        totalDiff += diff;
+      });
+
+      function buildPageNumbers() {
+        pageNumbers.innerHTML = "";
+        const maxShow = 5;
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, start + maxShow - 1);
+        start = Math.max(1, end - maxShow + 1);
+
+        for (let p = start; p <= end; p += 1) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "page-chip" + (p === currentPage ? " active" : "");
+          btn.textContent = String(p);
+          btn.addEventListener("click", () => {
+            currentPage = p;
+            renderTable();
+          });
+          pageNumbers.appendChild(btn);
+        }
+      }
+
+      function renderTable() {
+        totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * pageSize;
+        const pageRows = rows.slice(start, start + pageSize);
+
+        body.innerHTML = "";
+        pageRows.forEach((r) => {
+          const diff = Math.max(r.alloc - r.recv, 0);
+          const tr = document.createElement("tr");
+          tr.innerHTML = [
+            "<td>" + r.sku + "</td>",
+            "<td>" + r.name + "</td>",
+            "<td>" + r.alloc + "</td>",
+            "<td>" + r.recv + "</td>",
+            "<td class=\"" + (diff > 0 ? "diff-high" : "") + "\">" + diff + "</td>",
+          ].join("");
+          body.appendChild(tr);
+        });
+
+        totalInfo.textContent =
+          "共 " + rows.length + " 条（总调拨: " + totalAlloc + "，总收货: " + totalRecv + "，总差异: " + totalDiff + "）";
+
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+        buildPageNumbers();
+      }
+
+      pageSizeEl.addEventListener("change", () => {
+        pageSize = Number(pageSizeEl.value);
+        currentPage = 1;
+        renderTable();
+      });
+
+      prevPageBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage -= 1;
+          renderTable();
+        }
+      });
+
+      nextPageBtn.addEventListener("click", () => {
+        if (currentPage < totalPages) {
+          currentPage += 1;
+          renderTable();
+        }
+      });
+
+      gotoBtn.addEventListener("click", () => {
+        const n = Number(gotoPageEl.value);
+        if (!Number.isInteger(n) || n < 1 || n > totalPages) return;
+        currentPage = n;
+        renderTable();
+      });
+
+      const msg = document.getElementById("msg");
+      function openConfirmModal() {
+        confirmModal.classList.add("show");
+      }
+
+      function closeConfirmModal() {
+        confirmModal.classList.remove("show");
+      }
+
+      document.getElementById("submitBtn").addEventListener("click", () => {
+        const reason = document.getElementById("reason").value.trim();
+        if (!reason) {
+          msg.textContent = "校验失败：请先选择关单原因。";
+          msg.className = "msg error";
+          return;
+        }
+        if (totalDiff <= 0) {
+          msg.textContent = "校验失败：无差异，不允许执行少收关单。";
+          msg.className = "msg error";
+          return;
+        }
+        msg.textContent = "校验通过：请在弹窗中二次确认关单。";
+        msg.className = "msg";
+        openConfirmModal();
+      });
+
+      cancelConfirmBtn.addEventListener("click", () => {
+        closeConfirmModal();
+      });
+
+      okConfirmBtn.addEventListener("click", () => {
+        closeConfirmModal();
+        msg.textContent =
+          "校验通过：将执行关单（发货单→已完成，调拨单→完成），并释放差异在途库存。";
+        msg.className = "msg";
+      });
+
+      confirmModal.addEventListener("click", (e) => {
+        if (e.target === confirmModal) {
+          closeConfirmModal();
+        }
+      });
+
+      renderTable();
+    </script>
+  </body>
+</html>
