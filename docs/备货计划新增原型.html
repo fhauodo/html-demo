@@ -826,6 +826,8 @@
                 <button type="button" class="btn primary" id="openProductModal" onclick="handleAddProduct()">+ 添加产品</button>
                 <button type="button" class="btn primary" id="importDemo">导入产品</button>
                 <button type="button" class="btn ghost danger" id="removeSelected">批量移除</button>
+                <button type="button" class="btn ghost" id="expandAll">全部展开</button>
+                <button type="button" class="btn ghost" id="collapseAll">全部收起</button>
               </div>
               <div class="toolbar-right">
                 <span class="pill info" id="validState">待校验</span>
@@ -1350,6 +1352,18 @@
       rows = rows.filter(row => !row.checked);
       renderRows();
       showToast(count ? `已移除 ${count} 行明细。` : "请先选择需要移除的明细。");
+    });
+
+    document.getElementById("expandAll").addEventListener("click", () => {
+      getGroups().forEach(group => expandedSku.add(group.key));
+      renderRows();
+      showToast("已展开全部 SKU 明细。");
+    });
+
+    document.getElementById("collapseAll").addEventListener("click", () => {
+      expandedSku.clear();
+      renderRows();
+      showToast("已收起全部 SKU 明细。");
     });
 
     const splitSelectedButton = document.getElementById("splitSelected");
