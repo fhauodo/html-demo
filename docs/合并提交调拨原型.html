@@ -253,7 +253,7 @@
 
     table {
       width: 100%;
-      min-width: 1560px;
+      min-width: 1602px;
       border-collapse: collapse;
       table-layout: fixed;
     }
@@ -284,6 +284,7 @@
       background: #f7fbff;
     }
 
+    .check-col { width: 42px; text-align: center; }
     .plan-col { width: 150px; }
     .warehouse-col { width: 130px; }
     .date-col { width: 125px; }
@@ -567,6 +568,8 @@
 
           <div class="toolbar">
             <div class="toolbar-left">
+              <button class="btn primary" type="button" id="addPlanDetail">添加计划明细</button>
+              <button class="btn ghost" type="button" id="removeSelected">批量移除</button>
               <button class="btn ghost" type="button" id="expandAll">全部展开</button>
               <button class="btn ghost" type="button" id="collapseAll">全部收起</button>
               <button class="btn ghost" type="button" id="autoFill">按待提交全量填充</button>
@@ -583,6 +586,7 @@
             <table>
               <thead>
                 <tr>
+                  <th class="check-col"><input type="checkbox" id="checkAll" /></th>
                   <th class="sku-col">SKU</th>
                   <th class="plan-col">备货计划</th>
                   <th class="warehouse-col">始发仓</th>
@@ -625,6 +629,7 @@
     const rows = [
       {
         id: "SP-001__SKU-A",
+        checked: false,
         expanded: true,
         planNo: "SP-001",
         fromWarehouse: "成品仓",
@@ -645,6 +650,7 @@
       },
       {
         id: "SP-001__SKU-B",
+        checked: false,
         expanded: false,
         planNo: "SP-001",
         fromWarehouse: "成品仓",
@@ -664,6 +670,7 @@
       },
       {
         id: "SP-002__SKU-A",
+        checked: false,
         expanded: false,
         planNo: "SP-002",
         fromWarehouse: "成品仓",
@@ -683,6 +690,7 @@
       },
       {
         id: "SP-002__SKU-C",
+        checked: false,
         expanded: false,
         planNo: "SP-002",
         fromWarehouse: "成品仓",
@@ -702,6 +710,7 @@
       },
       {
         id: "SP-003__SKU-A",
+        checked: false,
         expanded: false,
         planNo: "SP-003",
         fromWarehouse: "成品仓",
@@ -721,6 +730,7 @@
       },
       {
         id: "SP-003__SKU-D",
+        checked: false,
         expanded: false,
         planNo: "SP-003",
         fromWarehouse: "成品仓",
@@ -821,6 +831,7 @@
         const allocations = allocateByLargestRemainder(row);
         const main = `
           <tr class="main-row ${row.expanded ? "group-open" : ""} ${error ? "row-error" : ""}" data-row="${rowIndex}">
+            <td class="check-col"><input type="checkbox" data-action="checkRow" ${row.checked ? "checked" : ""} /></td>
             <td class="sku-col">
               <button class="expand-btn ${row.expanded ? "expanded" : ""}" data-action="toggle" title="${row.expanded ? "收起" : "展开"}">
                 <span class="chevron"></span>
@@ -850,6 +861,7 @@
         `;
         const children = !row.expanded ? "" : allocations.map(item => `
           <tr class="child-row" data-row="${rowIndex}">
+            <td class="check-col"></td>
             <td class="sku-col"><span class="child-indent">└ ${escapeHtml(row.sku)}</span></td>
             <td class="plan-col">${escapeHtml(row.planNo)}</td>
             <td class="warehouse-col">${escapeHtml(row.fromWarehouse)}</td>
@@ -869,6 +881,7 @@
       }).join("");
 
       detailBody.innerHTML = html;
+      document.getElementById("checkAll").checked = rows.length > 0 && rows.every(row => row.checked);
     }
 
     function showToast(message) {
@@ -890,6 +903,33 @@
       renderRows();
     }
 
+    function createPlanDetail() {
+      const seq = rows.length + 1;
+      const template = rows[0];
+      rows.push({
+        id: `NEW-${Date.now()}`,
+        checked: false,
+        expanded: true,
+        planNo: `SP-NEW-${String(seq).padStart(3, "0")}`,
+        fromWarehouse: template.fromWarehouse,
+        toWarehouse: template.toWarehouse,
+        expectedShipDate: template.expectedShipDate,
+        transportMode: template.transportMode,
+        fromLevel: template.fromLevel,
+        remark: "新增计划明细",
+        sku: `SKU-NEW-${seq}`,
+        skuName: "新增产品",
+        productCode: `NEW-CODE-${seq}`,
+        availableQty: 0,
+        submitQty: 1,
+        levels: [
+          { level: "法国虚拟仓", planQty: 10, submittedQty: 0 }
+        ]
+      });
+      renderRows();
+      showToast("已新增一条计划明细示例，可继续展开查看收货层级分配。");
+    }
+
     detailBody.addEventListener("input", event => {
       const target = event.target;
       if (target.dataset.field !== "submitQty") return;
@@ -898,6 +938,12 @@
 
     detailBody.addEventListener("change", event => {
       const target = event.target;
+      const tr = target.closest("tr[data-row]");
+      if (target.dataset.action === "checkRow" && tr) {
+        rows[Number(tr.dataset.row)].checked = target.checked;
+        renderRows();
+        return;
+      }
       if (target.dataset.field !== "submitQty") return;
       commitSubmitInput(target);
     });
@@ -921,6 +967,28 @@
         rows[rowIndex].expanded = !rows[rowIndex].expanded;
         renderRows();
       }
+    });
+
+    document.getElementById("addPlanDetail").addEventListener("click", () => {
+      createPlanDetail();
+    });
+
+    document.getElementById("removeSelected").addEventListener("click", () => {
+      const count = rows.filter(row => row.checked).length;
+      if (!count) {
+        showToast("请先选择需要移除的计划明细。");
+        return;
+      }
+      for (let index = rows.length - 1; index >= 0; index -= 1) {
+        if (rows[index].checked) rows.splice(index, 1);
+      }
+      renderRows();
+      showToast(`已移除 ${count} 条计划明细。`);
+    });
+
+    document.getElementById("checkAll").addEventListener("change", event => {
+      rows.forEach(row => { row.checked = event.target.checked; });
+      renderRows();
     });
 
     document.getElementById("expandAll").addEventListener("click", () => {
