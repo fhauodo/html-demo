@@ -1067,7 +1067,6 @@
 
       <div class="page-title">
         <h1>调拨收货列表</h1>
-        <div class="hint">海外仓跟单收货作业台 · 按发货单分组处理</div>
       </div>
 
       <!-- ============== Stats ============== -->
@@ -1528,11 +1527,6 @@
             </span>
           </div>
 
-          <div class="alert info">
-            <span>💡</span>
-            实物清点完后录入；良品默认入目的仓正常库存，不良品按公司规则直入不良品仓（公共库存层级）。
-          </div>
-
           <table class="sku-table">
             <thead>
               <tr>
@@ -1614,18 +1608,12 @@
             <button class="btn btn-sm" onclick="fillAllBad()">全部不良品</button>
             <button class="btn btn-sm" onclick="clearAllQty()">数量清零</button>
             <button class="btn btn-sm" onclick="reuseLastInput()">复用上一次录入</button>
-            <span style="margin-left: auto; color: var(--sub); font-size: 12px">
-              💡 良品 SN 可用扫码枪连续扫描，回车后自动换行计数
-            </span>
           </div>
 
-          <div class="alert">
-            ⚠ 本次收货将生成：1 张目的仓入库单（良品），如有不良品则同时生成 1 张不良品仓入库单。入库失败时本次收货不算完成，可重新提交。
-          </div>
         </div>
 
         <div class="dlg-foot">
-          <div class="hint">数量与 SN 数量一致后才可保存；不良品需同时填写不良品 SN</div>
+          <div class="hint"></div>
           <div class="actions">
             <button class="btn" onclick="closeDialog('receiveDialog')">取消</button>
             <button class="btn" onclick="confirmReceiveAndClose()">保存并关闭</button>
@@ -1643,9 +1631,6 @@
           <span class="close" onclick="closeDialog('batchDialog')">×</span>
         </div>
         <div class="dlg-body">
-          <div class="alert info">
-            一次性把所选箱按"装箱数量 = 良品数量"完成收货；若有不良品请改用"按数量收货"。
-          </div>
           <div class="scan-area" style="grid-template-columns: 1fr 1fr">
             <div class="scan-field">
               <label>仓库入库时间（统一）</label>
@@ -1690,7 +1675,7 @@
           </div>
         </div>
         <div class="dlg-foot">
-          <div class="hint">已收过或部分收货的箱无法重复整箱收货</div>
+          <div class="hint"></div>
           <div class="actions">
             <button class="btn" onclick="closeDialog('batchDialog')">取消</button>
             <button class="btn btn-primary" onclick="confirmBatchReceive()">确认收货</button>
