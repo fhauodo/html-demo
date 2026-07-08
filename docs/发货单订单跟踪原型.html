@@ -148,34 +148,50 @@
       .node.pending .nm { color: var(--sub); font-weight: 500; }
       .node .tm { font-size: 11px; color: var(--sub); line-height: 1.5; min-height: 30px; }
       .badge-err {
-        display: inline-block; margin-top: 2px;
+        display: inline-block;
         font-size: 10px; line-height: 1.4;
         color: #fff; background: var(--err);
         border-radius: 8px; padding: 0 7px;
+        cursor: default;
       }
-      .exception-detail {
-        margin-top: 4px;
+      .exception-wrap {
         position: relative;
+        display: inline-block;
+        margin-top: 2px;
         z-index: 2;
       }
-      .exception-detail summary {
-        display: inline-block;
-        cursor: pointer;
-        color: var(--err);
-        font-size: 11px;
-        list-style: none;
-      }
-      .exception-detail summary::-webkit-details-marker { display: none; }
-      .exception-detail .reason {
-        width: 190px;
-        margin: 6px auto 0;
-        padding: 7px 8px;
+      .exception-tooltip {
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        width: 220px;
+        padding: 8px 10px;
         border-radius: 7px;
-        background: var(--err-weak);
-        color: var(--err);
+        background: rgba(226, 59, 59, 0.96);
+        color: #fff;
         font-size: 11px;
         line-height: 1.45;
         text-align: left;
+        box-shadow: 0 8px 20px rgba(226, 59, 59, 0.24);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 4px);
+        transition: opacity .16s ease, transform .16s ease;
+        z-index: 8;
+      }
+      .exception-tooltip::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -10px;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: rgba(226, 59, 59, 0.96);
+      }
+      .exception-wrap:hover .exception-tooltip,
+      .exception-wrap:focus-within .exception-tooltip {
+        opacity: 1;
+        transform: translate(-50%, 0);
       }
 
       /* 交互标注：数字框 + 悬浮说明 */
@@ -305,7 +321,7 @@
             <div class="field annotated">
               <span class="anno-no">1</span>
               <div class="anno-tip">物流状态仍可展示业务字段结果；本次新增的订单跟踪不改变调拨发货单状态，只用于展示固定物流节点进度。</div>
-              <label>物流状态</label><div class="val">异常</div>
+              <label>物流状态</label><div class="val">到达目的港</div>
             </div>
             <div class="field"><label>运单号</label><div class="val">SF7798001102, SF7798001103</div></div>
             <div class="field"><label>发货仓库</label><div class="val">深圳前置仓</div></div>
@@ -365,11 +381,13 @@
                 <div class="anno-tip">该节点是当前最新已完成节点；因 TMS 回传异常，优先展示红色异常态，并可查看异常原因。</div>
                 <div class="dot">!</div>
                 <div class="nm">到达目的港</div>
-                <div class="tm">2025-06-08 11:30<br/><span class="badge-err">异常</span></div>
-                <details class="exception-detail">
-                  <summary>查看原因</summary>
-                  <div class="reason">TMS 回传目的港到达节点异常：港口排队导致预计到港延迟。</div>
-                </details>
+                <div class="tm">
+                  2025-06-08 11:30<br/>
+                  <span class="exception-wrap">
+                    <span class="badge-err">异常</span>
+                    <span class="exception-tooltip">TMS 回传目的港到达节点异常：港口排队导致预计到港延迟。</span>
+                  </span>
+                </div>
               </div>
               <div class="node pending annotated">
                 <span class="anno-no">6</span>
