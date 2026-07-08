@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>添加调整关联明细 - SKU维度汇总</title>
+  <style>
+    :root {
+      --mask: rgba(0, 0, 0, .48);
+      --panel: #fff;
+      --line: #edf0f5;
+      --line-strong: #d7deea;
+      --head: #f6f8fc;
+      --text: #263445;
+      --muted: #6b7788;
+      --primary: #246bfe;
+      --primary-weak: #edf4ff;
+      --green: #12805c;
+      --green-weak: #e9f7f2;
+      --amber: #a35c00;
+      --amber-weak: #fff4dc;
+      --shadow: 0 18px 54px rgba(15, 23, 42, .24);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #eef2f8;
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 44px 32px;
+      background:
+        linear-gradient(135deg, rgba(36, 107, 254, .08), transparent 36%),
+        linear-gradient(315deg, rgba(18, 128, 92, .08), transparent 34%),
+        #eef2f8;
+    }
+
+    .mask {
+      min-height: calc(100vh - 88px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: var(--mask);
+    }
+
+    .dialog {
+      width: min(1500px, 100%);
+      min-height: 520px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-rows: 48px auto 1fr auto;
+    }
+
+    .dialog-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dialog-title {
+      color: #111827;
+      font-weight: 700;
+    }
+
+    .close {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      background: transparent;
+      color: #9aa4b2;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .filter {
+      padding: 14px 18px 8px;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 180px 170px 170px 170px auto;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .control {
+      width: 100%;
+      height: 28px;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      background: #fff;
+      color: #263445;
+      outline: none;
+      padding: 0 8px;
+    }
+
+    .control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-weak);
+    }
+
+    .btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px;
+      background: #fff;
+      color: #344054;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn.primary {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .toolbar-left,
+    .toolbar-right,
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 2px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .pill.success {
+      border-color: #a7dcc9;
+      background: var(--green-weak);
+      color: var(--green);
+    }
+
+    .pill.warn {
+      border-color: #f0cd82;
+      background: var(--amber-weak);
+      color: var(--amber);
+    }
+
+    .body {
+      min-height: 0;
+      padding: 0 18px 12px;
+      overflow: auto;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      overflow: auto;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1220px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      height: 38px;
+      padding: 8px 10px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    thead th {
+      background: var(--head);
+      color: #344054;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover td {
+      background: #fbfdff;
+    }
+
+    .check-col { width: 42px; text-align: center; }
+    .plan-col { width: 150px; }
+    .supplier-col { width: 120px; }
+    .warehouse-col { width: 130px; }
+    .date-col { width: 130px; }
+    .level-col { width: 140px; }
+    .channel-col { width: 135px; }
+    .remark-col { width: 135px; }
+    .code-col { width: 190px; }
+    .sku-col { width: 190px; }
+    .qty-col { width: 190px; }
+
+    .summary-row td {
+      background: #fff;
+    }
+
+    .summary-row.checked td {
+      background: #f8fbff;
+    }
+
+    .ellipsis {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .total-number {
+      color: #172033;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .footer {
+      min-height: 52px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 18px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      color: #667085;
+    }
+
+    .page-btn {
+      min-width: 28px;
+      height: 28px;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 2px;
+      color: #344054;
+      cursor: pointer;
+    }
+
+    .page-btn.active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="mask">
+      <section class="dialog" aria-label="添加调拨发货明细">
+        <header class="dialog-header">
+          <div class="dialog-title">添加调拨发货明细</div>
+          <button class="close" title="关闭">×</button>
+        </header>
+
+        <section class="filter">
+          <div class="filter-row">
+            <input id="filterPlanNo" class="control" placeholder="计划单号" />
+            <select id="filterSupplier" class="control">
+              <option value="">始发仓</option>
+              <option>佳裕仓</option>
+              <option>谷仓</option>
+              <option>万邑通</option>
+            </select>
+            <select id="filterWarehouse" class="control">
+              <option value="">目的仓</option>
+              <option>SPL仓</option>
+              <option>英国仓</option>
+              <option>欧洲央仓</option>
+            </select>
+            <input id="filterSku" class="control" placeholder="SKU" />
+            <div class="actions">
+              <button id="searchBtn" class="btn primary" type="button">查询</button>
+              <button id="resetBtn" class="btn" type="button">重置</button>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <button id="batchAdd" class="btn primary" type="button">批量添加</button>
+            </div>
+            <div class="toolbar-right">
+              <span id="summaryCount" class="pill">0 条汇总</span>
+              <span id="selectedCount" class="pill success">已选 0 条</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="check-col"><input id="checkAll" type="checkbox" /></th>
+                  <th class="plan-col">计划单号</th>
+                  <th class="supplier-col">始发仓</th>
+                  <th class="warehouse-col">目的仓</th>
+                  <th class="date-col">期望发货时间</th>
+                  <th class="level-col">发货层级</th>
+                  <th class="channel-col">收货层级</th>
+                  <th class="remark-col">备注</th>
+                  <th class="code-col">目的仓第三方仓产品代码</th>
+                  <th class="sku-col">SKU</th>
+                  <th class="qty-col">待提交调拨发货数量</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <div class="muted" id="footerTip"></div>
+          <div class="pagination">
+            <span>共 <span id="totalRows">0</span> 条</span>
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn">›</button>
+            <span>前往</span>
+            <input class="control" style="width: 44px; height: 28px; text-align: center;" value="1" />
+            <span>页</span>
+          </div>
+        </footer>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const sourceRows = [
+      {
+        id: "d-001",
+        planNo: "SP202603300001",
+        supplier: "佳裕仓",
+        warehouse: "SPL仓",
+        shipDate: "2026-03-31",
+        sendLevel: "公共",
+        channel: "德国",
+        remark: "测试",
+        thirdCode: "S806-SP1-UK-000-A",
+        sku: "S806-SP1-UK",
+        receiveLevel: "公共",
+        qty: 20
+      },
+      {
+        id: "d-002",
+        planNo: "SP202603300001",
+        supplier: "佳裕仓",
+        warehouse: "SPL仓",
+        shipDate: "2026-03-31",
+        sendLevel: "公共",
+        channel: "德国",
+        remark: "测试",
+        thirdCode: "S806-SP1-UK-000-A",
+        sku: "S806-SP1-UK",
+        receiveLevel: "法国虚拟仓",
+        qty: 8
+      },
+      {
+        id: "d-003",
+        planNo: "SP202603300001",
+        supplier: "佳裕仓",
+        warehouse: "SPL仓",
+        shipDate: "2026-03-31",
+        sendLevel: "公共",
+        channel: "德国",
+        remark: "测试",
+        thirdCode: "S806-SP1-UK-000-A",
+        sku: "S806-SP1-UK",
+        receiveLevel: "德国虚拟仓",
+        qty: 12
+      },
+      {
+        id: "d-004",
+        planNo: "SP202604120003",
+        supplier: "谷仓",
+        warehouse: "欧洲央仓",
+        shipDate: "2026-04-20",
+        sendLevel: "公共",
+        channel: "欧洲_亚马逊",
+        remark: "",
+        thirdCode: "S710-SP1-EU",
+        sku: "S710-SP1-AU",
+        receiveLevel: "公共",
+        qty: 33
+      },
+      {
+        id: "d-005",
+        planNo: "SP202604120003",
+        supplier: "谷仓",
+        warehouse: "欧洲央仓",
+        shipDate: "2026-04-20",
+        sendLevel: "公共",
+        channel: "欧洲_亚马逊",
+        remark: "",
+        thirdCode: "S710-SP1-EU",
+        sku: "S710-SP1-AU",
+        receiveLevel: "英国虚拟仓",
+        qty: 7
+      },
+      {
+        id: "d-006",
+        planNo: "SP202607010001",
+        supplier: "万邑通",
+        warehouse: "英国仓",
+        shipDate: "2026-07-02",
+        sendLevel: "公共",
+        channel: "TikTok_UK",
+        remark: "sample-audit",
+        thirdCode: "T911-SET-UK-test",
+        sku: "T911-SET-UK-test",
+        receiveLevel: "西班牙虚拟仓",
+        qty: 2
+      },
+      {
+        id: "d-007",
+        planNo: "SP202607010002",
+        supplier: "万邑通",
+        warehouse: "英国仓",
+        shipDate: "2026-07-02",
+        sendLevel: "公共",
+        channel: "TikTok_UK",
+        remark: "",
+        thirdCode: "T911-SET-UK-test",
+        sku: "T911-SET-UK-test",
+        receiveLevel: "公共",
+        qty: 3
+      },
+      {
+        id: "d-008",
+        planNo: "SP202607010004",
+        supplier: "佳裕仓",
+        warehouse: "SPL仓",
+        shipDate: "2026-07-02",
+        sendLevel: "公共",
+        channel: "amazon_fr",
+        remark: "",
+        thirdCode: "S710-SP1-AU",
+        sku: "S710-SP1-AU",
+        receiveLevel: "公共",
+        qty: 4
+      }
+    ];
+
+    let rows = sourceRows.map(row => ({ ...row, checked: false }));
+
+    const tableBody = document.getElementById("tableBody");
+    const filterPlanNo = document.getElementById("filterPlanNo");
+    const filterSupplier = document.getElementById("filterSupplier");
+    const filterWarehouse = document.getElementById("filterWarehouse");
+    const filterSku = document.getElementById("filterSku");
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function getGroupKey(row) {
+      return [
+        row.planNo,
+        row.supplier,
+        row.warehouse,
+        row.shipDate,
+        row.sendLevel,
+        row.thirdCode,
+        row.sku
+      ].join("__");
+    }
+
+    function getSummaries() {
+      const map = new Map();
+      rows.forEach(row => {
+        const key = getGroupKey(row);
+        if (!map.has(key)) {
+          map.set(key, {
+            key,
+            planNo: row.planNo,
+            supplier: row.supplier,
+            warehouse: row.warehouse,
+            shipDate: row.shipDate,
+            sendLevel: row.sendLevel,
+            remark: row.remark,
+            thirdCode: row.thirdCode,
+            sku: row.sku,
+            qty: 0,
+            levels: new Map(),
+            rows: []
+          });
+        }
+
+        const summary = map.get(key);
+        summary.qty += Number(row.qty) || 0;
+        summary.rows.push(row);
+        summary.levels.set(row.receiveLevel, (summary.levels.get(row.receiveLevel) || 0) + (Number(row.qty) || 0));
+        if (!summary.remark && row.remark) summary.remark = row.remark;
+      });
+      return Array.from(map.values());
+    }
+
+    function renderLevelText(summary) {
+      return Array.from(summary.levels.keys()).join("，");
+    }
+
+    function render() {
+      const summaries = getSummaries();
+      tableBody.innerHTML = summaries.map(summary => {
+        const checked = summary.rows.length > 0 && summary.rows.every(row => row.checked);
+        return `
+          <tr class="summary-row ${checked ? "checked" : ""}" data-key="${escapeHtml(summary.key)}">
+            <td class="check-col"><input type="checkbox" data-action="checkSummary" ${checked ? "checked" : ""} /></td>
+            <td class="plan-col"><span class="ellipsis" title="${escapeHtml(summary.planNo)}">${escapeHtml(summary.planNo)}</span></td>
+            <td class="supplier-col">${escapeHtml(summary.supplier)}</td>
+            <td class="warehouse-col">${escapeHtml(summary.warehouse)}</td>
+            <td class="date-col">${escapeHtml(summary.shipDate)}</td>
+            <td class="level-col">${escapeHtml(summary.sendLevel)}</td>
+            <td class="channel-col"><span class="ellipsis" title="${escapeHtml(renderLevelText(summary))}">${escapeHtml(renderLevelText(summary))}</span></td>
+            <td class="remark-col"><span class="ellipsis" title="${escapeHtml(summary.remark)}">${escapeHtml(summary.remark || "-")}</span></td>
+            <td class="code-col"><span class="ellipsis" title="${escapeHtml(summary.thirdCode)}">${escapeHtml(summary.thirdCode)}</span></td>
+            <td class="sku-col"><span class="ellipsis" title="${escapeHtml(summary.sku)}">${escapeHtml(summary.sku)}</span></td>
+            <td class="qty-col">
+              <span class="total-number">${summary.qty}</span>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      const selected = rows.filter(row => row.checked).length;
+      document.getElementById("summaryCount").textContent = `${summaries.length} 条汇总`;
+      document.getElementById("selectedCount").textContent = `已选 ${selected} 条`;
+      document.getElementById("totalRows").textContent = summaries.length;
+      document.getElementById("checkAll").checked = rows.length > 0 && rows.every(row => row.checked);
+    }
+
+    function filterRows() {
+      const planNo = filterPlanNo.value.trim().toLowerCase();
+      const supplier = filterSupplier.value;
+      const warehouse = filterWarehouse.value;
+      const sku = filterSku.value.trim().toLowerCase();
+
+      rows = sourceRows
+        .filter(row => !planNo || row.planNo.toLowerCase().includes(planNo))
+        .filter(row => !supplier || row.supplier === supplier)
+        .filter(row => !warehouse || row.warehouse === warehouse)
+        .filter(row => !sku || row.sku.toLowerCase().includes(sku))
+        .map(row => ({ ...row, checked: false }));
+      render();
+    }
+
+    tableBody.addEventListener("change", event => {
+      if (event.target.dataset.action !== "checkSummary") return;
+      const key = event.target.closest("tr").dataset.key;
+      rows = rows.map(row => getGroupKey(row) === key ? { ...row, checked: event.target.checked } : row);
+      render();
+    });
+
+    document.getElementById("checkAll").addEventListener("change", event => {
+      rows = rows.map(row => ({ ...row, checked: event.target.checked }));
+      render();
+    });
+
+    document.getElementById("searchBtn").addEventListener("click", filterRows);
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      filterPlanNo.value = "";
+      filterSupplier.value = "";
+      filterWarehouse.value = "";
+      filterSku.value = "";
+      rows = sourceRows.map(row => ({ ...row, checked: false }));
+      render();
+    });
+
+    document.getElementById("batchAdd").addEventListener("click", () => {
+      const selected = getSummaries().filter(summary => summary.rows.some(row => row.checked)).length;
+      document.getElementById("footerTip").textContent = selected
+        ? `已模拟添加 ${selected} 条 SKU 汇总明细。`
+        : "请先勾选需要添加的 SKU 汇总明细。";
+    });
+
+    render();
+  </script>
+</body>
+</html>
