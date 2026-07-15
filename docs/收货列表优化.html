@@ -3,25 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>调拨收货列表 - 海外仓跟单收货原型</title>
+    <title>收货列表优化原型</title>
     <style>
       :root {
-        --bg: #f3f5f9;
-        --card: #ffffff;
-        --line: #e6eaf2;
-        --line-strong: #d8dee9;
-        --text: #1f2a44;
-        --sub: #6b7a99;
-        --muted: #9aa6bf;
+        --bg: #f3f6fb;
+        --side: #ffffff;
+        --panel: #ffffff;
+        --surface: #fbfcff;
+        --line: #e6ebf3;
+        --line-dark: #d8e0ec;
+        --text: #26334d;
+        --sub: #6f7f99;
+        --muted: #a0aabe;
         --primary: #2f7bff;
-        --primary-soft: #e8f0ff;
-        --warn: #f59e0b;
-        --warn-soft: #fef3e2;
+        --primary-bg: #eef5ff;
+        --primary-soft: #d9e8ff;
+        --accent: #0f766e;
+        --accent-bg: #edfafa;
+        --success: #1f9d55;
+        --success-bg: #edf8f1;
+        --warning: #f59e0b;
+        --warning-bg: #fff7e8;
         --danger: #e34d59;
-        --danger-soft: #fdeaec;
-        --ok: #16a34a;
-        --ok-soft: #e6f4ec;
-        --input: #f7f9fd;
+        --danger-bg: #fff1f2;
+        --table-head: #f6f8fc;
+        --hover: #f8fbff;
+        --shadow-sm: 0 1px 2px rgba(31, 42, 68, 0.05);
+        --shadow-md: 0 10px 24px rgba(31, 42, 68, 0.1);
       }
 
       * {
@@ -31,248 +39,320 @@
       body {
         margin: 0;
         font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+        color: var(--text);
         background: var(--bg);
-        color: var(--text);
-        font-size: 13px;
-      }
-
-      .app {
-        max-width: 1440px;
-        margin: 16px auto;
-        padding: 0 16px;
-      }
-
-      .crumbs {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--sub);
         font-size: 12px;
-        margin-bottom: 10px;
+        line-height: 1.5;
       }
 
-      .crumbs b {
-        color: var(--text);
+      button,
+      input,
+      select {
+        font: inherit;
       }
 
-      .page-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-
-      .page-title h1 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-      }
-
-      .page-title .hint {
-        color: var(--sub);
-        font-size: 12px;
-      }
-
-      /* ============== Stat cards ============== */
-      .stats {
+      .layout {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 12px;
+        grid-template-columns: 56px 144px 1fr;
+        min-height: 100vh;
       }
 
-      .stat {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 14px 16px;
-        cursor: pointer;
-        transition: 0.15s;
-        position: relative;
+      .icon-nav {
+        background: #fff;
+        border-right: 1px solid var(--line);
+        padding: 8px 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
       }
 
-      .stat:hover {
-        border-color: var(--primary);
-        box-shadow: 0 4px 12px rgba(47, 123, 255, 0.08);
-      }
-
-      .stat.active {
-        border-color: var(--primary);
-        background: linear-gradient(180deg, #f4f8ff 0%, #ffffff 100%);
-      }
-
-      .stat-label {
-        color: var(--sub);
-        font-size: 12px;
+      .icon-item {
+        width: 56px;
+        height: 44px;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 4px;
+        justify-content: center;
+        gap: 3px;
+        color: #59677f;
+        cursor: pointer;
+        transition: color 0.16s ease, background 0.16s ease;
       }
 
-      .stat-value {
-        font-size: 24px;
+      .icon-item:hover {
+        color: var(--primary);
+        background: #f7faff;
+      }
+
+      .icon-item.active {
+        color: var(--primary);
+        background: var(--primary-bg);
+        border-right: 2px solid var(--primary);
+      }
+
+      .icon {
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      .side-menu {
+        background: var(--side);
+        border-right: 1px solid var(--line);
+        padding: 10px 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+
+      .menu-title {
+        padding: 0 14px 10px;
         font-weight: 600;
-        margin-top: 6px;
         color: var(--text);
       }
 
-      .stat-value .unit {
-        font-size: 13px;
+      .menu-group {
+        margin-bottom: 8px;
+      }
+
+      .menu-group-title {
+        padding: 8px 14px;
         color: var(--sub);
-        font-weight: normal;
-        margin-left: 4px;
       }
 
-      .stat-sub {
-        color: var(--sub);
-        font-size: 12px;
-        margin-top: 4px;
-      }
-
-      .stat-sub .up {
-        color: var(--ok);
-      }
-
-      .stat-sub .down {
-        color: var(--danger);
-      }
-
-      .stat .badge {
-        position: absolute;
-        right: 12px;
-        top: 12px;
-        background: var(--danger);
-        color: #fff;
-        padding: 1px 6px;
-        border-radius: 8px;
-        font-size: 11px;
-      }
-
-      /* ============== Filter bar ============== */
-      .panel {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        margin-bottom: 12px;
-      }
-
-      .tabbar {
+      .menu-link {
+        height: 34px;
+        padding: 0 14px 0 24px;
         display: flex;
+        align-items: center;
+        color: var(--text);
+        cursor: pointer;
+        border-right: 2px solid transparent;
+        transition: color 0.16s ease, background 0.16s ease;
+      }
+
+      .menu-link:hover {
+        color: var(--primary);
+        background: #f7faff;
+      }
+
+      .menu-link.active {
+        color: var(--primary);
+        background: var(--primary-bg);
+        border-right: 2px solid var(--primary);
+      }
+
+      .content {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px;
+        background: #fff;
         border-bottom: 1px solid var(--line);
-        padding: 0 16px;
+        position: sticky;
+        top: 0;
+        z-index: 12;
+      }
+
+      .tabs {
+        display: flex;
+        align-items: center;
+        gap: 18px;
       }
 
       .tab {
-        padding: 12px 16px;
-        cursor: pointer;
+        height: 42px;
+        display: flex;
+        align-items: center;
         color: var(--sub);
-        font-size: 13px;
-        position: relative;
-        border-bottom: 2px solid transparent;
       }
 
       .tab.active {
         color: var(--primary);
-        border-bottom-color: var(--primary);
-        font-weight: 600;
+        border-bottom: 2px solid var(--primary);
       }
 
-      .tab .count {
-        background: #eef2f9;
-        color: var(--sub);
-        font-size: 11px;
-        padding: 1px 6px;
-        border-radius: 8px;
-        margin-left: 4px;
-      }
-
-      .tab.active .count {
-        background: var(--primary-soft);
-        color: var(--primary);
-      }
-
-      .filter {
-        padding: 14px 16px 6px;
-        display: grid;
-        grid-template-columns: repeat(5, minmax(180px, 1fr)) auto;
-        gap: 10px 12px;
-        align-items: end;
-      }
-
-      .field {
+      .top-actions {
         display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .field label {
+        align-items: center;
+        gap: 12px;
         color: var(--sub);
-        font-size: 12px;
       }
 
-      .input, .select {
-        height: 32px;
-        border: 1px solid var(--line-strong);
+      .main {
+        padding: 12px 14px 0;
+      }
+
+      .filter-bar {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 1fr 1fr 1fr 1fr auto;
+        gap: 8px;
+        align-items: center;
         background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 10px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .input,
+      .select {
+        height: 30px;
+        width: 100%;
+        border: 1px solid var(--line-dark);
         border-radius: 4px;
-        padding: 0 10px;
-        font-size: 13px;
+        background: #fff;
         color: var(--text);
+        padding: 0 8px;
         outline: none;
-        font-family: inherit;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
       }
 
-      .input:focus, .select:focus {
+      .input:focus,
+      .select:focus {
         border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(47, 123, 255, 0.12);
       }
 
-      .input::placeholder {
-        color: var(--muted);
+      .input.invalid {
+        border-color: var(--danger);
+        background: var(--danger-bg);
       }
 
-      .input-with-prefix {
-        position: relative;
+      .input[readonly] {
+        background: #f8fafc;
+        color: var(--sub);
       }
 
-      .input-with-prefix .input {
-        padding-left: 28px;
+      .input:hover,
+      .select:hover {
+        border-color: #b7c5d8;
       }
 
-      .input-with-prefix .ic {
-        position: absolute;
-        left: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--muted);
-        font-size: 14px;
-        pointer-events: none;
+      .date-range {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
       }
 
       .filter-actions {
         display: flex;
+        gap: 6px;
+      }
+
+      .monitor-cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(160px, 1fr));
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .monitor-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 12px 14px;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        outline: none;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+      }
+
+      .monitor-card:hover,
+      .monitor-card:focus {
+        transform: translateY(-1px);
+        border-color: var(--primary-soft);
+        box-shadow: 0 8px 18px rgba(31, 42, 68, 0.08);
+      }
+
+      .monitor-card.active {
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(47, 123, 255, 0.1);
+      }
+
+      .monitor-card.warning {
+        border-left: 3px solid var(--warning);
+      }
+
+      .monitor-card.primary {
+        border-left: 3px solid var(--primary);
+      }
+
+      .monitor-card.danger {
+        border-left: 3px solid var(--danger);
+      }
+
+      .monitor-card.success {
+        border-left: 3px solid var(--success);
+      }
+
+      .monitor-label {
+        color: var(--sub);
+        display: flex;
+        justify-content: space-between;
         gap: 8px;
-        align-items: end;
-        padding-bottom: 0;
+      }
+
+      .monitor-value {
+        margin-top: 8px;
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .monitor-tip {
+        margin-top: 6px;
+        color: var(--muted);
+      }
+
+      .status-unit {
+        margin-left: 4px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--muted);
       }
 
       .btn {
-        height: 32px;
-        padding: 0 14px;
+        height: 30px;
+        padding: 0 10px;
+        border: 1px solid var(--line-dark);
         border-radius: 4px;
-        border: 1px solid var(--line-strong);
         background: #fff;
         color: var(--text);
-        font-size: 13px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 4px;
-        font-family: inherit;
+        white-space: nowrap;
+        transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
       }
 
       .btn:hover {
         border-color: var(--primary);
         color: var(--primary);
+      }
+
+      .btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(47, 123, 255, 0.14);
+      }
+
+      .btn:disabled,
+      .btn.disabled {
+        cursor: not-allowed;
+        color: var(--muted);
+        background: #f7f9fc;
+        border-color: var(--line);
+        box-shadow: none;
       }
 
       .btn-primary {
@@ -282,2119 +362,2344 @@
       }
 
       .btn-primary:hover {
-        background: #1c64df;
+        background: #1f67dc;
         color: #fff;
-        border-color: #1c64df;
       }
 
-      .btn-text {
+      .btn-link {
+        height: auto;
+        padding: 0;
+        border: 0;
         background: transparent;
-        border: none;
-        color: var(--primary);
-        padding: 0 6px;
-      }
-
-      .btn-text:hover {
-        color: #1c64df;
-        background: transparent;
-      }
-
-      .btn-ghost {
-        background: var(--primary-soft);
-        border-color: var(--primary-soft);
         color: var(--primary);
       }
 
-      .btn-ghost:hover {
-        background: #d8e6ff;
-        color: var(--primary);
-        border-color: #d8e6ff;
-      }
-
-      .btn-sm {
-        height: 26px;
-        padding: 0 10px;
-        font-size: 12px;
-      }
-
-      .checkbox-row {
-        padding: 4px 16px 12px;
+      .toolbar {
+        margin-top: 8px;
+        min-height: 40px;
+        padding: 5px 0;
         display: flex;
-        gap: 16px;
         align-items: center;
-        color: var(--sub);
-        font-size: 12px;
+        justify-content: space-between;
+        gap: 10px;
       }
 
-      .checkbox-row label {
-        display: inline-flex;
+      .toolbar-left,
+      .toolbar-right {
+        display: flex;
         align-items: center;
         gap: 6px;
-        cursor: pointer;
       }
 
-      /* ============== Toolbar ============== */
-      .toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 16px;
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 8px 8px 0 0;
-        border-bottom: none;
+      .selected-text {
+        margin-left: 8px;
+        color: var(--sub);
       }
 
-      .toolbar-left, .toolbar-right {
+      .receive-guide {
         display: flex;
         align-items: center;
         gap: 8px;
-      }
-
-      .selected-info {
-        background: var(--primary-soft);
-        border: 1px solid #c9def0;
-        border-radius: 4px;
-        padding: 4px 10px;
-        color: var(--primary);
-        font-size: 12px;
-      }
-
-      .view-switch {
-        display: inline-flex;
-        border: 1px solid var(--line-strong);
-        border-radius: 4px;
-        overflow: hidden;
-      }
-
-      .view-switch button {
-        background: #fff;
-        border: none;
-        padding: 6px 12px;
-        font-size: 12px;
-        cursor: pointer;
         color: var(--sub);
-        font-family: inherit;
+        background: var(--accent-bg);
+        border: 1px solid #ccefeb;
+        color: #32645f;
+        border-radius: 4px;
+        height: 30px;
+        padding: 0 10px;
       }
 
-      .view-switch button.active {
-        background: var(--primary);
-        color: #fff;
+      .guide-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
       }
 
-      /* ============== Grouped list ============== */
-      .list-wrap {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 0 0 8px 8px;
-        padding: 12px 12px 16px;
-      }
-
-      .group {
+      .table-wrap {
+        background: #fff;
         border: 1px solid var(--line);
         border-radius: 6px;
-        margin-bottom: 12px;
-        overflow: hidden;
-        background: #fff;
+        overflow: auto;
+        max-height: calc(100vh - 246px);
+        box-shadow: var(--shadow-sm);
       }
 
-      .group-head {
-        display: flex;
-        align-items: center;
-        padding: 10px 14px;
-        background: #fafbfd;
-        border-bottom: 1px solid var(--line);
-        cursor: pointer;
-        gap: 16px;
-      }
-
-      .group-head .toggle {
-        color: var(--sub);
-        font-size: 12px;
-        width: 12px;
-        display: inline-block;
-        transition: transform 0.15s;
-      }
-
-      .group.collapsed .group-head .toggle {
-        transform: rotate(-90deg);
-      }
-
-      .group-head .ship-no {
-        font-weight: 600;
-        color: var(--text);
-      }
-
-      .meta {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        color: var(--sub);
-        font-size: 12px;
-        flex-wrap: wrap;
-      }
-
-      .meta b {
-        color: var(--text);
-        font-weight: 500;
-      }
-
-      .group-head .right {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .progress {
-        width: 160px;
-        background: #eef1f6;
-        border-radius: 4px;
-        height: 6px;
-        overflow: hidden;
-        position: relative;
-      }
-
-      .progress > div {
-        height: 100%;
-        background: var(--primary);
-        border-radius: 4px;
-      }
-
-      .progress.warn > div {
-        background: var(--warn);
-      }
-
-      .progress.ok > div {
-        background: var(--ok);
-      }
-
-      .progress-text {
-        font-size: 12px;
-        color: var(--sub);
-        white-space: nowrap;
-      }
-
-      .pill {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        background: #eef2f9;
-        color: var(--sub);
-      }
-
-      .pill.warn {
-        background: var(--warn-soft);
-        color: var(--warn);
-      }
-
-      .pill.danger {
-        background: var(--danger-soft);
-        color: var(--danger);
-      }
-
-      .pill.ok {
-        background: var(--ok-soft);
-        color: var(--ok);
-      }
-
-      .pill.primary {
-        background: var(--primary-soft);
-        color: var(--primary);
-      }
-
-      .group-body {
-        padding: 0;
-        max-height: 9999px;
-        transition: max-height 0.2s;
-        overflow: hidden;
-      }
-
-      .group.collapsed .group-body {
-        max-height: 0;
-      }
-
-      table.box-tbl {
+      table {
         width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
+        min-width: 1260px;
+        border-collapse: separate;
+        border-spacing: 0;
       }
 
-      table.box-tbl thead th {
-        background: #f8fafd;
-        font-weight: 500;
-        color: var(--sub);
+      th,
+      td {
+        height: 36px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--line);
+        border-right: 1px solid var(--line);
         text-align: left;
-        padding: 8px 12px;
-        font-size: 12px;
-        border-bottom: 1px solid var(--line);
-      }
-
-      table.box-tbl tbody td {
-        padding: 10px 12px;
-        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
         vertical-align: middle;
       }
 
-      table.box-tbl tbody tr:last-child td {
-        border-bottom: none;
-      }
-
-      table.box-tbl tbody tr:hover {
-        background: #fafcff;
-      }
-
-      table.box-tbl tbody tr.selected {
-        background: var(--primary-soft);
-      }
-
-      .box-no {
+      th {
+        background: var(--table-head);
+        color: var(--sub);
         font-weight: 500;
-        color: var(--text);
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        user-select: none;
       }
 
-      .op-col {
-        display: flex;
-        gap: 4px;
-        justify-content: flex-end;
+      tbody tr:hover {
+        background: var(--hover);
+      }
+
+      tbody tr.active {
+        background: #f0f6ff;
+        box-shadow: inset 3px 0 0 var(--primary);
+      }
+
+      .table-wrap > table th:last-child,
+      .table-wrap > table td:last-child {
+        border-right: 0;
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        background: #fff;
+        box-shadow: -8px 0 12px rgba(31, 42, 68, 0.05);
+      }
+
+      .table-wrap > table th:last-child {
+        z-index: 4;
+        background: var(--table-head);
+      }
+
+      .table-wrap > table tbody tr:hover td:last-child {
+        background: var(--hover);
+      }
+
+      .table-wrap > table tbody tr.active td:last-child {
+        background: #f0f6ff;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        height: 20px;
+        padding: 0 7px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .tag-blue {
+        color: var(--primary);
+        background: var(--primary-bg);
+      }
+
+      .tag-green {
+        color: var(--success);
+        background: var(--success-bg);
+      }
+
+      .tag-orange {
+        color: var(--warning);
+        background: var(--warning-bg);
+      }
+
+      .tag-red {
+        color: var(--danger);
+        background: var(--danger-bg);
+      }
+
+      .muted {
+        color: var(--muted);
       }
 
       .num {
         font-variant-numeric: tabular-nums;
       }
 
-      .qty-wait {
-        color: var(--warn);
-        font-weight: 600;
-      }
-
-      .qty-zero {
-        color: var(--muted);
-      }
-
-      .group-actions {
-        padding: 10px 14px;
-        background: #fafbfd;
-        border-top: 1px solid var(--line);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 12px;
-        color: var(--sub);
-      }
-
-      /* ============== Pagination ============== */
-      .pager {
-        padding: 14px 16px;
-        display: flex;
-        justify-content: flex-end;
+      .op {
+        display: inline-flex;
         align-items: center;
         gap: 6px;
-        font-size: 12px;
-        color: var(--sub);
       }
 
-      .pager .num-btn {
-        border: 1px solid var(--line);
-        background: #fff;
-        min-width: 28px;
-        height: 28px;
-        border-radius: 4px;
+      .op a {
+        color: var(--primary);
+        text-decoration: none;
         cursor: pointer;
-        font-family: inherit;
-        color: var(--text);
       }
 
-      .pager .num-btn.active {
-        background: var(--primary);
-        color: #fff;
-        border-color: var(--primary);
-      }
-
-      /* ============== Drawer / Dialog ============== */
-      .mask {
-        position: fixed;
-        inset: 0;
-        background: rgba(20, 28, 50, 0.4);
-        display: none;
+      .op-btn {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        z-index: 100;
+        gap: 3px;
+        color: var(--primary);
+        cursor: pointer;
+        border-radius: 3px;
+        padding: 1px 2px;
       }
 
-      .mask.open {
-        display: flex;
+      .op-btn:hover {
+        color: #1f67dc;
+        background: var(--primary-bg);
       }
 
-      .dialog {
+      .op-btn.secondary {
+        color: #43617f;
+      }
+
+      .op-btn.disabled {
+        color: var(--muted);
+        cursor: not-allowed;
+      }
+
+      .op-btn.disabled:hover {
+        color: var(--muted);
+        background: transparent;
+      }
+
+      .op-split {
+        width: 1px;
+        height: 12px;
+        background: var(--line-dark);
+      }
+
+      .risk-text {
+        color: var(--danger);
+        font-weight: 500;
+      }
+
+      .warn-text {
+        color: var(--warning);
+        font-weight: 500;
+      }
+
+      .drawer {
+        position: fixed;
+        right: 0;
+        top: 42px;
+        bottom: 0;
+        width: min(820px, 100vw);
         background: #fff;
-        border-radius: 8px;
-        width: 1080px;
-        max-width: calc(100% - 40px);
-        max-height: calc(100vh - 40px);
+        border-left: 1px solid var(--line);
+        box-shadow: -12px 0 28px rgba(31, 42, 68, 0.14);
+        transform: translateX(100%);
+        transition: transform 0.18s ease;
+        z-index: 20;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 16px 48px rgba(20, 28, 50, 0.2);
+      }
+
+      .drawer.inline {
+        position: static;
+        width: 100%;
+        max-height: none;
+        margin-top: 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        box-shadow: none;
+        transform: none;
+        display: none;
         overflow: hidden;
       }
 
-      .dlg-head {
-        display: flex;
+      .modal-mask {
+        position: fixed;
+        inset: 0;
+        display: none;
         align-items: center;
-        padding: 14px 18px;
-        border-bottom: 1px solid var(--line);
-        gap: 10px;
+        justify-content: center;
+        background: rgba(20, 32, 52, 0.38);
+        z-index: 30;
       }
 
-      .dlg-head h3 {
-        margin: 0;
-        font-size: 15px;
+      .modal-mask.open {
+        display: flex;
+      }
+
+      .modal {
+        width: min(1280px, calc(100vw - 32px));
+        max-height: calc(100vh - 48px);
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 12px 36px rgba(31, 42, 68, 0.18);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .modal-hd {
+        min-height: 52px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
         font-weight: 600;
       }
 
-      .dlg-head .close {
-        margin-left: auto;
-        cursor: pointer;
-        color: var(--sub);
-        font-size: 18px;
+      .modal-title {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
       }
 
-      .dlg-body {
-        padding: 16px 18px;
-        overflow-y: auto;
+      .modal-title span {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sub);
+      }
+
+      .modal-body {
+        padding: 12px;
+        overflow: hidden auto;
+        background: #fbfcff;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .summary-item {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 9px 10px;
+        min-height: 64px;
+      }
+
+      .summary-label {
+        color: var(--sub);
+      }
+
+      .summary-value {
+        margin-top: 5px;
+        font-weight: 600;
+      }
+
+      .progress-track {
+        height: 6px;
+        margin-top: 8px;
+        border-radius: 999px;
+        background: #e8eef7;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: var(--primary);
+        transition: width 0.18s ease;
+      }
+
+      .sub-panel {
+        border: 1px solid var(--line);
+        background: #fff;
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .sub-panel-hd {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        background: var(--table-head);
+        border-bottom: 1px solid var(--line);
+        font-weight: 600;
+      }
+
+      .sub-panel-bd {
+        padding: 0;
+        overflow: auto;
+        scrollbar-gutter: stable;
         flex: 1;
       }
 
-      .dlg-foot {
-        padding: 12px 18px;
+      .mini-table {
+        min-width: 0;
+      }
+
+      .box-detail-layout {
+        --detail-panel-height: min(520px, calc(100vh - 260px));
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .box-detail-layout > .sub-panel,
+      .piece-receive-host .drawer.inline {
+        height: var(--detail-panel-height);
+      }
+
+      .box-detail-layout .mini-table {
+        min-width: 520px;
+      }
+
+      .box-detail-layout .sub-panel-bd {
+        max-height: none;
+        min-height: 0;
+      }
+
+      .box-pager {
+        min-height: 50px;
+        padding: 10px 8px;
         border-top: 1px solid var(--line);
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        background: #fafbfd;
-      }
-
-      .dlg-foot .hint {
-        color: var(--sub);
-        font-size: 12px;
-      }
-
-      .dlg-foot .actions {
-        display: flex;
+        justify-content: flex-end;
         gap: 8px;
-      }
-
-      /* Scan area in receiving dialog */
-      .scan-area {
-        background: linear-gradient(180deg, #f4f8ff 0%, #ffffff 100%);
-        border: 1px solid #d8e6ff;
-        border-radius: 8px;
-        padding: 14px 16px;
-        margin-bottom: 14px;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        gap: 14px;
-      }
-
-      .scan-field label {
-        font-size: 12px;
         color: var(--sub);
-        margin-bottom: 4px;
-        display: block;
+        background: #fff;
       }
 
-      .scan-field strong {
-        font-size: 15px;
+      .mini-table th,
+      .mini-table td {
+        height: 32px;
+        padding: 6px 8px;
+      }
+
+      .mini-table th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .mini-table tbody tr {
+        cursor: pointer;
+      }
+
+      .piece-receive-host {
+        margin-top: 0;
+        min-width: 0;
+        min-height: 360px;
+      }
+
+      .piece-receive-host .drawer.inline {
+        border-color: #cfe0ff;
+        border-radius: 8px;
+        background: #fff;
+        margin-top: 0;
+        max-height: none;
+      }
+
+      .receive-placeholder {
+        min-height: 360px;
+        padding: 28px 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: var(--sub);
+        background: #fff;
+        border: 1px dashed var(--line-dark);
+        border-radius: 8px;
+      }
+
+      .receive-placeholder strong {
+        margin-bottom: 6px;
         color: var(--text);
       }
 
-      .scan-field .input {
-        height: 32px;
+      .drawer.open {
+        transform: translateX(0);
       }
 
-      .info-line {
+      .drawer.inline.open {
+        display: flex;
+        transform: none;
+      }
+
+      .drawer-hd {
+        min-height: 48px;
+        padding: 0 14px;
         display: flex;
         align-items: center;
-        gap: 18px;
-        background: #f7f9fd;
-        border-radius: 6px;
-        padding: 10px 14px;
-        margin-bottom: 12px;
-        font-size: 12px;
-        color: var(--sub);
-        flex-wrap: wrap;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        font-weight: 600;
       }
 
-      .info-line b {
-        color: var(--text);
-        font-weight: 500;
+      .drawer.inline .drawer-hd {
+        background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%);
       }
 
-      .sku-table {
-        width: 100%;
-        border-collapse: collapse;
-        border: 1px solid var(--line);
-        border-radius: 6px;
+      .drawer-body {
+        padding: 14px;
+        overflow: auto;
+        background: #fbfcff;
+      }
+
+      .drawer.inline .drawer-body {
+        padding: 12px;
+        min-height: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
       }
 
-      .sku-table thead th {
-        background: #f7f9fd;
-        font-weight: 500;
-        color: var(--sub);
-        text-align: left;
-        padding: 8px 10px;
-        font-size: 12px;
+      .receive-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1;
+      }
+
+      .receive-side,
+      .receive-main {
+        min-width: 0;
+      }
+
+      .receive-side {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: start;
+      }
+
+      .receive-main {
+        margin-top: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        overflow: hidden;
+        min-height: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .receive-main .receive-table-wrap {
+        margin-top: 0;
+        border: 0;
+        border-radius: 0;
+        max-height: none;
+        min-height: 0;
+        flex: 1;
+      }
+
+      .receive-main-hd {
+        min-height: 42px;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
         border-bottom: 1px solid var(--line);
+        background: var(--table-head);
         white-space: nowrap;
       }
 
-      .sku-table tbody td {
-        padding: 10px;
-        border-bottom: 1px solid var(--line);
-        vertical-align: top;
+      .receive-main-hd .section-title {
+        margin: 0;
       }
 
-      .sku-table tbody tr:last-child td {
-        border-bottom: none;
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 82px 1fr 82px 1fr;
+        gap: 10px 12px;
+        margin-bottom: 14px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
       }
 
-      .qty-input {
-        width: 80px;
-        height: 30px;
-        border: 1px solid var(--line-strong);
-        border-radius: 4px;
-        padding: 0 8px;
-        font-size: 13px;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-        font-family: inherit;
+      .receive-side .detail-grid {
+        grid-template-columns: 76px minmax(0, 1fr) 76px minmax(0, 1fr);
+        margin-bottom: 0;
       }
 
-      .qty-input.good {
-        border-color: #b8d6b8;
+      .receive-side .qty-form {
+        grid-template-columns: 64px minmax(0, 1fr);
       }
 
-      .qty-input.bad {
-        border-color: #f0c2c5;
+      .receive-side .quick-actions {
+        grid-column: auto;
+        margin: 0;
+        align-self: stretch;
+        flex-direction: column;
       }
 
-      .qty-input.bad[value]:not([value="0"]) {
-        background: #fff7f7;
+      .receive-side .quick-actions .btn {
+        flex: 1;
       }
 
-      .qty-warning {
-        color: var(--danger);
-        font-size: 11px;
-        margin-top: 4px;
+      .receive-side .exception-panel {
+        grid-column: 1 / -1;
+        margin-top: 0;
+      }
+
+      .hidden-field {
         display: none;
       }
 
-      .qty-warning.show {
-        display: block;
-      }
-
-      .sn-area {
-        position: relative;
-        width: 100%;
-      }
-
-      .sn-textarea {
-        width: 100%;
-        min-height: 50px;
-        border: 1px dashed var(--line-strong);
-        border-radius: 4px;
-        padding: 6px 8px;
-        font-size: 12px;
-        resize: vertical;
-        font-family: inherit;
-        color: var(--text);
-      }
-
-      .sn-textarea:focus {
-        border-color: var(--primary);
-        border-style: solid;
-        outline: none;
-      }
-
-      .sn-count {
-        position: absolute;
-        right: 6px;
-        bottom: 6px;
-        font-size: 11px;
+      .detail-grid .label {
         color: var(--sub);
-        background: rgba(255, 255, 255, 0.8);
-        padding: 1px 4px;
-        border-radius: 3px;
       }
 
-      .sn-count.match {
-        color: var(--ok);
+      .section-title {
+        margin: 14px 0 8px;
+        font-weight: 600;
       }
 
-      .sn-count.mismatch {
-        color: var(--danger);
-      }
-
-      .sku-row .sku-img {
-        width: 36px;
-        height: 36px;
-        background: #eef2f9;
-        border-radius: 4px;
-        display: inline-flex;
+      .section-row {
+        margin: 14px 0 8px;
+        display: flex;
         align-items: center;
-        justify-content: center;
-        color: var(--muted);
-        font-size: 10px;
-        margin-right: 8px;
-        vertical-align: middle;
+        justify-content: space-between;
+        gap: 12px;
       }
 
-      .sku-name {
-        font-size: 11px;
+      .section-row .section-title {
+        margin: 0;
+      }
+
+      .calc-text {
         color: var(--sub);
-        margin-top: 2px;
+        font-variant-numeric: tabular-nums;
       }
 
       .quick-actions {
         display: flex;
+        align-items: center;
         gap: 8px;
-        margin-top: 14px;
-        margin-bottom: 12px;
-      }
-
-      .quick-actions .btn {
-        font-size: 12px;
-        height: 28px;
-        padding: 0 10px;
-      }
-
-      /* batch dialog */
-      .batch-list {
-        max-height: 320px;
-        overflow-y: auto;
+        margin: 10px 0 12px;
+        padding: 8px 10px;
         border: 1px solid var(--line);
         border-radius: 6px;
+        background: #fff;
       }
 
-      .batch-list-head {
-        background: #f7f9fd;
-        padding: 8px 12px;
-        font-size: 12px;
-        color: var(--sub);
-        border-bottom: 1px solid var(--line);
-      }
-
-      .batch-item {
-        padding: 8px 12px;
-        border-bottom: 1px solid var(--line);
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        font-size: 12px;
-      }
-
-      .batch-item:last-child {
-        border-bottom: none;
-      }
-
-      .batch-item .remove {
-        color: var(--danger);
-        cursor: pointer;
-        margin-left: auto;
-        font-size: 12px;
-      }
-
-      /* Helper styles */
-      .alert {
-        background: var(--warn-soft);
-        border: 1px solid #fbd9a2;
+      .receive-table-wrap {
+        margin-top: 12px;
+        border: 1px solid var(--line);
         border-radius: 6px;
-        padding: 8px 12px;
-        font-size: 12px;
-        color: #92580a;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        overflow: auto;
+        scrollbar-gutter: stable;
+        background: #fff;
+        max-height: 300px;
       }
 
-      .alert.danger {
-        background: var(--danger-soft);
-        border-color: #f5b8be;
-        color: #99272f;
+      .receive-table {
+        min-width: 900px;
+        table-layout: fixed;
       }
 
-      .alert.info {
-        background: var(--primary-soft);
-        border-color: #c9def0;
+      .receive-table th,
+      .receive-table td {
+        white-space: nowrap;
+      }
+
+      .receive-table th:nth-child(1),
+      .receive-table td:nth-child(1) {
+        width: 210px;
+      }
+
+      .receive-table th:nth-child(2),
+      .receive-table td:nth-child(2),
+      .receive-table th:nth-child(3),
+      .receive-table td:nth-child(3),
+      .receive-table th:nth-child(4),
+      .receive-table td:nth-child(4),
+      .receive-table th:nth-child(5),
+      .receive-table td:nth-child(5),
+      .receive-table th:nth-child(7),
+      .receive-table td:nth-child(7) {
+        width: 92px;
+      }
+
+      .receive-table th:nth-child(6),
+      .receive-table td:nth-child(6),
+      .receive-table th:nth-child(8),
+      .receive-table td:nth-child(8) {
+        width: 150px;
+      }
+
+      .receive-table th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .receive-table th:first-child,
+      .receive-table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #fff;
+        box-shadow: 8px 0 12px rgba(31, 42, 68, 0.04);
+      }
+
+      .receive-table th:first-child {
+        z-index: 3;
+        background: var(--table-head);
+      }
+
+      .sub-panel-bd::-webkit-scrollbar,
+      .receive-table-wrap::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      .sub-panel-bd::-webkit-scrollbar-thumb,
+      .receive-table-wrap::-webkit-scrollbar-thumb {
+        background: #c8d2e1;
+        border-radius: 999px;
+      }
+
+      .sub-panel-bd::-webkit-scrollbar-track,
+      .receive-table-wrap::-webkit-scrollbar-track {
+        background: #f3f6fb;
+      }
+
+      .receive-table .input {
+        height: 28px;
+      }
+
+      .drawer-good,
+      .drawer-bad {
+        width: 74px;
+      }
+
+      .sn-link {
         color: var(--primary);
+        cursor: pointer;
+        display: inline-flex;
+        margin-bottom: 4px;
       }
 
-      /* checkbox style */
-      input[type="checkbox"] {
-        accent-color: var(--primary);
+      .sn-input {
+        margin-top: 6px;
+        display: none;
+        width: 132px;
+        min-height: 56px;
+        resize: vertical;
+        padding-top: 5px;
+        white-space: pre-wrap;
       }
 
-      /* ============ Toast notification ============ */
-      .toast-container {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 200;
-        display: flex;
-        flex-direction: column;
+      .sn-input.show {
+        display: block;
+      }
+
+      .btn-danger {
+        color: var(--danger);
+        border-color: #f2c1c6;
+      }
+
+      .btn-danger:hover {
+        color: #c73542;
+        border-color: var(--danger);
+      }
+
+      .confirm-modal {
+        width: 420px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 12px 36px rgba(31, 42, 68, 0.18);
+      }
+
+      .confirm-hd {
+        padding: 14px 16px 10px;
+        font-weight: 600;
+      }
+
+      .confirm-body {
+        padding: 0 16px 14px;
+        color: var(--sub);
+        line-height: 1.7;
+      }
+
+      .confirm-form {
+        padding: 0 16px 14px;
+        display: grid;
+        grid-template-columns: 92px 1fr;
         gap: 8px;
         align-items: center;
-        pointer-events: none;
+      }
+
+      .confirm-ft {
+        padding: 10px 16px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        border-top: 1px solid var(--line);
+      }
+
+      .exception-panel {
+        display: none;
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px dashed var(--line-dark);
+        border-radius: 6px;
+        background: #fff;
+      }
+
+      .exception-panel.show {
+        display: block;
+      }
+
+      .exception-panel .qty-form {
+        padding: 0;
+        border: 0;
+      }
+
+      .qty-form {
+        display: grid;
+        grid-template-columns: 82px 1fr;
+        gap: 8px;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+      }
+
+      .drawer-ft {
+        margin-top: auto;
+        padding: 10px 14px;
+        min-height: 50px;
+        border-top: 1px solid var(--line);
+        background: #fff;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .pager {
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        color: var(--sub);
+      }
+
+      .page-btn {
+        min-width: 26px;
+        height: 26px;
+        padding: 0 8px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .page-btn:disabled {
+        cursor: not-allowed;
+        color: var(--muted);
+        background: #f7f9fc;
+      }
+
+      .page-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
       }
 
       .toast {
-        background: rgba(40, 50, 78, 0.94);
+        position: fixed;
+        top: 52px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(38, 51, 77, 0.94);
         color: #fff;
-        padding: 8px 16px;
+        padding: 8px 14px;
         border-radius: 6px;
-        font-size: 13px;
-        box-shadow: 0 6px 18px rgba(20, 28, 50, 0.18);
-        display: flex;
-        align-items: center;
-        gap: 8px;
         opacity: 0;
-        transform: translateY(-8px);
-        transition: opacity 0.2s, transform 0.2s;
-        max-width: 460px;
-        line-height: 1.5;
+        pointer-events: none;
+        transition: opacity 0.16s ease;
+        z-index: 40;
       }
 
       .toast.show {
         opacity: 1;
-        transform: translateY(0);
       }
 
-      .toast .ic {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.18);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: bold;
-      }
-
-      .toast-success {
-        background: rgba(22, 130, 70, 0.94);
-      }
-
-      .toast-warn {
-        background: rgba(202, 122, 8, 0.94);
-      }
-
-      .toast-error {
-        background: rgba(190, 50, 60, 0.94);
-      }
-
-      /* ============ Column settings popover ============ */
-      .popover {
-        position: absolute;
-        background: #fff;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        box-shadow: 0 8px 20px rgba(20, 28, 50, 0.12);
-        padding: 10px 12px;
-        min-width: 200px;
-        z-index: 150;
+      .empty-state {
         display: none;
-      }
-
-      .popover.open {
-        display: block;
-      }
-
-      .popover h4 {
-        margin: 0 0 8px;
-        font-size: 12px;
+        padding: 32px 16px;
+        text-align: center;
         color: var(--sub);
-        font-weight: 500;
-      }
-
-      .popover label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 4px 0;
-        font-size: 12px;
-        color: var(--text);
-        cursor: pointer;
-      }
-
-      .popover .pop-foot {
-        margin-top: 8px;
-        padding-top: 8px;
+        background: #fff;
         border-top: 1px solid var(--line);
-        display: flex;
-        justify-content: flex-end;
-        gap: 6px;
       }
 
-      .row-done {
-        background: #f7faf8 !important;
+      .row-flash {
+        animation: rowFlash 0.9s ease;
       }
 
-      .ic-success {
-        color: var(--ok);
+      @keyframes rowFlash {
+        0% {
+          background: #eaf4ff;
+        }
+        100% {
+          background: transparent;
+        }
       }
 
-      .pulse-once {
-        animation: pulseHi 0.6s ease;
+      @media (max-width: 1320px) {
+        .box-detail-layout {
+          grid-template-columns: 330px minmax(0, 1fr);
+        }
+
+        .receive-side {
+          grid-template-columns: minmax(0, 1fr) 220px;
+        }
+
+        .receive-side .quick-actions {
+          grid-column: 1 / -1;
+        }
       }
 
-      @keyframes pulseHi {
-        0% { background: #fffae0; }
-        100% { background: transparent; }
+      @media (max-width: 1180px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .icon-nav,
+        .side-menu {
+          display: none;
+        }
+
+        .filter-bar {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .monitor-cards {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .summary-grid,
+        .box-detail-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .piece-receive-host,
+        .receive-placeholder {
+          min-height: 220px;
+        }
+
+        .box-detail-layout .sub-panel-bd,
+        .receive-main .receive-table-wrap {
+          max-height: 280px;
+        }
+
+        .detail-grid,
+        .receive-side,
+        .receive-side .detail-grid {
+          grid-template-columns: 82px 1fr;
+        }
+
+        .receive-side .quick-actions,
+        .receive-side .exception-panel {
+          grid-column: 1 / -1;
+        }
+
+        .toolbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .toolbar-right {
+          width: 100%;
+          justify-content: space-between;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="app">
-      <!-- Breadcrumb & title -->
-      <div class="crumbs">
-        WMS / 调拨管理 /
-        <b>收货列表</b>
-      </div>
+    <div class="layout">
+      <aside class="icon-nav">
+        <div class="icon-item"><span class="icon">⌂</span><span>首页</span></div>
+        <div class="icon-item"><span class="icon">￥</span><span>财务</span></div>
+        <div class="icon-item"><span class="icon">□</span><span>产品</span></div>
+        <div class="icon-item active"><span class="icon">仓</span><span>仓储</span></div>
+        <div class="icon-item"><span class="icon">⚙</span><span>系统</span></div>
+      </aside>
 
-      <div class="page-title">
-        <h1>调拨收货列表</h1>
-      </div>
+      <aside class="side-menu">
+        <div class="menu-title">仓储管理</div>
+        <div class="menu-group">
+          <div class="menu-group-title">调拨管理</div>
+          <div class="menu-link">调拨发货单</div>
+          <div class="menu-link active">收货列表</div>
+          <div class="menu-link">库存调整</div>
+        </div>
+        <div class="menu-group">
+          <div class="menu-group-title">入库</div>
+          <div class="menu-link">仓储收货</div>
+          <div class="menu-link">入库记录</div>
+        </div>
+      </aside>
 
-      <!-- ============== Stats ============== -->
-      <div class="stats">
-        <div class="stat active" data-key="pending" onclick="filterByStat('pending')">
-          <div class="stat-label">待收发货单</div>
-          <div class="stat-value">
-            128
-            <span class="unit">单 / 3,686 箱</span>
+      <main class="content">
+        <div class="topbar">
+          <div class="tabs">
+            <div class="tab">首页</div>
+            <div class="tab active">收货列表</div>
           </div>
-          <div class="stat-sub">
-            其中
-            <b>42 单</b>
-            到仓超 7 天
-          </div>
-        </div>
-        <div class="stat" data-key="part" onclick="filterByStat('part')">
-          <div class="stat-label">部分收货中</div>
-          <div class="stat-value">
-            36
-            <span class="unit">箱</span>
-          </div>
-          <div class="stat-sub">
-            涉及
-            <b>14 单</b>
-            发货单，需补收
+          <div class="top-actions">
+            <span>⌄</span>
+            <span>▦</span>
+            <span>013301</span>
+            <span>●</span>
           </div>
         </div>
-        <div class="stat" data-key="today" onclick="filterByStat('today')">
-          <div class="stat-label">今日已收</div>
-          <div class="stat-value">
-            74
-            <span class="unit">箱</span>
-          </div>
-          <div class="stat-sub">
-            <span class="up">↑ 12%</span>
-            较昨日
-          </div>
-        </div>
-        <div class="stat" data-key="exception" onclick="filterByStat('exception')">
-          <span class="badge">8</span>
-          <div class="stat-label">异常待人工处理</div>
-          <div class="stat-value">
-            8
-            <span class="unit">条</span>
-          </div>
-          <div class="stat-sub">数量不符 / SN 重复 / 不良品</div>
-        </div>
-      </div>
 
-      <!-- ============== Filters ============== -->
-      <div class="panel">
-        <div class="filter">
-          <div class="field">
-            <label>扫描箱号 / 调拨单号</label>
-            <div class="input-with-prefix">
-              <span class="ic">⌕</span>
-              <input
-                class="input"
-                placeholder="扫码或输入回车快速定位"
-                autofocus
-                onkeydown="if(event.key==='Enter') scanLocate(this.value)"
-              />
+        <div class="main">
+          <div class="monitor-cards">
+            <div class="monitor-card warning" tabindex="0" role="button" data-monitor="pending-order" onclick="filterPendingBoxes(this)" onkeydown="handleCardKey(event, filterPendingBoxes, this)">
+              <div class="monitor-label"><span>待收货单数</span><span>工作池</span></div>
+              <div class="monitor-value"><span id="monitorPendingOrder">0</span><span class="status-unit">单</span></div>
+              <div class="monitor-tip">未收货 + 部分收货，<span id="monitorPendingBoxText">涉及 0 箱</span></div>
+            </div>
+            <div class="monitor-card primary" tabindex="0" role="button" data-monitor="pending-qty" onclick="filterPendingBoxes(this)" onkeydown="handleCardKey(event, filterPendingBoxes, this)">
+              <div class="monitor-label"><span>待收货件数</span><span>工作量</span></div>
+              <div class="monitor-value"><span id="monitorPendingQty">0</span><span class="status-unit">件</span></div>
+              <div class="monitor-tip">反映实际处理压力，点击查看待收货单</div>
+            </div>
+            <div class="monitor-card danger" tabindex="0" role="button" data-monitor="exception" onclick="filterByMonitorStatus('异常', this)" onkeydown="handleCardKey(event, filterByMonitorStatus, '异常', this)">
+              <div class="monitor-label"><span>异常待处理单数</span><span>优先处理</span></div>
+              <div class="monitor-value"><span id="monitorExceptionOrder">0</span><span class="status-unit">单</span></div>
+              <div class="monitor-tip">少收、破损、SKU 不一致，<span id="monitorExceptionBoxText">涉及 0 箱</span></div>
+            </div>
+            <div class="monitor-card danger" tabindex="0" role="button" data-monitor="overdue" onclick="filterOverdueBoxes(this)" onkeydown="handleCardKey(event, filterOverdueBoxes, this)">
+              <div class="monitor-label"><span>超时未完成单数</span><span>影响库存</span></div>
+              <div class="monitor-value"><span id="monitorOverdueOrder">0</span><span class="status-unit">单</span></div>
+              <div class="monitor-tip">超 24h 仍未完成，<span id="monitorOverdueBoxText">涉及 0 箱</span></div>
             </div>
           </div>
-          <div class="field">
-            <label>发货单号</label>
-            <input class="input" placeholder="AS260511..." />
-          </div>
-          <div class="field">
-            <label>目的仓入库单号</label>
-            <input class="input" placeholder="WA260511..." />
-          </div>
-          <div class="field">
-            <label>目的仓</label>
-            <select class="select">
+
+          <div class="filter-bar">
+            <input id="keywordInput" class="input" placeholder="箱号 / 发货单号 / SKU" />
+            <input id="shipmentInput" class="input" placeholder="发货单号" />
+            <input id="transferInput" class="input" placeholder="调拨单号" />
+            <select id="warehouseSelect" class="select">
+              <option value="">目的仓</option>
               <option>法国谷仓</option>
-              <option>德国万邑通</option>
-              <option>美国筋斗云</option>
-              <option>云DWA仓</option>
+              <option>德国亚马逊仓</option>
+              <option>云 DWA 仓</option>
             </select>
-          </div>
-          <div class="field">
-            <label>SKU</label>
-            <input class="input" placeholder="多个用空格/换行" />
-          </div>
-          <div class="filter-actions">
-            <button class="btn btn-primary" onclick="doSearch()">查 询</button>
-            <button class="btn" onclick="resetFilters()">重 置</button>
-          </div>
-        </div>
-
-        <div class="checkbox-row">
-          <label>
-            <input type="checkbox" checked onchange="onFilterCheckbox(this)" />
-            只看我处理的目的仓
-          </label>
-          <label>
-            <input type="checkbox" checked onchange="onFilterCheckbox(this)" />
-            只看到仓超 24 小时
-          </label>
-          <label>
-            <input type="checkbox" onchange="onFilterCheckbox(this)" />
-            含 SN 管控商品优先
-          </label>
-          <label>
-            <input type="checkbox" onchange="onFilterCheckbox(this)" />
-            隐藏空箱/已取消
-          </label>
-        </div>
-      </div>
-
-      <!-- ============== Toolbar ============== -->
-      <div class="toolbar">
-        <div class="toolbar-left">
-          <button class="btn btn-primary" onclick="openBatchDialog()">+ 批量整箱收货</button>
-          <button class="btn" onclick="doSingleReceive()">按单整收</button>
-          <button class="btn" onclick="openExceptions()">待人工处理 (8)</button>
-          <button class="btn" onclick="doExport()">导出</button>
-          <span id="selectedTip" class="selected-info" style="display: none">
-            已选 <b id="selCnt">0</b> 箱
-            <a href="#" style="margin-left: 8px; color: var(--primary)" onclick="event.preventDefault(); clearSelection()">取消选择</a>
-          </span>
-        </div>
-        <div class="toolbar-right">
-          <span style="color: var(--sub); font-size: 12px">视图</span>
-          <div class="view-switch">
-            <button class="active" onclick="switchView(this, 'group')">按发货单分组</button>
-            <button onclick="switchView(this, 'flat')">按箱平铺</button>
-          </div>
-          <button class="btn btn-sm" onclick="openColumnSettings(event)">⚙ 列设置</button>
-        </div>
-      </div>
-
-      <!-- ============== Grouped list ============== -->
-      <div class="list-wrap" id="listWrap">
-        <!-- ===== Group 1 ===== -->
-        <div class="group">
-          <div class="group-head" onclick="toggleGroup(this)">
-            <span class="toggle">▾</span>
-            <div>
-              <div class="ship-no">AS26051100008 · 法国谷仓</div>
-              <div class="meta">
-                <span>调拨单 <b>WA26051100008</b></span>
-                <span>目的仓入库单 <b>IB260512395</b></span>
-                <span>始发仓 <b>深圳总仓</b></span>
-                <span>跟踪号 <b>SF7822351290</b></span>
-                <span>到仓时间 <b>2026-05-11 14:20</b></span>
-              </div>
+            <select id="statusSelect" class="select">
+              <option value="">接收状态</option>
+              <option>未收货</option>
+              <option>部分收货</option>
+              <option>异常</option>
+              <option>已收货</option>
+            </select>
+            <div class="date-range">
+              <input class="input" placeholder="开始时间" />
+              <input class="input" placeholder="结束时间" />
             </div>
-            <div class="right">
-              <span class="pill warn">部分收货 3 / 10 箱</span>
-              <div class="progress warn">
-                <div style="width: 30%"></div>
-              </div>
-              <span class="progress-text">已收 3 / 10 箱</span>
-              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openShipmentReceive(this, 'AS26051100008')">
-                按单收完 →
-              </button>
+            <div class="filter-actions">
+              <button class="btn btn-primary" onclick="applyFilters()">查询</button>
+              <button class="btn" onclick="resetFilters()">重置</button>
             </div>
           </div>
-          <div class="group-body">
-            <table class="box-tbl">
+
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <button id="batchReceiveBtn" class="btn btn-primary" onclick="receiveSelected()" disabled>批量整单收货</button>
+              <button class="btn" onclick="showToast('已导出当前筛选结果')">导出</button>
+              <span class="selected-text">已选择 <b id="selectedCount">0</b> 单</span>
+            </div>
+            <div class="toolbar-right">
+              <div class="receive-guide"><span class="guide-dot"></span><span>点击行内操作处理单据，顶部仅保留列表级动作</span></div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
               <thead>
                 <tr>
-                  <th style="width: 36px"><input type="checkbox" onclick="toggleAllInGroup(this)" /></th>
-                  <th style="width: 140px">箱号</th>
-                  <th style="width: 80px">装箱形式</th>
-                  <th style="width: 90px">接收状态</th>
-                  <th>箱内 SKU</th>
-                  <th style="width: 80px">装箱</th>
-                  <th style="width: 80px">已收</th>
-                  <th style="width: 80px">待收</th>
-                  <th style="width: 130px">箱规 / 毛重</th>
-                  <th style="width: 130px">仓库入库时间</th>
-                  <th style="width: 180px; text-align: right">操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><input type="checkbox" onclick="rowToggle(this)" /></td>
-                  <td class="box-no">B26190057852</td>
-                  <td><span class="pill">整装</span></td>
-                  <td><span class="pill warn">未收货</span></td>
-                  <td>
-                    <div class="sku-name">E320-ST-GY-EU-000 · OpenFit Air</div>
-                    <div style="color: var(--muted); font-size: 11px">含 SN 管控</div>
-                  </td>
-                  <td class="num">36</td>
-                  <td class="num qty-zero">0</td>
-                  <td class="num qty-wait">36</td>
-                  <td style="color: var(--sub); font-size: 12px">
-                    37.2×25.0×32.1 cm<br />
-                    <span style="color: var(--muted)">5.82 kg</span>
-                  </td>
-                  <td style="color: var(--muted)">—</td>
-                  <td>
-                    <div class="op-col">
-                      <button class="btn btn-sm" onclick="receiveWholeBox(this, 'B26190057852')">整箱收货</button>
-                      <button class="btn btn-sm btn-ghost" onclick="openReceiveDialog('B26190057852')">
-                        按数量收货
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td><input type="checkbox" onclick="rowToggle(this)" /></td>
-                  <td class="box-no">B26190057832</td>
-                  <td><span class="pill">整装</span></td>
-                  <td><span class="pill primary">部分收货</span></td>
-                  <td>
-                    <div class="sku-name">E320-ST-GY-EU-000 · OpenFit Air</div>
-                  </td>
-                  <td class="num">36</td>
-                  <td class="num">20</td>
-                  <td class="num qty-wait">16</td>
-                  <td style="color: var(--sub); font-size: 12px">
-                    36.9×25.0×31.9 cm<br />
-                    <span style="color: var(--muted)">5.86 kg</span>
-                  </td>
-                  <td style="color: var(--sub); font-size: 12px">2026-05-12 10:32</td>
-                  <td>
-                    <div class="op-col">
-                      <button class="btn btn-sm btn-ghost" onclick="openReceiveDialog('B26190057832')">
-                        继续收 16
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td><input type="checkbox" onclick="rowToggle(this)" /></td>
-                  <td class="box-no">B26190057822</td>
-                  <td><span class="pill">混装</span></td>
-                  <td><span class="pill warn">未收货</span></td>
-                  <td>
-                    <div class="sku-name">3 个 SKU：E320-ST × 24、A210-BK × 8、TS11-AZB × 4</div>
-                  </td>
-                  <td class="num">36</td>
-                  <td class="num qty-zero">0</td>
-                  <td class="num qty-wait">36</td>
-                  <td style="color: var(--sub); font-size: 12px">
-                    37.3×24.5×32.0 cm<br />
-                    <span style="color: var(--muted)">5.8 kg</span>
-                  </td>
-                  <td style="color: var(--muted)">—</td>
-                  <td>
-                    <div class="op-col">
-                      <button class="btn btn-sm" onclick="receiveWholeBox(this, 'B26190057822')">整箱收货</button>
-                      <button class="btn btn-sm btn-ghost" onclick="openReceiveDialog('B26190057822')">
-                        按数量收货
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td><input type="checkbox" onclick="rowToggle(this)" /></td>
-                  <td class="box-no">B26190057812</td>
-                  <td><span class="pill">整装</span></td>
-                  <td><span class="pill warn">未收货</span></td>
-                  <td>
-                    <div class="sku-name">E320-ST-GY-EU-000 · OpenFit Air</div>
-                  </td>
-                  <td class="num">36</td>
-                  <td class="num qty-zero">0</td>
-                  <td class="num qty-wait">36</td>
-                  <td style="color: var(--sub); font-size: 12px">
-                    37.1×25.0×32.1 cm<br />
-                    <span style="color: var(--muted)">5.84 kg</span>
-                  </td>
-                  <td style="color: var(--muted)">—</td>
-                  <td>
-                    <div class="op-col">
-                      <button class="btn btn-sm" onclick="receiveWholeBox(this, 'B26190057812')">整箱收货</button>
-                      <button class="btn btn-sm btn-ghost" onclick="openReceiveDialog('B26190057812')">
-                        按数量收货
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="group-actions">
-              <span>本单还有 6 个箱未展示，<a href="#" class="btn-text" style="padding: 0" onclick="event.preventDefault(); expandAllInGroup(this)">展开全部</a></span>
-              <div style="display: flex; gap: 8px">
-                <button class="btn btn-sm" onclick="receiveAllInGroup(this)">本单全部整箱收</button>
-                <button class="btn btn-sm" onclick="receiveAllByQtyInGroup(this)">本单按数量逐箱收</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ===== Group 2 ===== -->
-        <div class="group">
-          <div class="group-head" onclick="toggleGroup(this)">
-            <span class="toggle">▾</span>
-            <div>
-              <div class="ship-no">AS26041400007 · 德国亚马逊仓</div>
-              <div class="meta">
-                <span>调拨单 <b>WA26041400007</b></span>
-                <span>目的仓入库单 <b>IB260512394</b></span>
-                <span>始发仓 <b>香港中转仓</b></span>
-                <span>跟踪号 <b>DHL5562231</b></span>
-                <span>到仓时间 <b>2026-05-12 03:00</b></span>
-              </div>
-            </div>
-            <div class="right">
-              <span class="pill danger">含不良品记录</span>
-              <div class="progress ok">
-                <div style="width: 100%"></div>
-              </div>
-              <span class="progress-text">已收 5 / 5 箱</span>
-              <button class="btn btn-sm" onclick="event.stopPropagation(); viewGroupDetail('AS26041400007')">查看详情</button>
-            </div>
-          </div>
-          <div class="group-body" style="max-height: 0">
-            <table class="box-tbl">
-              <thead>
-                <tr>
-                  <th style="width: 36px"></th>
-                  <th>箱号</th>
+                  <th style="width: 36px"><input id="checkAll" type="checkbox" onclick="toggleAll(this)" /></th>
+                  <th style="width: 54px">序号</th>
                   <th>接收状态</th>
-                  <th>箱内 SKU</th>
-                  <th>装箱</th>
-                  <th>已收</th>
-                  <th>待收</th>
+                  <th>发货单号</th>
+                  <th>调拨单号</th>
+                  <th>目的仓入库单号</th>
+                  <th>目的仓</th>
+                  <th>箱数</th>
+                  <th>异常箱数</th>
+                  <th>SKU数</th>
+                  <th>装箱数量</th>
+                  <th>已收数量</th>
+                  <th>待收数量</th>
+                  <th>监控提示</th>
+                  <th>最晚入库时间</th>
+                  <th style="width: 200px">操作</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td></td>
-                  <td>已折叠 ...</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
+              <tbody id="receiptRows">
+                <tr class="active" data-order="AS2607070001" data-transfer="WA2607070001" data-inbound="RVG1149-260707" data-warehouse="法国谷仓" data-status="未收货" data-box-count="3" data-exception-box="0" data-sku-count="5" data-total="42" data-received="0" data-overdue="true" onclick="selectRow(this)">
+                  <td onclick="event.stopPropagation()"><input type="checkbox" onchange="onRowCheckboxChange(this)" /></td>
+                  <td>1</td>
+                  <td><span class="tag tag-orange">未收货</span></td>
+                  <td>AS2607070001</td>
+                  <td>WA2607070001</td>
+                  <td>RVG1149-260707</td>
+                  <td>法国谷仓</td>
+                  <td class="num">3</td>
+                  <td class="num">0</td>
+                  <td class="num">5</td>
+                  <td class="num">42</td>
+                  <td class="num">0</td>
+                  <td class="num">42</td>
+                  <td><span class="risk-text">到仓超 24h</span></td>
+                  <td class="muted">--</td>
+                  <td>
+                    <span class="op">
+                      <span class="op-btn" onclick="event.stopPropagation(); confirmOrderReceive(this.closest('tr'))">整单收货</span>
+                      <span class="op-split"></span>
+                      <span class="op-btn secondary" onclick="event.stopPropagation(); openBoxModal(this.closest('tr'))">明细收货</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr data-order="AS2607070002" data-transfer="WA2607070002" data-inbound="RVG1149-260708" data-warehouse="法国谷仓" data-status="部分收货" data-box-count="2" data-exception-box="0" data-sku-count="2" data-total="18" data-received="7" data-overdue="false" onclick="selectRow(this)">
+                  <td onclick="event.stopPropagation()"><input type="checkbox" onchange="onRowCheckboxChange(this)" /></td>
+                  <td>2</td>
+                  <td><span class="tag tag-blue">部分收货</span></td>
+                  <td>AS2607070002</td>
+                  <td>WA2607070002</td>
+                  <td>RVG1149-260708</td>
+                  <td>法国谷仓</td>
+                  <td class="num">2</td>
+                  <td class="num">0</td>
+                  <td class="num">2</td>
+                  <td class="num">18</td>
+                  <td class="num">7</td>
+                  <td class="num">11</td>
+                  <td><span class="warn-text">剩余 11 件待收</span></td>
+                  <td>2026-07-08 19:10:00</td>
+                  <td>
+                    <span class="op">
+                      <span class="op-btn" onclick="event.stopPropagation(); confirmOrderReceive(this.closest('tr'))">整单收货</span>
+                      <span class="op-split"></span>
+                      <span class="op-btn secondary" onclick="event.stopPropagation(); openBoxModal(this.closest('tr'))">明细收货</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr data-order="AS2607070003" data-transfer="WA2607070003" data-inbound="--" data-warehouse="法国谷仓" data-status="异常" data-box-count="4" data-exception-box="1" data-sku-count="3" data-total="36" data-received="12" data-overdue="true" onclick="selectRow(this)">
+                  <td onclick="event.stopPropagation()"><input type="checkbox" onchange="onRowCheckboxChange(this)" /></td>
+                  <td>3</td>
+                  <td><span class="tag tag-red">异常</span></td>
+                  <td>AS2607070003</td>
+                  <td>WA2607070003</td>
+                  <td>--</td>
+                  <td>法国谷仓</td>
+                  <td class="num">4</td>
+                  <td class="num">1</td>
+                  <td class="num">3</td>
+                  <td class="num">36</td>
+                  <td class="num">12</td>
+                  <td class="num">24</td>
+                  <td><span class="risk-text">箱 1520 少收待确认</span></td>
+                  <td>2026-07-08 10:00:00</td>
+                  <td>
+                    <span class="op">
+                      <span class="op-btn" onclick="event.stopPropagation(); confirmOrderReceive(this.closest('tr'))">整单收货</span>
+                      <span class="op-split"></span>
+                      <span class="op-btn secondary" onclick="event.stopPropagation(); openBoxModal(this.closest('tr'))">明细收货</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr data-order="AS2607070004" data-transfer="WA2607070004" data-inbound="--" data-warehouse="法国谷仓" data-status="已收货" data-box-count="1" data-exception-box="0" data-sku-count="1" data-total="36" data-received="36" data-overdue="false" onclick="selectRow(this)">
+                  <td onclick="event.stopPropagation()"><input type="checkbox" disabled /></td>
+                  <td>4</td>
+                  <td><span class="tag tag-green">已收货</span></td>
+                  <td>AS2607070004</td>
+                  <td>WA2607070004</td>
+                  <td>--</td>
+                  <td>法国谷仓</td>
+                  <td class="num">1</td>
+                  <td class="num">0</td>
+                  <td class="num">1</td>
+                  <td class="num">36</td>
+                  <td class="num">36</td>
+                  <td class="num">0</td>
+                  <td><span class="muted">已完成</span></td>
+                  <td>2026-07-08 00:00:00</td>
+                  <td>
+                    <span class="op">
+                      <span class="op-btn disabled">整单收货</span>
+                      <span class="op-split"></span>
+                      <span class="op-btn secondary" onclick="event.stopPropagation(); openBoxModal(this.closest('tr'))">明细收货</span>
+                    </span>
+                  </td>
+                </tr>
+                <tr data-order="AS2607070005" data-transfer="WA2607070005" data-inbound="--" data-warehouse="德国亚马逊仓" data-status="未收货" data-box-count="2" data-exception-box="0" data-sku-count="2" data-total="72" data-received="0" data-overdue="false" onclick="selectRow(this)">
+                  <td onclick="event.stopPropagation()"><input type="checkbox" onchange="onRowCheckboxChange(this)" /></td>
+                  <td>5</td>
+                  <td><span class="tag tag-orange">未收货</span></td>
+                  <td>AS2607070005</td>
+                  <td>WA2607070005</td>
+                  <td>--</td>
+                  <td>德国亚马逊仓</td>
+                  <td class="num">2</td>
+                  <td class="num">0</td>
+                  <td class="num">2</td>
+                  <td class="num">72</td>
+                  <td class="num">0</td>
+                  <td class="num">72</td>
+                  <td><span class="muted">待业务确认</span></td>
+                  <td class="muted">--</td>
+                  <td>
+                    <span class="op">
+                      <span class="op-btn" onclick="event.stopPropagation(); confirmOrderReceive(this.closest('tr'))">整单收货</span>
+                      <span class="op-split"></span>
+                      <span class="op-btn secondary" onclick="event.stopPropagation(); openBoxModal(this.closest('tr'))">明细收货</span>
+                    </span>
+                  </td>
                 </tr>
               </tbody>
             </table>
+            <div id="emptyState" class="empty-state">未找到匹配的收货单，请调整筛选条件后重试。</div>
+          </div>
+
+          <div class="pager">
+            <span>共 <b>3624</b> 条</span>
+            <select class="select" style="width: 90px">
+              <option>10条/页</option>
+              <option>20条/页</option>
+              <option>50条/页</option>
+            </select>
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn">5</button>
+            <button class="page-btn">6</button>
+            <span>...</span>
+            <button class="page-btn">363</button>
+            <button class="page-btn">›</button>
+            <span>前往</span>
+            <input class="input" style="width: 46px" value="1" />
+            <span>页</span>
           </div>
         </div>
+      </main>
+    </div>
 
-        <!-- ===== Group 3 ===== -->
-        <div class="group">
-          <div class="group-head" onclick="toggleGroup(this)">
-            <span class="toggle">▾</span>
-            <div>
-              <div class="ship-no">AS26050900137 · 云 DWA 仓</div>
-              <div class="meta">
-                <span>调拨单 <b>WA26050900137</b></span>
-                <span>目的仓入库单 <b>IB260512398</b></span>
-                <span>始发仓 <b>深圳总仓</b></span>
-                <span>跟踪号 <b>RT0500137</b></span>
-                <span>到仓时间 <b>2026-05-12 00:00</b></span>
-                <span class="pill primary">设备入库</span>
+    <div id="boxModal" class="modal-mask">
+      <div class="modal">
+        <div class="modal-hd">
+          <div class="modal-title">
+            <strong>明细收货</strong>
+          </div>
+          <button class="btn btn-link" onclick="closeBoxModal()">关闭</button>
+        </div>
+        <div class="modal-body">
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="summary-label">发货单号</div>
+              <div id="modalOrderNo" class="summary-value">--</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">目的仓</div>
+              <div id="modalWarehouse" class="summary-value">--</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">箱数 / 异常箱</div>
+              <div id="modalBoxSummary" class="summary-value">--</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">收货进度</div>
+              <div id="modalQtySummary" class="summary-value">--</div>
+              <div class="progress-track"><div id="modalProgressBar" class="progress-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="box-detail-layout">
+            <div class="sub-panel">
+              <div class="sub-panel-hd">
+                <span>箱列表</span>
+                <div class="toolbar-left">
+                  <span id="modalBoxCountText" class="muted">0 箱</span>
+                  <button class="btn btn-primary" onclick="receiveAllBoxesInModal()">整单无差异收货</button>
+                </div>
+              </div>
+              <div class="sub-panel-bd">
+                <table class="mini-table">
+                  <thead>
+                    <tr>
+                      <th>箱号</th>
+                      <th>状态</th>
+                      <th>装箱数量</th>
+                      <th>待收</th>
+                      <th style="width: 76px">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="modalBoxRows"></tbody>
+                </table>
+              </div>
+              <div class="box-pager">
+                <button id="boxPrevBtn" class="page-btn" onclick="changeBoxPage(-1)">‹</button>
+                <span id="boxPageText">1 / 1</span>
+                <button id="boxNextBtn" class="page-btn" onclick="changeBoxPage(1)">›</button>
               </div>
             </div>
-            <div class="right">
-              <span class="pill warn">待收 1 / 1 箱</span>
-              <div class="progress">
-                <div style="width: 0%"></div>
+            <div id="pieceReceiveHost" class="piece-receive-host">
+              <div id="receivePlaceholder" class="receive-placeholder">
+                <strong>选择待收箱</strong>
+                <span>选择箱后填写收货结果。</span>
               </div>
-              <span class="progress-text">已收 0 / 1 箱</span>
-              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openShipmentReceive(this, 'AS26050900137')">
-                按单收完 →
-              </button>
             </div>
-          </div>
-          <div class="group-body" style="max-height: 0">
-            <table class="box-tbl">
-              <thead>
-                <tr>
-                  <th>箱号</th>
-                  <th>状态</th>
-                  <th>SKU</th>
-                  <th>数量</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>已折叠...</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- pagination -->
-        <div class="pager">
-          共 <b style="color: var(--text)">128</b> 个待收发货单 · 3,686 箱
-          <span style="margin: 0 12px"></span>
-          <select class="select" style="width: auto; height: 28px" onchange="changePageSize(this)">
-            <option>10 单/页</option>
-            <option>20 单/页</option>
-            <option>50 单/页</option>
-          </select>
-          <button class="num-btn" onclick="goPage(this, 'prev')">‹</button>
-          <button class="num-btn active" onclick="goPage(this, 1)">1</button>
-          <button class="num-btn" onclick="goPage(this, 2)">2</button>
-          <button class="num-btn" onclick="goPage(this, 3)">3</button>
-          <button class="num-btn" onclick="goPage(this, 4)">4</button>
-          <button class="num-btn" onclick="goPage(this, 'more')">…</button>
-          <button class="num-btn" onclick="goPage(this, 13)">13</button>
-          <button class="num-btn" onclick="goPage(this, 'next')">›</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============== Receiving Dialog ============== -->
-    <div id="receiveDialog" class="mask">
-      <div class="dialog">
-        <div class="dlg-head">
-          <h3>按数量收货 · 箱号 <span id="dlgBoxNo">B26190057852</span></h3>
-          <span class="pill warn" id="dlgBoxStatus">未收货</span>
-          <span class="close" onclick="closeDialog('receiveDialog')">×</span>
-        </div>
-
-        <div class="dlg-body">
-          <!-- Scan / quick info -->
-          <div class="scan-area">
-            <div class="scan-field">
-              <label>① 扫描箱号校验</label>
-              <input
-                id="scanBoxInput"
-                class="input"
-                placeholder="扫描或输入箱号回车校验"
-                onkeydown="if(event.key==='Enter') verifyBox(this.value)"
-              />
-            </div>
-            <div class="scan-field">
-              <label>② 仓库入库时间</label>
-              <input class="input" type="datetime-local" />
-            </div>
-            <div class="scan-field">
-              <label>③ 收货人</label>
-              <input class="input" value="017163 · 法国谷仓跟单" readonly />
-            </div>
-            <div class="scan-field">
-              <label>④ 默认良品填充</label>
-              <select class="select">
-                <option>按"待收数量"自动填满</option>
-                <option>不自动填充，逐项录入</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="info-line">
-            <span>发货单 <b>AS26051100008</b></span>
-            <span>调拨单 <b>WA26051100008</b></span>
-            <span>目的仓 <b>法国谷仓</b></span>
-            <span>装箱形式 <b>整装 · 36 件</b></span>
-            <span>预计良品/不良品 <b style="color: var(--warn)">视实物</b></span>
-            <span style="margin-left: auto">
-              <a href="#" class="btn-text" style="padding: 0" onclick="event.preventDefault(); viewUpstreamDetail()">查看上游调拨明细</a>
-            </span>
-          </div>
-
-          <table class="sku-table">
-            <thead>
-              <tr>
-                <th style="min-width: 200px">SKU</th>
-                <th style="width: 70px">装箱</th>
-                <th style="width: 70px">已收</th>
-                <th style="width: 70px">待收</th>
-                <th style="width: 110px">本次良品数</th>
-                <th style="min-width: 200px">良品 SN</th>
-                <th style="width: 110px">本次不良品数</th>
-                <th style="min-width: 200px">不良品 SN</th>
-                <th style="width: 100px">备注</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="sku-row" data-row="1">
-                <td>
-                  <div style="display: flex; align-items: flex-start">
-                    <span class="sku-img">IMG</span>
-                    <div>
-                      <div style="font-weight: 500">E320-ST-GY-EU-000</div>
-                      <div class="sku-name">OpenFit Air · 灰色 · 欧版</div>
-                      <span class="pill primary" style="margin-top: 4px">SN 管控</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="num">36</td>
-                <td class="num qty-zero">0</td>
-                <td class="num qty-wait">36</td>
-                <td>
-                  <input
-                    type="number"
-                    class="qty-input good"
-                    value="36"
-                    data-max="36"
-                    onchange="onQtyChange(this)"
-                  />
-                  <div class="qty-warning">数量超过待收，请核对</div>
-                </td>
-                <td>
-                  <div class="sn-area">
-                    <textarea
-                      class="sn-textarea"
-                      placeholder="可粘贴或扫码，多个 SN 用换行/逗号分隔"
-                      oninput="updateSnCount(this, 36, 'good')"
-                    ></textarea>
-                    <span class="sn-count">SN 0 / 应录入 36</span>
-                  </div>
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="qty-input bad"
-                    value="0"
-                    data-max="36"
-                    onchange="onQtyChange(this)"
-                  />
-                  <div class="qty-warning">良品+不良品超过待收数量</div>
-                </td>
-                <td>
-                  <div class="sn-area">
-                    <textarea
-                      class="sn-textarea"
-                      placeholder="不良品 SN，数量需等于不良品数"
-                      oninput="updateSnCount(this, 0, 'bad')"
-                    ></textarea>
-                    <span class="sn-count">SN 0 / 应录入 0</span>
-                  </div>
-                </td>
-                <td>
-                  <input class="input" style="width: 100%; padding: 0 6px" placeholder="如破损" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="quick-actions">
-            <button class="btn btn-sm" onclick="fillAllGood()">全部良品</button>
-            <button class="btn btn-sm" onclick="fillAllBad()">全部不良品</button>
-            <button class="btn btn-sm" onclick="clearAllQty()">数量清零</button>
-            <button class="btn btn-sm" onclick="reuseLastInput()">复用上一次录入</button>
-          </div>
-
-        </div>
-
-        <div class="dlg-foot">
-          <div class="hint"></div>
-          <div class="actions">
-            <button class="btn" onclick="closeDialog('receiveDialog')">取消</button>
-            <button class="btn" onclick="confirmReceiveAndClose()">保存并关闭</button>
-            <button class="btn btn-primary" onclick="confirmReceiveAndNext()">保存并下一箱</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ============== Batch Dialog ============== -->
-    <div id="batchDialog" class="mask">
-      <div class="dialog" style="width: 720px">
-        <div class="dlg-head">
-          <h3>批量整箱收货</h3>
-          <span class="close" onclick="closeDialog('batchDialog')">×</span>
+    <div id="drawer" class="drawer">
+      <div class="drawer-hd">
+        <span id="drawerTitle">录入收货</span>
+        <button class="btn btn-link" onclick="closeDrawer()">关闭</button>
+      </div>
+      <div class="drawer-body">
+        <div class="receive-layout">
+          <aside class="receive-side">
+            <div class="detail-grid">
+              <div class="label">收货范围</div>
+              <div id="drawerScope">整单剩余 SKU</div>
+              <div class="label">待收数量</div>
+              <div><span id="drawerWait">3</span> 件</div>
+              <div class="label">入库时间</div>
+              <div><input id="receiveTimeInput" class="input" placeholder="自动带入当前时间" oninput="validateReceiveForm()" /></div>
+              <div class="label">备注</div>
+              <input id="remark" class="input" placeholder="少收、不良品或 SN 异常说明" />
+            </div>
+            <input id="goodQty" class="input hidden-field" type="number" value="3" min="0" step="1" readonly />
+            <input id="badQty" class="input hidden-field" type="number" value="0" min="0" step="1" readonly />
+            <div class="quick-actions">
+              <button class="btn" onclick="fillAllGood()">整箱良品</button>
+              <button class="btn btn-danger" onclick="markDrawerException()">登记差异</button>
+            </div>
+            <div id="exceptionPanel" class="exception-panel">
+              <div class="section-title">差异登记</div>
+              <div class="qty-form">
+                <label>差异类型</label>
+                <select id="exceptionType" class="select">
+                  <option>少收</option>
+                  <option>破损</option>
+                  <option>SKU 不一致</option>
+                  <option>其他异常</option>
+                </select>
+                <label>处理建议</label>
+                <input id="exceptionRemark" class="input" placeholder="例如：待仓库复核 / 转异常关单" />
+              </div>
+            </div>
+          </aside>
+          <section class="receive-main">
+            <div class="receive-main-hd">
+              <div class="section-title">SKU 收货明细</div>
+              <div id="receiveCalcText" class="calc-text">本次 0 件</div>
+            </div>
+            <div class="receive-table-wrap">
+              <table class="receive-table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>装箱数量</th>
+                    <th>已收数量</th>
+                    <th>待收数量</th>
+                    <th>本次良品</th>
+                    <th>良品 SN</th>
+                    <th>本次不良品</th>
+                    <th>不良品 SN</th>
+                  </tr>
+                </thead>
+                <tbody id="drawerSkuReceiveRows"></tbody>
+              </table>
+            </div>
+          </section>
         </div>
-        <div class="dlg-body">
-          <div class="scan-area" style="grid-template-columns: 1fr 1fr">
-            <div class="scan-field">
-              <label>仓库入库时间（统一）</label>
-              <input id="batchTime" class="input" type="datetime-local" />
-            </div>
-            <div class="scan-field">
-              <label>追加箱号（扫码）</label>
-              <input class="input" placeholder="扫描箱号回车追加" onkeydown="if(event.key==='Enter') addBoxToBatch(this)" />
-            </div>
-          </div>
+      </div>
+      <div class="drawer-ft">
+        <button class="btn" onclick="closeDrawer()">取消</button>
+        <button id="saveReceiveBtn" class="btn btn-primary" onclick="saveReceive()">保存收货结果</button>
+      </div>
+    </div>
 
-          <div class="batch-list">
-            <div class="batch-list-head">已选 <b id="batchSelCount">4</b> 箱，预计入库共 <b id="batchTotalQty">144</b> 件，全部按良品入库</div>
-            <div class="batch-item">
-              <input type="checkbox" checked />
-              <b>B26190057852</b>
-              <span style="color: var(--sub)">AS26051100008 · 法国谷仓</span>
-              <span class="pill">36 件</span>
-              <span class="remove" onclick="this.parentNode.remove()">移除</span>
-            </div>
-            <div class="batch-item">
-              <input type="checkbox" checked />
-              <b>B26190057822</b>
-              <span style="color: var(--sub)">AS26051100008 · 法国谷仓</span>
-              <span class="pill">36 件</span>
-              <span class="remove" onclick="this.parentNode.remove()">移除</span>
-            </div>
-            <div class="batch-item">
-              <input type="checkbox" checked />
-              <b>B26190057812</b>
-              <span style="color: var(--sub)">AS26051100008 · 法国谷仓</span>
-              <span class="pill">36 件</span>
-              <span class="remove" onclick="this.parentNode.remove()">移除</span>
-            </div>
-            <div class="batch-item">
-              <input type="checkbox" checked />
-              <b>B26190057802</b>
-              <span style="color: var(--sub)">AS26051100008 · 法国谷仓</span>
-              <span class="pill">36 件</span>
-              <span class="remove" onclick="this.parentNode.remove()">移除</span>
-            </div>
-          </div>
+    <div id="confirmModal" class="modal-mask">
+      <div class="confirm-modal">
+        <div id="confirmTitle" class="confirm-hd">确认操作</div>
+        <div id="confirmBody" class="confirm-body">请确认是否继续。</div>
+        <div class="confirm-form">
+          <label class="label">仓库入库时间</label>
+          <input id="confirmReceiveTime" class="input" placeholder="请选择仓库入库时间" oninput="this.classList.remove('invalid')" />
         </div>
-        <div class="dlg-foot">
-          <div class="hint"></div>
-          <div class="actions">
-            <button class="btn" onclick="closeDialog('batchDialog')">取消</button>
-            <button class="btn btn-primary" onclick="confirmBatchReceive()">确认收货</button>
-          </div>
+        <div class="confirm-ft">
+          <button class="btn" onclick="closeConfirm()">取消</button>
+          <button class="btn btn-primary" onclick="runConfirmAction()">确认</button>
         </div>
       </div>
     </div>
 
-    <!-- ============== Toast container ============== -->
-    <div id="toastContainer" class="toast-container"></div>
-
-    <!-- ============== Column settings popover ============== -->
-    <div id="colPopover" class="popover">
-      <h4>列设置（演示）</h4>
-      <label><input type="checkbox" checked /> 箱号</label>
-      <label><input type="checkbox" checked /> 装箱形式</label>
-      <label><input type="checkbox" checked /> 接收状态</label>
-      <label><input type="checkbox" checked /> 箱内 SKU</label>
-      <label><input type="checkbox" checked /> 装箱 / 已收 / 待收</label>
-      <label><input type="checkbox" /> 箱规 / 毛重</label>
-      <label><input type="checkbox" checked /> 仓库入库时间</label>
-      <label><input type="checkbox" checked /> 操作</label>
-      <div class="pop-foot">
-        <button class="btn btn-sm" onclick="closePopover('colPopover')">取消</button>
-        <button class="btn btn-sm btn-primary" onclick="applyColumnSettings()">应用</button>
-      </div>
-    </div>
+    <div id="toast" class="toast"></div>
 
     <script>
-      // ============ Toast notification ============
-      function toast(msg, type) {
-        type = type || "info";
-        const c = document.getElementById("toastContainer");
-        if (!c) return;
-        const el = document.createElement("div");
-        el.className = "toast toast-" + type;
-        const icon = type === "success" ? "✓" : type === "warn" ? "!" : type === "error" ? "✕" : "i";
-        el.innerHTML = '<span class="ic">' + icon + "</span><span>" + msg + "</span>";
-        c.appendChild(el);
-        requestAnimationFrame(() => el.classList.add("show"));
-        setTimeout(() => {
-          el.classList.remove("show");
-          setTimeout(() => el.remove(), 250);
-        }, 2400);
+      let currentRow = document.querySelector("#receiptRows tr.active");
+      let currentModalRow = currentRow;
+      let selectedBoxNo = "";
+      let modalBoxPage = 1;
+      const modalBoxPageSize = 10;
+      let drawerMode = "orderPiece";
+      let receiptTargetBoxNo = "";
+      let confirmAction = null;
+      let drawerExceptionManual = false;
+      const receiptRowSelector = "#receiptRows tr[data-order]";
+
+      function allRows() {
+        return Array.from(document.querySelectorAll(receiptRowSelector));
       }
 
-      // ============ Common helpers ============
-      function nowText() {
-        const d = new Date();
-        const pad = (n) => String(n).padStart(2, "0");
+      function visibleRows() {
+        return allRows().filter((row) => row.style.display !== "none");
+      }
+
+      function handleCardKey(event, action, ...args) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          action(...args);
+        }
+      }
+
+      function setMonitorActive(card) {
+        document.querySelectorAll(".monitor-card").forEach((item) => item.classList.toggle("active", item === card));
+      }
+
+      function clearMonitorActive() {
+        document.querySelectorAll(".monitor-card").forEach((item) => item.classList.remove("active"));
+      }
+
+      function formatNow() {
+        const pad = (num) => String(num).padStart(2, "0");
+        const date = new Date();
         return (
-          d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
-          " " + pad(d.getHours()) + ":" + pad(d.getMinutes())
+          date.getFullYear() +
+          "-" +
+          pad(date.getMonth() + 1) +
+          "-" +
+          pad(date.getDate()) +
+          " " +
+          pad(date.getHours()) +
+          ":" +
+          pad(date.getMinutes()) +
+          ":00"
         );
       }
 
-      function isoLocal() {
-        const d = new Date();
-        const pad = (n) => String(n).padStart(2, "0");
-        return (
-          d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
-          "T" + pad(d.getHours()) + ":" + pad(d.getMinutes())
-        );
+      function flashRow(row) {
+        if (!row) return;
+        row.classList.remove("row-flash");
+        void row.offsetWidth;
+        row.classList.add("row-flash");
       }
 
-      // ============ Stats / view ============
-      function filterByStat(key) {
-        document.querySelectorAll(".stat").forEach((s) => s.classList.remove("active"));
-        const card = document.querySelector('.stat[data-key="' + key + '"]');
-        if (card) card.classList.add("active");
-        else if (window.event) window.event.currentTarget.classList.add("active");
-        const labels = {
-          pending: "待收发货单",
-          part: "部分收货中",
-          today: "今日已收",
-          exception: "异常待人工处理",
-        };
-        toast("筛选：" + (labels[key] || key), "info");
+      function syncEmptyState() {
+        const empty = document.getElementById("emptyState");
+        if (empty) empty.style.display = visibleRows().length ? "none" : "block";
       }
 
-      function switchView(btn, mode) {
-        btn.parentNode.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        toast("视图：" + (mode === "group" ? "按发货单分组" : "按箱平铺"), "info");
-      }
-
-      // ============ Filter actions ============
-      function doSearch() {
-        toast("查询中...", "info");
-        setTimeout(() => toast("查询完成，匹配 128 个待收发货单 / 3,686 箱", "success"), 500);
-      }
-
-      function resetFilters() {
-        const panel = document.querySelector(".panel");
-        panel.querySelectorAll(".filter .input").forEach((i) => (i.value = ""));
-        panel.querySelectorAll(".filter select").forEach((s) => (s.selectedIndex = 0));
-        const cbs = panel.querySelectorAll(".checkbox-row input[type='checkbox']");
-        cbs.forEach((c, idx) => (c.checked = idx < 2));
-        toast("筛选条件已重置", "success");
-      }
-
-      function onFilterCheckbox(cb) {
-        const label = cb.parentNode.innerText.trim();
-        toast((cb.checked ? "已开启：" : "已取消：") + label, "info");
-      }
-
-      function scanLocate(v) {
-        if (!v) return;
-        const norm = v.trim();
-        const rows = document.querySelectorAll("table.box-tbl tbody tr");
-        for (const r of rows) {
-          const bn = r.querySelector(".box-no");
-          if (bn && bn.innerText.trim() === norm) {
-            const group = r.closest(".group");
-            group.classList.remove("collapsed");
-            group.querySelector(".group-body").style.maxHeight = "9999px";
-            r.classList.add("pulse-once");
-            r.scrollIntoView({ behavior: "smooth", block: "center" });
-            toast("已定位到箱：" + norm, "success");
-            setTimeout(() => r.classList.remove("pulse-once"), 800);
-            return;
-          }
+      function selectFirstVisibleRow() {
+        const first = visibleRows()[0];
+        if (first) selectRow(first);
+        else {
+          document.querySelectorAll("#receiptRows tr").forEach((item) => item.classList.remove("active"));
+          currentRow = null;
         }
-        toast("未在当前页找到：" + norm + "（演示仅支持已展示的箱号）", "warn");
+        setToolbarState();
       }
 
-      // ============ Toolbar actions ============
-      function doSingleReceive() {
-        toast('请在某个发货单分组上点击 "按单收完" 进入按单收货流程', "info");
+      function updateHeaderCheckbox() {
+        const checkAll = document.getElementById("checkAll");
+        if (!checkAll) return;
+        const candidates = allRows()
+          .filter((row) => row.style.display !== "none")
+          .map((row) => row.querySelector('input[type="checkbox"]:not(:disabled)'))
+          .filter(Boolean);
+        const checkedCount = candidates.filter((checkbox) => checkbox.checked).length;
+        checkAll.checked = candidates.length > 0 && checkedCount === candidates.length;
+        checkAll.indeterminate = checkedCount > 0 && checkedCount < candidates.length;
+        checkAll.disabled = candidates.length === 0;
       }
 
-      function openExceptions() {
-        filterByStat("exception");
-        toast("已筛选「异常待人工处理」(8 条)，可单独处理 SN 重复 / 数量不符等异常", "warn");
+      function setToolbarState() {
+        const checkedCount = document.querySelectorAll('#receiptRows input[type="checkbox"]:checked').length;
+        const batchBtn = document.getElementById("batchReceiveBtn");
+        if (batchBtn) batchBtn.disabled = checkedCount === 0;
       }
 
-      function doExport() {
-        toast("正在生成 Excel...", "info");
-        setTimeout(() => toast("导出完成，请到下载中心查看", "success"), 900);
-      }
-
-      function openColumnSettings(e) {
-        e && e.stopPropagation();
-        const pop = document.getElementById("colPopover");
-        const btn = e ? e.currentTarget : null;
-        if (btn) {
-          const rect = btn.getBoundingClientRect();
-          pop.style.top = window.scrollY + rect.bottom + 6 + "px";
-          pop.style.left = Math.max(8, rect.right - 220) + "px";
-        }
-        pop.classList.add("open");
-      }
-
-      function closePopover(id) {
-        document.getElementById(id).classList.remove("open");
-      }
-
-      function applyColumnSettings() {
-        closePopover("colPopover");
-        toast("列设置已应用（演示）", "success");
-      }
-
-      document.addEventListener("click", function (e) {
-        const pop = document.getElementById("colPopover");
-        if (!pop) return;
-        if (pop.classList.contains("open") && !pop.contains(e.target) && !e.target.closest("[onclick*='openColumnSettings']")) {
-          pop.classList.remove("open");
-        }
-      });
-
-      // ============ Group collapse ============
-      function toggleGroup(head) {
-        head.parentNode.classList.toggle("collapsed");
-        const body = head.parentNode.querySelector(".group-body");
-        body.style.maxHeight = head.parentNode.classList.contains("collapsed") ? "0" : "9999px";
-      }
-
-      // ============ Row selection ============
-      function rowToggle(cb) {
-        const tr = cb.closest("tr");
-        if (cb.checked) tr.classList.add("selected");
-        else tr.classList.remove("selected");
-        updateSelectedTip();
-      }
-
-      function toggleAllInGroup(cb) {
-        const tbody = cb.closest("table").querySelector("tbody");
-        tbody.querySelectorAll('input[type="checkbox"]').forEach((c) => {
-          c.checked = cb.checked;
-          rowToggle(c);
-        });
-      }
-
-      function updateSelectedTip() {
-        const n = document.querySelectorAll('table.box-tbl tbody input[type="checkbox"]:checked').length;
-        const tip = document.getElementById("selectedTip");
-        document.getElementById("selCnt").innerText = n;
-        tip.style.display = n > 0 ? "" : "none";
-      }
-
-      function clearSelection() {
-        document.querySelectorAll('table.box-tbl tbody input[type="checkbox"]:checked').forEach((c) => {
-          c.checked = false;
-          rowToggle(c);
-        });
-        document.querySelectorAll('table.box-tbl thead input[type="checkbox"]').forEach((c) => (c.checked = false));
-        toast("已取消所有选择", "info");
-      }
-
-      // ============ Whole-box receive (row level) ============
-      function receiveWholeBox(btn, boxNo) {
-        if (!window.confirm("确认整箱收货：" + boxNo + " ？\n本次将按「装箱数量 = 良品数量」完成收货。")) return;
-        const tr = btn.closest("tr");
-        markRowAsFullyReceived(tr);
-        updateGroupProgress(tr.closest(".group"));
-        toast("箱 " + boxNo + " 整箱收货完成", "success");
-      }
-
-      function markRowAsFullyReceived(tr) {
-        const planned = tr.children[5].innerText.trim();
-        tr.children[3].innerHTML = '<span class="pill ok">已收货</span>';
-        tr.children[6].innerText = planned;
-        tr.children[6].classList.remove("qty-zero");
-        tr.children[7].innerText = "0";
-        tr.children[7].classList.remove("qty-wait");
-        tr.children[7].classList.add("qty-zero");
-        tr.children[9].innerText = nowText();
-        tr.children[9].style.color = "var(--sub)";
-        tr.children[10].innerHTML = '<div class="op-col"><span class="pill ok">本箱已完成</span></div>';
-        tr.classList.add("row-done");
-        // 取消选择
-        const cb = tr.querySelector('input[type="checkbox"]');
-        if (cb && cb.checked) {
-          cb.checked = false;
-          rowToggle(cb);
-        }
-      }
-
-      function updateGroupProgress(group) {
-        if (!group) return;
-        const rows = group.querySelectorAll("tbody tr");
-        let total = 0,
-          done = 0;
-        rows.forEach((r) => {
-          const status = r.querySelector("td:nth-child(4) .pill");
-          if (!status) return;
-          total++;
-          if (status.innerText.trim() === "已收货") done++;
-        });
-        if (total === 0) return;
-        const pct = Math.round((done / total) * 100);
-        const bar = group.querySelector(".progress > div");
-        if (bar) bar.style.width = pct + "%";
-        const progressEl = group.querySelector(".progress");
-        if (progressEl) {
-          progressEl.classList.remove("warn", "ok");
-          if (pct === 100) progressEl.classList.add("ok");
-          else if (pct > 0) progressEl.classList.add("warn");
-        }
-        const txt = group.querySelector(".progress-text");
-        if (txt) txt.innerText = "已收 " + done + " / " + total + " 箱（已展示）";
-        const pill = group.querySelector(".group-head .right .pill:first-child");
-        if (pill) {
-          if (pct === 100) {
-            pill.className = "pill ok";
-            pill.innerText = "本单已收完";
-          } else if (done > 0) {
-            pill.className = "pill warn";
-            pill.innerText = "部分收货 " + done + " / " + total + " 箱";
-          } else {
-            pill.className = "pill warn";
-            pill.innerText = "待收 " + total + " 箱";
-          }
-        }
-      }
-
-      // ============ Group-level actions ============
-      function receiveAllInGroup(btn) {
-        const group = btn.closest(".group");
-        const rows = group.querySelectorAll("tbody tr");
-        const pending = [];
-        rows.forEach((r) => {
-          const status = r.querySelector("td:nth-child(4) .pill");
-          if (status && status.innerText.trim() === "未收货") pending.push(r);
-        });
-        if (pending.length === 0) {
-          toast("本单已无未收货箱，无需整箱收货", "warn");
-          return;
-        }
-        if (!window.confirm("确认对本单 " + pending.length + " 个未收货箱执行整箱收货？")) return;
-        pending.forEach(markRowAsFullyReceived);
-        updateGroupProgress(group);
-        toast("本单 " + pending.length + " 个箱整箱收货完成", "success");
-      }
-
-      function receiveAllByQtyInGroup(btn) {
-        const group = btn.closest(".group");
-        const rows = group.querySelectorAll("tbody tr");
-        for (const r of rows) {
-          const status = r.querySelector("td:nth-child(4) .pill");
-          const bn = r.querySelector(".box-no");
-          if (!status || !bn) continue;
-          if (status.innerText.trim() !== "已收货") {
-            openReceiveDialog(bn.innerText.trim());
-            toast("已打开本单第一个未收完的箱：" + bn.innerText, "info");
-            return;
-          }
-        }
-        toast("本单已无待收箱", "warn");
-      }
-
-      function openShipmentReceive(btn, shipmentNo) {
-        const group = btn.closest(".group");
-        const rows = group.querySelectorAll("tbody tr");
-        for (const r of rows) {
-          const status = r.querySelector("td:nth-child(4) .pill");
-          const bn = r.querySelector(".box-no");
-          if (!status || !bn) continue;
-          if (status.innerText.trim() !== "已收货") {
-            openReceiveDialog(bn.innerText.trim());
-            toast("发货单 " + shipmentNo + "：从未收完的第一个箱开始", "info");
-            return;
-          }
-        }
-        toast("本单已全部收完，无需继续", "warn");
-      }
-
-      function expandAllInGroup(link) {
-        const group = link.closest(".group");
-        const actions = group.querySelector(".group-actions");
-        if (actions) {
-          actions.innerHTML =
-            '<span style="color:var(--sub)">本单全部箱已展开（演示原型）</span>' +
-            '<div style="display:flex;gap:8px">' +
-            '<button class="btn btn-sm" onclick="receiveAllInGroup(this)">本单全部整箱收</button>' +
-            '<button class="btn btn-sm" onclick="receiveAllByQtyInGroup(this)">本单按数量逐箱收</button>' +
-            "</div>";
-        }
-        toast("已展开本单全部箱（演示）", "info");
-      }
-
-      function viewGroupDetail(shipmentNo) {
-        toast("打开发货单详情：" + shipmentNo + "（演示原型，未实现侧栏）", "info");
-      }
-
-      function viewUpstreamDetail() {
-        toast("跳转到上游调拨单明细（演示）", "info");
-      }
-
-      // ============ Receive dialog ============
-      function openReceiveDialog(boxNo) {
-        document.getElementById("dlgBoxNo").innerText = boxNo;
-        const dt = document.querySelector('#receiveDialog input[type="datetime-local"]');
-        if (dt) dt.value = isoLocal();
-        resetReceiveDialogForm();
-        document.getElementById("receiveDialog").classList.add("open");
-        setTimeout(() => {
-          const inp = document.getElementById("scanBoxInput");
-          if (inp) {
-            inp.value = "";
-            inp.focus();
-          }
-        }, 100);
-      }
-
-      function openBatchDialog() {
-        const n = document.querySelectorAll('table.box-tbl tbody input[type="checkbox"]:checked').length;
-        // 仅做提示，仍允许查看演示数据
-        const cnt = n > 0 ? n : 4;
-        document.getElementById("batchSelCount").innerText = cnt;
-        document.getElementById("batchTotalQty").innerText = cnt * 36;
-        const bt = document.getElementById("batchTime");
-        if (bt) bt.value = isoLocal();
-        document.getElementById("batchDialog").classList.add("open");
-        if (n === 0) toast("未勾选箱，演示数据已自动填入 4 箱", "info");
-      }
-
-      function closeDialog(id) {
-        document.getElementById(id).classList.remove("open");
-      }
-
-      function resetReceiveDialogForm() {
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((r) => {
-          const wait = parseInt(r.children[3].innerText.trim() || "0", 10);
-          const goodEl = r.querySelector(".qty-input.good");
-          const badEl = r.querySelector(".qty-input.bad");
-          if (goodEl) goodEl.value = wait;
-          if (badEl) badEl.value = 0;
-          r.querySelectorAll(".sn-textarea").forEach((t) => (t.value = ""));
-          if (goodEl) onQtyChange(goodEl);
-        });
-        const remark = document.querySelector('.sku-table input[placeholder="如破损"]');
-        if (remark) remark.value = "";
-      }
-
-      // ============ Receive validation & save ============
-      function validateReceive() {
-        let ok = true;
-        let firstError = "";
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((r) => {
-          const wait = parseInt(r.children[3].innerText.trim() || "0", 10);
-          const good = parseInt(r.querySelector(".qty-input.good").value || "0", 10);
-          const bad = parseInt(r.querySelector(".qty-input.bad").value || "0", 10);
-          if (good + bad > wait) {
-            ok = false;
-            if (!firstError) firstError = "良品+不良品数超过待收数量";
-          }
-          if (good + bad === 0) {
-            ok = false;
-            if (!firstError) firstError = "请录入本次收货数量";
-          }
-          const tas = r.querySelectorAll(".sn-textarea");
-          const isSnCtrl = !!r.querySelector(".pill.primary");
-          if (isSnCtrl) {
-            const goodSn = (tas[0] ? tas[0].value : "").split(/[\n,，\s]+/).filter(Boolean).length;
-            const badSn = (tas[1] ? tas[1].value : "").split(/[\n,，\s]+/).filter(Boolean).length;
-            if (goodSn !== good) {
-              ok = false;
-              if (!firstError) firstError = "良品 SN 数量(" + goodSn + ") 与本次良品数(" + good + ") 不一致";
-            }
-            if (badSn !== bad) {
-              ok = false;
-              if (!firstError) firstError = "不良品 SN 数量(" + badSn + ") 与本次不良品数(" + bad + ") 不一致";
-            }
-          }
-        });
-        return { ok: ok, msg: firstError };
-      }
-
-      let lastReceiveSnapshot = null;
-
-      function saveCurrentInputSnapshot() {
-        lastReceiveSnapshot = [];
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((r) => {
-          lastReceiveSnapshot.push({
-            good: r.querySelector(".qty-input.good").value,
-            bad: r.querySelector(".qty-input.bad").value,
-            goodSn: (r.querySelectorAll(".sn-textarea")[0] || {}).value || "",
-            badSn: (r.querySelectorAll(".sn-textarea")[1] || {}).value || "",
+      function bindFilterShortcuts() {
+        ["keywordInput", "shipmentInput", "transferInput"].forEach((id) => {
+          const input = document.getElementById(id);
+          if (!input) return;
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") applyFilters();
           });
         });
       }
 
-      function confirmReceiveAndClose() {
-        if (!doConfirmReceive()) return;
-        closeDialog("receiveDialog");
-      }
-
-      function confirmReceiveAndNext() {
-        if (!doConfirmReceive()) return;
-        const currentBox = document.getElementById("dlgBoxNo").innerText;
-        const next = findNextPendingBox(currentBox);
-        if (next) {
-          setTimeout(() => openReceiveDialog(next), 350);
-        } else {
-          closeDialog("receiveDialog");
-          toast("本单已无待收箱，已自动关闭", "success");
-        }
-      }
-
-      function doConfirmReceive() {
-        const v = validateReceive();
-        if (!v.ok) {
-          toast("校验未通过：" + v.msg, "error");
-          return false;
-        }
-        saveCurrentInputSnapshot();
-        const boxNo = document.getElementById("dlgBoxNo").innerText;
-        applyReceiveResultToList(boxNo);
-        toast("箱 " + boxNo + " 收货保存成功", "success");
-        return true;
-      }
-
-      function findNextPendingBox(currentBox) {
-        const rows = document.querySelectorAll("table.box-tbl tbody tr");
-        let foundCur = false;
-        for (const r of rows) {
-          const bn = r.querySelector(".box-no");
-          if (!bn) continue;
-          if (foundCur) {
-            const st = r.querySelector("td:nth-child(4) .pill");
-            if (st && st.innerText.trim() !== "已收货") return bn.innerText.trim();
+      const boxData = {
+        AS2607070001: [
+          {
+            boxNo: "1540",
+            status: "未收货",
+            total: 18,
+            received: 0,
+            receiveTime: "--",
+            skus: [
+              { sku: "E320-ST-GY-EU-000", qty: 8, received: 0, good: 0, bad: 0 },
+              { sku: "A210-BK-DE-000", qty: 10, received: 0, good: 0, bad: 0 }
+            ]
+          },
+          {
+            boxNo: "1541",
+            status: "未收货",
+            total: 12,
+            received: 0,
+            receiveTime: "--",
+            skus: [{ sku: "TS11-AZB-US-000", qty: 12, received: 0, good: 0, bad: 0 }]
+          },
+          {
+            boxNo: "1542",
+            status: "未收货",
+            total: 12,
+            received: 0,
+            receiveTime: "--",
+            skus: [
+              { sku: "N100-WH-EU-000", qty: 6, received: 0, good: 0, bad: 0 },
+              { sku: "N100-BK-EU-000", qty: 6, received: 0, good: 0, bad: 0 }
+            ]
           }
-          if (bn.innerText.trim() === currentBox) foundCur = true;
-        }
-        // 没找到则从头扫一遍
-        for (const r of rows) {
-          const bn = r.querySelector(".box-no");
-          if (!bn) continue;
-          const st = r.querySelector("td:nth-child(4) .pill");
-          if (st && st.innerText.trim() !== "已收货" && bn.innerText.trim() !== currentBox) {
-            return bn.innerText.trim();
+        ],
+        AS2607070002: [
+          {
+            boxNo: "1",
+            status: "已收货",
+            total: 9,
+            received: 7,
+            receiveTime: "2026-07-08 19:10:00",
+            skus: [{ sku: "E320-ST-GY-EU-000", qty: 9, received: 7, good: 7, bad: 0 }]
+          },
+          {
+            boxNo: "2",
+            status: "未收货",
+            total: 9,
+            received: 0,
+            receiveTime: "--",
+            skus: [{ sku: "E320-ST-BK-EU-000", qty: 9, received: 0, good: 0, bad: 0 }]
           }
-        }
-        return null;
+        ],
+        AS2607070003: [
+          {
+            boxNo: "1520",
+            status: "异常",
+            total: 12,
+            received: 4,
+            receiveTime: "2026-07-08 10:00:00",
+            skus: [
+              { sku: "混装-SKU-A", qty: 4, received: 4, good: 3, bad: 1 },
+              { sku: "混装-SKU-B", qty: 4, received: 0, good: 0, bad: 0 },
+              { sku: "混装-SKU-C", qty: 4, received: 0, good: 0, bad: 0 }
+            ]
+          },
+          {
+            boxNo: "1521",
+            status: "部分收货",
+            total: 8,
+            received: 8,
+            receiveTime: "2026-07-08 10:20:00",
+            skus: [{ sku: "混装-SKU-A", qty: 8, received: 8, good: 8, bad: 0 }]
+          },
+          {
+            boxNo: "1522",
+            status: "未收货",
+            total: 8,
+            received: 0,
+            receiveTime: "--",
+            skus: [{ sku: "混装-SKU-B", qty: 8, received: 0, good: 0, bad: 0 }]
+          },
+          {
+            boxNo: "1523",
+            status: "未收货",
+            total: 8,
+            received: 0,
+            receiveTime: "--",
+            skus: [{ sku: "混装-SKU-C", qty: 8, received: 0, good: 0, bad: 0 }]
+          }
+        ],
+        AS2607070004: [
+          {
+            boxNo: "20",
+            status: "已收货",
+            total: 36,
+            received: 36,
+            receiveTime: "2026-07-08 00:00:00",
+            skus: [{ sku: "A210-BK-DE-000", qty: 36, received: 36, good: 36, bad: 0 }]
+          }
+        ],
+        AS2607070005: [
+          {
+            boxNo: "19",
+            status: "未收货",
+            total: 36,
+            received: 0,
+            receiveTime: "--",
+            skus: [{ sku: "TS11-AZB-US-000", qty: 36, received: 0, good: 0, bad: 0 }]
+          },
+          {
+            boxNo: "21",
+            status: "未收货",
+            total: 36,
+            received: 0,
+            receiveTime: "--",
+            skus: [{ sku: "TS11-AZB-US-001", qty: 36, received: 0, good: 0, bad: 0 }]
+          }
+        ]
+      };
+
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.classList.add("show");
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
       }
 
-      function applyReceiveResultToList(boxNo) {
-        const rows = document.querySelectorAll("table.box-tbl tbody tr");
-        let good = 0,
-          bad = 0;
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((rr) => {
-          good += parseInt(rr.querySelector(".qty-input.good").value || "0", 10);
-          bad += parseInt(rr.querySelector(".qty-input.bad").value || "0", 10);
+      function openConfirm(title, body, action) {
+        document.getElementById("confirmTitle").innerText = title;
+        document.getElementById("confirmBody").innerText = body;
+        const timeInput = document.getElementById("confirmReceiveTime");
+        timeInput.value = formatNow();
+        timeInput.classList.remove("invalid");
+        confirmAction = action;
+        document.getElementById("confirmModal").classList.add("open");
+      }
+
+      function closeConfirm() {
+        document.getElementById("confirmModal").classList.remove("open");
+        confirmAction = null;
+      }
+
+      function runConfirmAction() {
+        const action = confirmAction;
+        const receiveTime = document.getElementById("confirmReceiveTime").value.trim();
+        if (!receiveTime) {
+          showToast("请填写仓库入库时间");
+          document.getElementById("confirmReceiveTime").classList.add("invalid");
+          document.getElementById("confirmReceiveTime").focus();
+          return;
+        }
+        closeConfirm();
+        if (typeof action === "function") action(receiveTime);
+      }
+
+      function statusTag(status) {
+        const map = {
+          未收货: "tag-orange",
+          部分收货: "tag-blue",
+          异常: "tag-red",
+          已收货: "tag-green"
+        };
+        return '<span class="tag ' + (map[status] || "tag-blue") + '">' + status + "</span>";
+      }
+
+      function selectRow(row) {
+        if (!row) return;
+        document.querySelectorAll("#receiptRows tr").forEach((item) => item.classList.remove("active"));
+        row.classList.add("active");
+        currentRow = row;
+        setToolbarState();
+      }
+
+      function getBoxes(row) {
+        return boxData[row.dataset.order] || [];
+      }
+
+      function getBoxSearchText(row) {
+        return getBoxes(row)
+          .flatMap((box) => [box.boxNo, ...box.skus.map((item) => item.sku)])
+          .join(" ")
+          .toLowerCase();
+      }
+
+      function applyFilters() {
+        clearMonitorActive();
+        const keyword = document.getElementById("keywordInput").value.trim().toLowerCase();
+        const shipment = document.getElementById("shipmentInput").value.trim().toLowerCase();
+        const transfer = document.getElementById("transferInput").value.trim().toLowerCase();
+        const warehouse = document.getElementById("warehouseSelect").value;
+        const status = document.getElementById("statusSelect").value;
+        let count = 0;
+
+        document.querySelectorAll("#receiptRows tr").forEach((row) => {
+          const searchable = [row.dataset.order, row.dataset.transfer, row.dataset.inbound, getBoxSearchText(row)].join(" ").toLowerCase();
+          const visible =
+            (!keyword || searchable.includes(keyword)) &&
+            (!shipment || row.dataset.order.toLowerCase().includes(shipment)) &&
+            (!transfer || row.dataset.transfer.toLowerCase().includes(transfer)) &&
+            (!warehouse || row.dataset.warehouse === warehouse) &&
+            (!status || row.dataset.status === status);
+          row.style.display = visible ? "" : "none";
+          const checkbox = row.querySelector('input[type="checkbox"]');
+          if (!visible && checkbox) checkbox.checked = false;
+          if (visible) count += 1;
         });
-        for (const r of rows) {
-          const bn = r.querySelector(".box-no");
-          if (!bn || bn.innerText.trim() !== boxNo) continue;
-          const planned = parseInt(r.children[5].innerText.trim() || "0", 10);
-          const already = parseInt(r.children[6].innerText.trim() || "0", 10);
-          const newReceived = already + good + bad;
-          const newWait = Math.max(0, planned - newReceived);
-          r.children[6].innerText = newReceived;
-          r.children[6].classList.remove("qty-zero");
-          r.children[7].innerText = newWait;
-          if (newWait === 0) {
-            r.children[7].classList.remove("qty-wait");
-            r.children[7].classList.add("qty-zero");
-            r.children[3].innerHTML = '<span class="pill ok">已收货</span>';
-            r.children[10].innerHTML = '<div class="op-col"><span class="pill ok">本箱已完成</span></div>';
-            r.classList.add("row-done");
-          } else {
-            r.children[3].innerHTML = '<span class="pill primary">部分收货</span>';
-            r.children[10].innerHTML =
-              '<div class="op-col"><button class="btn btn-sm btn-ghost" onclick="openReceiveDialog(\'' +
-              boxNo + '\')">继续收 ' + newWait + "</button></div>";
-          }
-          r.children[9].innerText = nowText();
-          r.children[9].style.color = "var(--sub)";
-          updateGroupProgress(r.closest(".group"));
-          break;
+
+        selectFirstVisibleRow();
+        updateSelectedCount();
+        syncEmptyState();
+        showToast("查询完成，匹配 " + count + " 单数据");
+      }
+
+      function filterByMonitorStatus(status, card) {
+        setMonitorActive(card);
+        document.getElementById("statusSelect").value = status;
+        applyFilters();
+        setMonitorActive(card);
+      }
+
+      function filterPendingBoxes(card) {
+        setMonitorActive(card);
+        let count = 0;
+        document.getElementById("statusSelect").value = "";
+        document.querySelectorAll("#receiptRows tr").forEach((row) => {
+          const visible = Number(row.dataset.total || 0) > Number(row.dataset.received || 0);
+          row.style.display = visible ? "" : "none";
+          const checkbox = row.querySelector('input[type="checkbox"]');
+          if (!visible && checkbox) checkbox.checked = false;
+          if (visible) count += 1;
+        });
+        selectFirstVisibleRow();
+        updateSelectedCount();
+        syncEmptyState();
+        showToast("已筛选待收货单，匹配 " + count + " 单");
+      }
+
+      function filterOverdueBoxes(card) {
+        setMonitorActive(card);
+        let count = 0;
+        document.getElementById("statusSelect").value = "";
+        document.querySelectorAll("#receiptRows tr").forEach((row) => {
+          const visible = row.dataset.overdue === "true" && row.dataset.status !== "已收货";
+          row.style.display = visible ? "" : "none";
+          const checkbox = row.querySelector('input[type="checkbox"]');
+          if (!visible && checkbox) checkbox.checked = false;
+          if (visible) count += 1;
+        });
+        selectFirstVisibleRow();
+        updateSelectedCount();
+        syncEmptyState();
+        showToast("已筛选超时未完成单，匹配 " + count + " 单");
+      }
+
+      function resetFilters() {
+        clearMonitorActive();
+        document.getElementById("keywordInput").value = "";
+        document.getElementById("shipmentInput").value = "";
+        document.getElementById("transferInput").value = "";
+        document.getElementById("warehouseSelect").value = "";
+        document.getElementById("statusSelect").value = "";
+        document.querySelectorAll("#receiptRows tr").forEach((row) => (row.style.display = ""));
+        selectFirstVisibleRow();
+        updateSelectedCount();
+        syncEmptyState();
+        showToast("筛选条件已重置");
+      }
+
+      function toggleAll(source) {
+        visibleRows().forEach((row) => {
+          const checkbox = row.querySelector('input[type="checkbox"]:not(:disabled)');
+          if (checkbox) checkbox.checked = source.checked;
+        });
+        updateSelectedCount();
+      }
+
+      function onRowCheckboxChange(checkbox) {
+        if (checkbox.checked) selectRow(checkbox.closest("tr"));
+        updateSelectedCount();
+      }
+
+      function updateSelectedCount() {
+        const count = document.querySelectorAll('#receiptRows input[type="checkbox"]:checked').length;
+        document.getElementById("selectedCount").innerText = count;
+        updateHeaderCheckbox();
+        setToolbarState();
+      }
+
+      function renderOperation(row) {
+        const detail = '<span class="op-btn secondary" onclick="event.stopPropagation(); openBoxModal(this.closest(\'tr\'))">明细收货</span>';
+        if (row.dataset.status === "已收货") {
+          return '<span class="op"><span class="op-btn disabled">整单收货</span><span class="op-split"></span>' + detail + "</span>";
+        }
+        const whole = '<span class="op-btn" onclick="event.stopPropagation(); confirmOrderReceive(this.closest(\'tr\'))">整单收货</span>';
+        return '<span class="op">' + whole + '<span class="op-split"></span>' + detail + "</span>";
+      }
+
+      function updateOrderRow(row) {
+        const boxes = getBoxes(row);
+        const total = boxes.reduce((sum, box) => sum + box.total, 0);
+        const received = boxes.reduce((sum, box) => sum + box.received, 0);
+        const exceptionBox = boxes.filter((box) => box.status === "异常").length;
+        const skuCount = new Set(boxes.flatMap((box) => box.skus.map((item) => item.sku))).size;
+        const wait = Math.max(total - received, 0);
+        const latestTime = boxes.map((box) => box.receiveTime).filter((time) => time && time !== "--").sort().pop() || "--";
+        let status = "未收货";
+
+        if (exceptionBox > 0) status = "异常";
+        else if (wait === 0) status = "已收货";
+        else if (received > 0) status = "部分收货";
+
+        row.dataset.status = status;
+        row.dataset.total = String(total);
+        row.dataset.received = String(received);
+        row.dataset.boxCount = String(boxes.length);
+        row.dataset.exceptionBox = String(exceptionBox);
+        row.dataset.skuCount = String(skuCount);
+        row.dataset.overdue = status === "已收货" ? "false" : row.dataset.overdue;
+
+        row.children[2].innerHTML = statusTag(status);
+        row.children[7].innerText = boxes.length;
+        row.children[8].innerText = exceptionBox;
+        row.children[9].innerText = skuCount;
+        row.children[10].innerText = total;
+        row.children[11].innerText = received;
+        row.children[12].innerText = wait;
+        row.children[13].innerHTML =
+          status === "已收货"
+            ? '<span class="muted">已完成</span>'
+            : exceptionBox > 0
+              ? '<span class="risk-text">箱维度异常待处理</span>'
+              : '<span class="warn-text">剩余 ' + wait + " 件待收</span>";
+        row.children[14].innerText = latestTime;
+        row.children[14].classList.toggle("muted", latestTime === "--");
+        row.children[15].innerHTML = renderOperation(row);
+        const checkbox = row.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          checkbox.disabled = status === "已收货";
+          if (checkbox.disabled) checkbox.checked = false;
+        }
+        flashRow(row);
+        updateSelectedCount();
+        refreshStatusCards();
+      }
+
+      function receiveOrder(row, receiveTime) {
+        const finalReceiveTime = receiveTime || formatNow();
+        getBoxes(row).forEach((box) => {
+          box.received = box.total;
+          box.status = "已收货";
+          box.receiveTime = finalReceiveTime;
+          box.skus.forEach((item) => {
+            item.received = item.qty;
+            item.good = item.qty;
+            item.bad = 0;
+          });
+        });
+        updateOrderRow(row);
+      }
+
+      function confirmOrderReceive(row) {
+        if (!row) {
+          showToast("请先选择一条收货单");
+          return;
+        }
+        selectRow(row);
+        const wait = Math.max(Number(row.dataset.total || 0) - Number(row.dataset.received || 0), 0);
+        if (wait === 0) {
+          showToast("当前单据已完成收货");
+          return;
+        }
+        openConfirm("确认整单收货", "将把发货单 " + row.dataset.order + " 下所有未完成箱和 SKU 按良品收货，待收 " + wait + " 件。", (receiveTime) => {
+          receiveOrder(row, receiveTime);
+          showToast("发货单 " + row.dataset.order + " 已整单收货");
+        });
+      }
+
+      function openBoxModal(row) {
+        if (!row) row = currentRow;
+        if (!row) {
+          showToast("请先选择一条收货单");
+          return;
+        }
+        closeDrawer();
+        selectRow(row);
+        currentModalRow = row;
+        const boxes = getBoxes(row);
+        const firstPendingBox = boxes.find((box) => box.received < box.total);
+        selectedBoxNo = (firstPendingBox || boxes[0])?.boxNo || "";
+        syncBoxPageToSelection();
+        renderBoxModal();
+        document.getElementById("boxModal").classList.add("open");
+        if (firstPendingBox) {
+          openBoxReceivePanel(firstPendingBox.boxNo);
+          showToast("已打开第一箱待收明细，可直接填写并保存");
+        } else {
+          setReceivePlaceholder("当前单据已完成", "上方可切换箱号查看明细，已完成箱不再进入收货填写。", true);
         }
       }
 
-      // ============ Quick fill ============
+      function closeBoxModal() {
+        closeDrawer();
+        document.getElementById("boxModal").classList.remove("open");
+      }
+
+      function setReceivePlaceholder(title, text, visible) {
+        const placeholder = document.getElementById("receivePlaceholder");
+        if (!placeholder) return;
+        placeholder.style.display = visible ? "flex" : "none";
+        placeholder.innerHTML = "<strong>" + title + "</strong><span>" + text + "</span>";
+      }
+
+      function getBoxPageCount() {
+        return Math.max(1, Math.ceil(getBoxes(currentModalRow).length / modalBoxPageSize));
+      }
+
+      function syncBoxPageToSelection() {
+        const boxes = getBoxes(currentModalRow);
+        const index = boxes.findIndex((box) => box.boxNo === selectedBoxNo);
+        modalBoxPage = index >= 0 ? Math.floor(index / modalBoxPageSize) + 1 : 1;
+      }
+
+      function changeBoxPage(delta) {
+        const pageCount = getBoxPageCount();
+        modalBoxPage = Math.min(Math.max(modalBoxPage + delta, 1), pageCount);
+        closeDrawer();
+        renderBoxModal();
+      }
+
+      function renderBoxModal() {
+        const row = currentModalRow;
+        const boxes = getBoxes(row);
+        const total = boxes.reduce((sum, box) => sum + box.total, 0);
+        const received = boxes.reduce((sum, box) => sum + box.received, 0);
+        const exceptionBox = boxes.filter((box) => box.status === "异常").length;
+
+        document.getElementById("modalOrderNo").innerText = row.dataset.order;
+        document.getElementById("modalWarehouse").innerText = row.dataset.warehouse;
+        document.getElementById("modalBoxSummary").innerText = boxes.length + " 箱 / " + exceptionBox + " 异常";
+        document.getElementById("modalQtySummary").innerText = received + " / " + total + " 件";
+        document.getElementById("modalProgressBar").style.width = total ? Math.round((received / total) * 100) + "%" : "0%";
+        document.getElementById("modalBoxCountText").innerText = boxes.length + " 箱";
+
+        const pageCount = getBoxPageCount();
+        modalBoxPage = Math.min(Math.max(modalBoxPage, 1), pageCount);
+        const pageStart = (modalBoxPage - 1) * modalBoxPageSize;
+        const pageBoxes = boxes.slice(pageStart, pageStart + modalBoxPageSize);
+        document.getElementById("boxPageText").innerText = modalBoxPage + " / " + pageCount;
+        document.getElementById("boxPrevBtn").disabled = modalBoxPage <= 1;
+        document.getElementById("boxNextBtn").disabled = modalBoxPage >= pageCount;
+
+        document.getElementById("modalBoxRows").innerHTML = pageBoxes
+          .map((box) => {
+            const wait = Math.max(box.total - box.received, 0);
+            const op =
+              box.status === "已收货"
+                ? `<span class="op-btn secondary" onclick="event.stopPropagation(); selectBox('${box.boxNo}')">查看</span>`
+                : `<span class="op-btn" onclick="event.stopPropagation(); openBoxReceivePanel('${box.boxNo}')">明细收货</span>`;
+            const boxRow =
+              '<tr class="' +
+              (box.boxNo === selectedBoxNo ? "active" : "") +
+              '" onclick="' +
+              (box.status === "已收货" ? "selectBox" : "openBoxReceivePanel") +
+              "('" +
+              box.boxNo +
+              "')\"><td>" +
+              box.boxNo +
+              "</td><td>" +
+              statusTag(box.status) +
+              '</td><td class="num">' +
+              box.total +
+              '</td><td class="num">' +
+              wait +
+              '</td><td><span class="op">' +
+              op +
+              "</span></td></tr>";
+            return boxRow;
+          })
+          .join("");
+      }
+
+      function selectBox(boxNo) {
+        selectedBoxNo = boxNo;
+        syncBoxPageToSelection();
+        closeDrawer();
+        setReceivePlaceholder("当前箱已完成或仅查看", "该箱无需填写收货结果。如需处理其他箱，请点击上方待收箱的“明细收货”。", true);
+        renderBoxModal();
+      }
+
+      function receiveBox(boxNo, receiveTime) {
+        const box = getBoxes(currentModalRow).find((item) => item.boxNo === boxNo);
+        if (!box) return;
+        box.status = "已收货";
+        box.received = box.total;
+        box.receiveTime = receiveTime || formatNow();
+        box.skus.forEach((item) => {
+          item.received = item.qty;
+          item.good = item.qty;
+          item.bad = 0;
+        });
+        updateOrderRow(currentModalRow);
+        renderBoxModal();
+        showToast("箱 " + boxNo + " 已整箱良品收货");
+      }
+
+      function confirmBoxReceive(boxNo) {
+        const box = getBoxes(currentModalRow).find((item) => item.boxNo === boxNo);
+        if (!box) return;
+        const wait = Math.max(box.total - box.received, 0);
+        if (wait === 0) {
+          showToast("当前箱已完成收货");
+          return;
+        }
+        openConfirm("确认整箱良品收货", "将把箱 " + boxNo + " 剩余 " + wait + " 件全部按良品收货。", (receiveTime) => receiveBox(boxNo, receiveTime));
+      }
+
+      function receiveAllBoxesInModal() {
+        const wait = Math.max(Number(currentModalRow.dataset.total || 0) - Number(currentModalRow.dataset.received || 0), 0);
+        if (wait === 0) {
+          showToast("当前单据已完成收货");
+          return;
+        }
+        openConfirm("确认整单收货", "将把发货单 " + currentModalRow.dataset.order + " 剩余 " + wait + " 件全部按良品收货。", (receiveTime) => {
+          receiveOrder(currentModalRow, receiveTime);
+          renderBoxModal();
+          showToast("发货单 " + currentModalRow.dataset.order + " 已整单收货");
+        });
+      }
+
+      function openBoxReceivePanel(boxNo) {
+        selectedBoxNo = boxNo;
+        receiptTargetBoxNo = boxNo;
+        syncBoxPageToSelection();
+        renderBoxModal();
+        openDrawer(currentModalRow, "boxPiece");
+        document.getElementById("drawer").scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+
+      function openBoxPieceReceive(boxNo) {
+        openBoxReceivePanel(boxNo);
+      }
+
+      function openDrawer(row, mode) {
+        if (!row) row = currentRow;
+        if (!row) {
+          showToast("请先选择一条收货单");
+          return;
+        }
+        if (!mode) mode = "orderPiece";
+        selectRow(row);
+        drawerMode = mode === "boxPiece" ? "boxPiece" : "orderPiece";
+
+        if (!document.getElementById("boxModal").classList.contains("open")) {
+          currentModalRow = row;
+          selectedBoxNo = getBoxes(row)[0]?.boxNo || "";
+          renderBoxModal();
+          document.getElementById("boxModal").classList.add("open");
+        }
+
+        const box = drawerMode === "boxPiece" ? getBoxes(row).find((item) => item.boxNo === receiptTargetBoxNo) : null;
+        const total = box ? box.total : Number(row.dataset.total || 0);
+        const received = box ? box.received : Number(row.dataset.received || 0);
+        const wait = Math.max(total - received, 0);
+
+        if (wait === 0) {
+          showToast("当前对象已完成收货");
+          return;
+        }
+
+        document.getElementById("drawerTitle").innerText = box ? "明细收货 - 箱号 " + box.boxNo : "明细收货 - 整单剩余";
+        document.getElementById("drawerScope").innerText = box ? "箱号 " + box.boxNo + " 内 SKU" : "整单剩余 SKU";
+        document.getElementById("drawerWait").innerText = wait;
+        document.getElementById("goodQty").value = wait;
+        document.getElementById("badQty").value = 0;
+        document.getElementById("remark").value = "";
+        document.getElementById("receiveTimeInput").value = formatNow();
+        document.getElementById("remark").placeholder = "少收、不良品或 SKU 差异说明";
+        drawerExceptionManual = false;
+        document.getElementById("exceptionPanel").classList.remove("show");
+        const drawer = document.getElementById("drawer");
+        document.getElementById("pieceReceiveHost").appendChild(drawer);
+        drawer.classList.add("inline");
+        renderDrawerSkuRows(row, box);
+        setReceivePlaceholder("", "", false);
+        drawer.classList.add("open");
+        validateReceiveForm();
+      }
+
+      function renderDrawerSkuRows(row, box) {
+        const rows = box
+          ? box.skus.map((sku, skuIndex) => ({ boxNo: box.boxNo, skuIndex, sku })).filter((item) => item.sku.received < item.sku.qty)
+          : getBoxes(row).flatMap((item) =>
+              item.skus
+                .map((sku, skuIndex) => ({ boxNo: item.boxNo, skuIndex, sku }))
+                .filter((entry) => entry.sku.received < entry.sku.qty)
+            );
+        document.getElementById("drawerSkuReceiveRows").innerHTML =
+          rows
+            .map((entry) => {
+              const item = entry.sku;
+              const wait = Math.max(item.qty - item.received, 0);
+              return (
+                '<tr data-box-no="' +
+                entry.boxNo +
+                '" data-sku-index="' +
+                entry.skuIndex +
+                '"><td><span class="muted">箱 ' +
+                entry.boxNo +
+                '</span><br />' +
+                item.sku +
+                '</td><td class="num">' +
+                item.qty +
+                '</td><td class="num">' +
+                item.received +
+                '</td><td class="num">' +
+                wait +
+                '</td><td><input class="input drawer-good" type="number" min="0" step="1" value="' +
+                wait +
+                '" oninput="syncDrawerSkuTotal()" /></td><td><span class="sn-link" onclick="toggleSnInput(this)">展开输入</span><textarea class="input sn-input" placeholder="一行一个良品 SN"></textarea></td><td><input class="input drawer-bad" type="number" min="0" step="1" value="0" oninput="syncDrawerSkuTotal()" /></td><td><span class="sn-link" onclick="toggleSnInput(this)">展开输入</span><textarea class="input sn-input" placeholder="一行一个不良品 SN"></textarea></td></tr>'
+              );
+            })
+            .join("") || '<tr><td colspan="8" class="muted">暂无待收 SKU 明细</td></tr>';
+        syncDrawerSkuTotal();
+      }
+
+      function toggleSnInput(link) {
+        const input = link.parentElement.querySelector(".sn-input");
+        input.classList.toggle("show");
+        link.innerText = input.classList.contains("show") ? "收起输入" : "展开输入";
+      }
+
+      function syncDrawerSkuTotal() {
+        const good = Array.from(document.querySelectorAll(".drawer-good")).reduce((sum, input) => sum + Number(input.value || 0), 0);
+        const bad = Array.from(document.querySelectorAll(".drawer-bad")).reduce((sum, input) => sum + Number(input.value || 0), 0);
+        document.getElementById("goodQty").value = good;
+        document.getElementById("badQty").value = bad;
+        document.getElementById("receiveCalcText").innerText = "本次 " + (good + bad) + " 件";
+        if (bad > 0) document.getElementById("exceptionPanel").classList.add("show");
+        else if (!drawerExceptionManual) document.getElementById("exceptionPanel").classList.remove("show");
+        validateReceiveForm();
+      }
+
+      function closeDrawer() {
+        const drawer = document.getElementById("drawer");
+        drawer.classList.remove("open");
+        document.getElementById("exceptionPanel").classList.remove("show");
+        drawerExceptionManual = false;
+        setReceivePlaceholder("选择待收箱", "选择箱后填写收货结果。", true);
+      }
+
       function fillAllGood() {
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((r) => {
-          const wait = parseInt(r.children[3].innerText.trim() || "0", 10);
-          r.querySelector(".qty-input.good").value = wait;
-          r.querySelector(".qty-input.bad").value = 0;
-          onQtyChange(r.querySelector(".qty-input.good"));
+        document.querySelectorAll("#drawerSkuReceiveRows tr").forEach((row) => {
+          const good = row.querySelector(".drawer-good");
+          const bad = row.querySelector(".drawer-bad");
+          if (good) good.value = row.children[3]?.innerText || 0;
+          if (bad) bad.value = 0;
         });
-        toast("已按待收数量全部填为良品", "success");
+        syncDrawerSkuTotal();
+        document.getElementById("exceptionPanel").classList.remove("show");
+        drawerExceptionManual = false;
+        document.getElementById("remark").value = "";
+        validateReceiveForm();
       }
 
-      function fillAllBad() {
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((r) => {
-          const wait = parseInt(r.children[3].innerText.trim() || "0", 10);
-          r.querySelector(".qty-input.good").value = 0;
-          r.querySelector(".qty-input.bad").value = wait;
-          onQtyChange(r.querySelector(".qty-input.bad"));
+      function markDrawerException() {
+        drawerExceptionManual = true;
+        document.getElementById("exceptionPanel").classList.add("show");
+        document.getElementById("remark").focus();
+        document.getElementById("remark").placeholder = "请说明少收、破损或 SKU 差异原因";
+        validateReceiveForm();
+      }
+
+      function validateReceiveForm() {
+        const goodInput = document.getElementById("goodQty");
+        const badInput = document.getElementById("badQty");
+        const timeInput = document.getElementById("receiveTimeInput");
+        const saveBtn = document.getElementById("saveReceiveBtn");
+        const wait = Number(document.getElementById("drawerWait").innerText || 0);
+        const good = Number(goodInput.value || 0);
+        const bad = Number(badInput.value || 0);
+        let rowInvalid = false;
+
+        document.querySelectorAll("#drawerSkuReceiveRows tr[data-box-no]").forEach((tr) => {
+          const rowWait = Number(tr.children[3]?.innerText || 0);
+          const goodField = tr.querySelector(".drawer-good");
+          const badField = tr.querySelector(".drawer-bad");
+          const rowGood = Number(goodField?.value || 0);
+          const rowBad = Number(badField?.value || 0);
+          const invalid = rowGood < 0 || rowBad < 0 || !Number.isInteger(rowGood) || !Number.isInteger(rowBad) || rowGood + rowBad > rowWait;
+          goodField?.classList.toggle("invalid", invalid);
+          badField?.classList.toggle("invalid", invalid);
+          rowInvalid = rowInvalid || invalid;
         });
-        toast("已按待收数量全部填为不良品", "warn");
+
+        const invalid = good < 0 || bad < 0 || !Number.isInteger(good) || !Number.isInteger(bad) || good + bad <= 0 || good + bad > wait || rowInvalid || !timeInput.value.trim();
+        goodInput.classList.toggle("invalid", good < 0 || good + bad > wait);
+        badInput.classList.toggle("invalid", bad < 0 || good + bad > wait);
+        timeInput.classList.toggle("invalid", !timeInput.value.trim());
+        if (saveBtn) saveBtn.disabled = invalid;
+        return !invalid;
       }
 
-      function clearAllQty() {
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((r) => {
-          r.querySelector(".qty-input.good").value = 0;
-          r.querySelector(".qty-input.bad").value = 0;
-          r.querySelectorAll(".sn-textarea").forEach((t) => (t.value = ""));
-          onQtyChange(r.querySelector(".qty-input.good"));
+      function getDrawerReceiveEntries() {
+        return Array.from(document.querySelectorAll("#drawerSkuReceiveRows tr[data-box-no]"))
+          .map((tr) => {
+            const box = getBoxes(currentRow).find((item) => item.boxNo === tr.dataset.boxNo);
+            const sku = box?.skus[Number(tr.dataset.skuIndex)];
+            const good = Number(tr.querySelector(".drawer-good")?.value || 0);
+            const bad = Number(tr.querySelector(".drawer-bad")?.value || 0);
+            const wait = sku ? Math.max(sku.qty - sku.received, 0) : 0;
+            return { box, sku, good, bad, wait };
+          })
+          .filter((entry) => entry.box && entry.sku && entry.good + entry.bad > 0);
+      }
+
+      function applyDrawerSkuReceive(entries, receiveTime, hasException) {
+        const touchedBoxes = new Set();
+        entries.forEach((entry) => {
+          const qty = entry.good + entry.bad;
+          entry.sku.received = Math.min(entry.sku.qty, entry.sku.received + qty);
+          entry.sku.good = Math.min(entry.sku.qty, entry.sku.good + entry.good);
+          entry.sku.bad += entry.bad;
+          entry.box.receiveTime = receiveTime;
+          touchedBoxes.add(entry.box);
         });
-        toast("已清空本次录入数量", "info");
-      }
 
-      function reuseLastInput() {
-        if (!lastReceiveSnapshot || !lastReceiveSnapshot.length) {
-          toast("暂无上一次录入记录", "warn");
-          return;
-        }
-        document.querySelectorAll(".sku-table tr.sku-row").forEach((r, i) => {
-          const s = lastReceiveSnapshot[i];
-          if (!s) return;
-          r.querySelector(".qty-input.good").value = s.good;
-          r.querySelector(".qty-input.bad").value = s.bad;
-          const tas = r.querySelectorAll(".sn-textarea");
-          if (tas[0]) tas[0].value = s.goodSn;
-          if (tas[1]) tas[1].value = s.badSn;
-          onQtyChange(r.querySelector(".qty-input.good"));
+        touchedBoxes.forEach((box) => {
+          const received = box.skus.reduce((sum, sku) => sum + sku.received, 0);
+          const hasBad = box.skus.some((sku) => sku.bad > 0);
+          box.received = Math.min(box.total, received);
+          box.status = hasException || hasBad ? "异常" : box.received === box.total ? "已收货" : "部分收货";
         });
-        toast("已复用上一次的录入数量", "success");
       }
 
-      function verifyBox(v) {
-        if (!v) return;
-        const target = document.getElementById("dlgBoxNo").innerText.trim();
-        if (v.trim() === target) {
-          toast("箱号校验通过：" + v, "success");
-        } else {
-          toast("箱号不一致：扫到 " + v + "，应为 " + target, "error");
-        }
-      }
-
-      // ============ Quantity & SN ============
-      function onQtyChange(input) {
-        const row = input.closest("tr");
-        const goodEl = row.querySelector(".qty-input.good");
-        const badEl = row.querySelector(".qty-input.bad");
-        const wait = parseInt(row.children[3].innerText.trim() || "0", 10);
-        const good = parseInt(goodEl.value || "0", 10);
-        const bad = parseInt(badEl.value || "0", 10);
-        const total = good + bad;
-        const warnGood = row.querySelector(".qty-input.good + .qty-warning");
-        const warnBad = row.querySelector(".qty-input.bad + .qty-warning");
-        if (warnGood) warnGood.classList.toggle("show", total > wait);
-        if (warnBad) warnBad.classList.toggle("show", total > wait);
-        const snAreas = row.querySelectorAll(".sn-area");
-        if (snAreas[0]) updateSnCount(snAreas[0].querySelector(".sn-textarea"), good, "good");
-        if (snAreas[1]) updateSnCount(snAreas[1].querySelector(".sn-textarea"), bad, "bad");
-      }
-
-      function updateSnCount(ta, expect, type) {
-        if (!ta) return;
-        const txt = (ta.value || "").trim();
-        const arr = txt ? txt.split(/[\n,，\s]+/).filter(Boolean) : [];
-        const cnt = arr.length;
-        const span = ta.parentNode.querySelector(".sn-count");
-        if (!span) return;
-        span.innerText = "SN " + cnt + " / 应录入 " + expect;
-        span.classList.remove("match", "mismatch");
-        if (expect === 0) {
-          if (cnt === 0) span.classList.add("match");
-          else span.classList.add("mismatch");
-        } else if (cnt === expect) {
-          span.classList.add("match");
-        } else {
-          span.classList.add("mismatch");
-        }
-      }
-
-      // ============ Pagination ============
-      function goPage(btn, n) {
-        if (n === "prev") {
-          const active = btn.parentNode.querySelector(".num-btn.active");
-          const prev = active && active.previousElementSibling;
-          if (prev && prev !== btn) goPage(prev, parseInt(prev.innerText, 10) || 1);
-          else toast("已是第一页", "warn");
+      function saveReceive() {
+        if (!currentRow) return;
+        if (!validateReceiveForm()) {
+          showToast("请检查入库时间和本次收货数量");
           return;
         }
-        if (n === "next") {
-          const active = btn.parentNode.querySelector(".num-btn.active");
-          const next = active && active.nextElementSibling;
-          if (next && next !== btn && next.innerText !== "›") goPage(next, parseInt(next.innerText, 10) || 1);
-          else toast("已是最后一页", "warn");
+        const good = Number(document.getElementById("goodQty").value || 0);
+        const bad = Number(document.getElementById("badQty").value || 0);
+        const exceptionMode = document.getElementById("exceptionPanel").classList.contains("show");
+        const box = drawerMode === "boxPiece" ? getBoxes(currentRow).find((item) => item.boxNo === receiptTargetBoxNo) : null;
+        const total = box ? box.total : Number(currentRow.dataset.total || 0);
+        const received = box ? box.received : Number(currentRow.dataset.received || 0);
+        const next = received + good + bad;
+        const entries = getDrawerReceiveEntries();
+        const receiveTime = document.getElementById("receiveTimeInput").value.trim();
+
+        if (good < 0 || bad < 0 || next > total) {
+          showToast("本次数量不能小于 0，且不能超过待收数量");
           return;
         }
-        if (n === "more") {
-          toast("跳页：请输入页码（演示）", "info");
+        if (!entries.length) {
+          showToast("请确认本次收货数量");
           return;
         }
-        btn.parentNode.querySelectorAll(".num-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        toast("已切换到第 " + n + " 页", "info");
+
+        applyDrawerSkuReceive(entries, receiveTime, exceptionMode || bad > 0);
+        updateOrderRow(currentRow);
+        if (currentModalRow === currentRow) renderBoxModal();
+
+        closeDrawer();
+        showToast(exceptionMode || bad > 0 ? "差异已登记，进入异常待处理" : "整箱良品收货已保存");
       }
 
-      function changePageSize(sel) {
-        toast("每页显示：" + sel.value, "info");
+      function markException(row) {
+        if (!row) row = currentRow;
+        selectRow(row);
+        const firstBox = getBoxes(row).find((box) => box.status !== "已收货") || getBoxes(row)[0];
+        if (firstBox) firstBox.status = "异常";
+        updateOrderRow(row);
       }
 
-      // ============ Batch dialog ============
-      function addBoxToBatch(input) {
-        const v = (input.value || "").trim();
-        if (!v) return;
-        // 重复校验
-        const exists = Array.from(document.querySelectorAll("#batchDialog .batch-item b")).some(
-          (b) => b.innerText === v
-        );
-        if (exists) {
-          toast("该箱已在列表中：" + v, "warn");
-          input.value = "";
+      function openExceptionPanel() {
+        openDrawer(currentRow, "piece");
+        document.getElementById("exceptionPanel").classList.add("show");
+        document.getElementById("remark").placeholder = "请补充差异说明，保存后进入异常待处理";
+      }
+
+      function refreshStatusCards() {
+        const rows = Array.from(document.querySelectorAll("#receiptRows tr"));
+        const pendingRows = rows.filter((row) => Number(row.dataset.total || 0) > Number(row.dataset.received || 0));
+        const exceptionRows = rows.filter((row) => row.dataset.status === "异常");
+        const overdueRows = rows.filter((row) => row.dataset.overdue === "true" && row.dataset.status !== "已收货");
+        const pendingBoxes = pendingRows.reduce((sum, row) => sum + getBoxes(row).filter((box) => box.status !== "已收货").length, 0);
+        const pendingQty = pendingRows.reduce((sum, row) => sum + Math.max(Number(row.dataset.total || 0) - Number(row.dataset.received || 0), 0), 0);
+        const exceptionBoxes = exceptionRows.reduce((sum, row) => sum + getBoxes(row).filter((box) => box.status === "异常").length, 0);
+        const overdueBoxes = overdueRows.reduce((sum, row) => sum + Number(row.dataset.boxCount || 0), 0);
+        document.getElementById("monitorPendingOrder").innerText = pendingRows.length;
+        document.getElementById("monitorPendingQty").innerText = pendingQty;
+        document.getElementById("monitorExceptionOrder").innerText = exceptionRows.length;
+        document.getElementById("monitorOverdueOrder").innerText = overdueRows.length;
+        document.getElementById("monitorPendingBoxText").innerText = "涉及 " + pendingBoxes + " 箱";
+        document.getElementById("monitorExceptionBoxText").innerText = "涉及 " + exceptionBoxes + " 箱";
+        document.getElementById("monitorOverdueBoxText").innerText = "涉及 " + overdueBoxes + " 箱";
+      }
+
+      function receiveSelected() {
+        const checkedRows = Array.from(document.querySelectorAll('#receiptRows input[type="checkbox"]:checked')).map((checkbox) => checkbox.closest("tr"));
+        const rows = checkedRows.filter((row) => row && row.dataset.status !== "已收货");
+        if (!rows.length) {
+          showToast("请先选择未完成收货的单据");
           return;
         }
-        const list = document.querySelector("#batchDialog .batch-list");
-        const item = document.createElement("div");
-        item.className = "batch-item";
-        item.innerHTML =
-          '<input type="checkbox" checked /> <b>' + v + "</b> " +
-          '<span style="color:var(--sub)">扫码追加</span> ' +
-          '<span class="pill">未知件</span> ' +
-          '<span class="remove" onclick="this.parentNode.remove(); refreshBatchCount()">移除</span>';
-        list.appendChild(item);
-        input.value = "";
-        refreshBatchCount();
-        toast("已追加：" + v, "success");
+        const waitQty = rows.reduce((sum, row) => sum + Math.max(Number(row.dataset.total || 0) - Number(row.dataset.received || 0), 0), 0);
+        openConfirm("确认批量整单收货", "将对已选择的 " + rows.length + " 单执行整单收货，合计待收 " + waitQty + " 件。", (receiveTime) => {
+          rows.forEach((row) => receiveOrder(row, receiveTime));
+          document.querySelectorAll('#receiptRows input[type="checkbox"]').forEach((checkbox) => (checkbox.checked = false));
+          updateSelectedCount();
+          showToast("已完成 " + rows.length + " 单整单收货");
+        });
       }
 
-      function refreshBatchCount() {
-        const items = document.querySelectorAll("#batchDialog .batch-item");
-        document.getElementById("batchSelCount").innerText = items.length;
-        document.getElementById("batchTotalQty").innerText = items.length * 36;
-      }
+      function bindOverlayDismiss() {
+        document.querySelectorAll(".modal-mask").forEach((mask) => {
+          mask.addEventListener("click", (event) => {
+            if (event.target !== mask) return;
+            if (mask.id === "boxModal") closeBoxModal();
+            if (mask.id === "confirmModal") closeConfirm();
+          });
+        });
 
-      function confirmBatchReceive() {
-        const items = document.querySelectorAll('#batchDialog .batch-item input[type="checkbox"]:checked');
-        if (items.length === 0) {
-          toast("请勾选至少一个箱", "warn");
-          return;
-        }
-        if (!window.confirm("确认对所选 " + items.length + " 个箱执行整箱收货？")) return;
-        let updated = 0;
-        items.forEach((cb) => {
-          const boxNo = cb.parentNode.querySelector("b").innerText.trim();
-          const rows = document.querySelectorAll("table.box-tbl tbody tr");
-          for (const r of rows) {
-            const bn = r.querySelector(".box-no");
-            if (bn && bn.innerText.trim() === boxNo) {
-              const status = r.querySelector("td:nth-child(4) .pill");
-              if (status && status.innerText.trim() !== "已收货") {
-                markRowAsFullyReceived(r);
-                updateGroupProgress(r.closest(".group"));
-                updated++;
-              }
-              break;
-            }
+        document.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape") return;
+          if (document.getElementById("drawer").classList.contains("open")) {
+            closeDrawer();
+            return;
           }
+          closeConfirm();
+          closeBoxModal();
         });
-        closeDialog("batchDialog");
-        toast(updated + " 个箱整箱收货完成" + (items.length > updated ? "（其余已收过自动跳过）" : ""), "success");
       }
+
+      bindFilterShortcuts();
+      bindOverlayDismiss();
+      selectFirstVisibleRow();
+      updateSelectedCount();
+      syncEmptyState();
+      refreshStatusCards();
     </script>
   </body>
 </html>
