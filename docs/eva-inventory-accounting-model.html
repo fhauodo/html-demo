@@ -1,0 +1,386 @@
+<title>EVA 出入库记账模型</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  :root {
+    --bg: #f6f8f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f4;
+    --ink: #1b2632;
+    --ink-2: #4b5a68;
+    --ink-3: #7a8794;
+    --line: #dde3e8;
+    --accent: #155e63;
+    --accent-ink: #0e4448;
+    --accent-bg: #e6f0f1;
+    /* 语义色：四本账 */
+    --in: #2e7d5b;   --in-bg: #e5f2ec;
+    --out: #b5472f;  --out-bg: #f7e9e5;
+    --lock: #9a6b14; --lock-bg: #f6efe0;
+    --rel: #5b6b7c;  --rel-bg: #e9edf1;
+    --ok: #2e7d5b;
+    --no: #9aa5af;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141a;
+      --surface: #161e27;
+      --surface-2: #1d2731;
+      --ink: #e6ecf2;
+      --ink-2: #a8b8c6;
+      --ink-3: #748390;
+      --line: #2a3642;
+      --accent: #54b6bf;
+      --accent-ink: #d3f0f3;
+      --accent-bg: #143039;
+      --in: #5bc48a;   --in-bg: #143229;
+      --out: #e08a6e;  --out-bg: #34211b;
+      --lock: #dcb65f; --lock-bg: #2e2816;
+      --rel: #9fb0c0;  --rel-bg: #202a33;
+      --ok: #5bc48a;
+      --no: #5c6872;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141a;
+    --surface: #161e27;
+    --surface-2: #1d2731;
+    --ink: #e6ecf2;
+    --ink-2: #a8b8c6;
+    --ink-3: #748390;
+    --line: #2a3642;
+    --accent: #54b6bf;
+    --accent-ink: #d3f0f3;
+    --accent-bg: #143039;
+    --in: #5bc48a;   --in-bg: #143229;
+    --out: #e08a6e;  --out-bg: #34211b;
+    --lock: #dcb65f; --lock-bg: #2e2816;
+    --rel: #9fb0c0;  --rel-bg: #202a33;
+    --ok: #5bc48a;
+    --no: #5c6872;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono {
+    font-family: "SF Mono", "JetBrains Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 28px; }
+
+  /* Header */
+  header { padding: 56px 0 8px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 16px;
+  }
+  h1 {
+    font-size: 34px; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em;
+    margin: 0 0 20px; text-wrap: balance; color: var(--ink);
+  }
+  h1 .accent { color: var(--accent); }
+  .lede { font-size: 17px; color: var(--ink-2); max-width: 640px; margin: 0; }
+
+  section { padding: 40px 0 8px; }
+  .sec-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 6px;
+  }
+  h2 { font-size: 22px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em; }
+  .sec-sub { color: var(--ink-2); margin: 0 0 20px; max-width: 680px; }
+
+  /* Legend */
+  .legend {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px;
+  }
+  .legend-item {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 16px 14px;
+  }
+  .legend-item .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: 1px; }
+  .legend-item .name { font-weight: 700; font-size: 14px; }
+  .legend-item .desc { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.45; }
+  .legend-item .sign { font-size: 11px; font-weight: 600; color: var(--ink-3); letter-spacing: 0.03em; }
+
+  /* Flow diagram */
+  .flow { margin-top: 12px; display: flex; flex-direction: column; align-items: stretch; }
+  .flow-node {
+    border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
+    background: var(--surface); border-left: 4px solid var(--line);
+  }
+  .flow-node .step { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-3); text-transform: uppercase; }
+  .flow-node .title { font-size: 16px; font-weight: 700; margin: 3px 0 4px; }
+  .flow-node .desc { font-size: 13.5px; color: var(--ink-2); }
+  .flow-node .total { font-size: 12.5px; font-weight: 600; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .node-lock { border-left-color: var(--lock); }
+  .node-lock .title { color: var(--lock); }
+  .node-out { border-left-color: var(--out); }
+  .node-out .title { color: var(--out); }
+  .node-rel { border-left-color: var(--rel); }
+  .node-rel .title { color: var(--rel); }
+  .node-in { border-left-color: var(--in); }
+  .node-in .title { color: var(--in); }
+
+  .flow-arrow { text-align: center; color: var(--ink-3); font-size: 20px; line-height: 1; padding: 6px 0; }
+  .flow-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .flow-split .branch-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--ink-3);
+    margin-bottom: 6px; text-align: center;
+  }
+  .split-arrow { text-align: center; color: var(--ink-3); font-size: 15px; line-height: 1; padding: 8px 0 6px; }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px;
+    letter-spacing: 0.02em; margin-left: 6px; vertical-align: 1px;
+  }
+  .tag-lock { background: var(--lock-bg); color: var(--lock); }
+  .tag-out { background: var(--out-bg); color: var(--out); }
+  .tag-rel { background: var(--rel-bg); color: var(--rel); }
+  .tag-in { background: var(--in-bg); color: var(--in); }
+
+  /* Callout */
+  .callout {
+    background: var(--accent-bg); border: 1px solid var(--accent); border-radius: 12px;
+    padding: 18px 20px; margin-top: 20px;
+  }
+  .callout .k { font-weight: 700; color: var(--accent-ink); }
+  .callout p { margin: 0; font-size: 14px; color: var(--ink); }
+
+  /* Table */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin-top: 12px; }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 13px; }
+  thead th {
+    text-align: left; font-size: 12px; font-weight: 700; color: var(--ink-2);
+    padding: 12px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+    background: var(--surface-2); letter-spacing: 0.02em;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tr.group-row td { background: var(--surface-2); font-weight: 700; color: var(--ink); }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 5px; white-space: nowrap; }
+  .pill-in { background: var(--in-bg); color: var(--in); }
+  .pill-out { background: var(--out-bg); color: var(--out); }
+  .pill-lock { background: var(--lock-bg); color: var(--lock); }
+  .pill-rel { background: var(--rel-bg); color: var(--rel); }
+  .qty-pos { color: var(--in); font-weight: 700; }
+  .qty-neg { color: var(--out); font-weight: 700; }
+  .verdict { font-weight: 700; white-space: nowrap; }
+  .v-yes { color: var(--ok); }
+  .v-no { color: var(--no); }
+  .verdict .why { display: block; font-weight: 400; font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+
+  /* Summary */
+  .summary {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; margin-top: 8px;
+  }
+  .summary h2 { margin-bottom: 8px; }
+  .summary ul { margin: 0; padding-left: 0; list-style: none; }
+  .summary li { position: relative; padding-left: 22px; margin: 8px 0; color: var(--ink-2); }
+  .summary li::before {
+    content: ""; position: absolute; left: 0; top: 9px; width: 8px; height: 8px; border-radius: 2px; background: var(--accent);
+  }
+  .summary li b { color: var(--ink); }
+
+  footer { padding: 36px 0 64px; color: var(--ink-3); font-size: 13px; }
+
+  @media (max-width: 640px) {
+    .legend { grid-template-columns: 1fr 1fr; }
+    .flow-split { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">EVA 海外仓 · 库存流水记账模型</p>
+    <h1>库存不是「进、出」两本账，<br>而是<span class="accent">「进、出、锁定、释放」</span>四本账</h1>
+    <p class="lede">一个销售订单从「下单」到「发货」，系统会记下多条流水。理解这四类动作，才能明白为什么「取消又重建」不会把库存和库龄算重复。</p>
+  </header>
+
+  <section>
+    <p class="sec-label">先认识四类动作</p>
+    <h2>四个动作，四种颜色</h2>
+    <p class="sec-sub">系统用不同编码区分四类动作，其中「锁定」「释放」只是库存内部的转移（可用 ↔ 锁定），不改变库存总量；真正改变总量的是「入库」和「出库」。</p>
+    <div class="legend">
+      <div class="legend-item">
+        <span class="dot" style="background:var(--in)"></span><span class="name">入库</span>
+        <div class="desc">真正增加库存总量</div>
+        <div class="sign">正数 · 如 3 调拨入库</div>
+      </div>
+      <div class="legend-item">
+        <span class="dot" style="background:var(--out)"></span><span class="name">出库</span>
+        <div class="desc">真正减少库存总量</div>
+        <div class="sign">负数 · 如 -4 销售出库</div>
+      </div>
+      <div class="legend-item">
+        <span class="dot" style="background:var(--lock)"></span><span class="name">锁定</span>
+        <div class="desc">可用 → 锁定，总量不变</div>
+        <div class="sign">负数 · 如 -200 订单锁定</div>
+      </div>
+      <div class="legend-item">
+        <span class="dot" style="background:var(--rel)"></span><span class="name">释放 / 取消</span>
+        <div class="desc">锁定 → 可用，总量不变</div>
+        <div class="sign">冲正 · in_out_type 为空</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">一张图看懂</p>
+    <h2>一个单据的两种结局</h2>
+    <p class="sec-sub">下单后先「锁定」；如果发货，就走「出库」（库存真正变少）；如果取消，就走「释放」（库存回到原样）。两者在系统里是两条完全不同的记录。</p>
+
+    <div class="flow">
+      <div class="flow-node">
+        <div class="step">动作 ① · 创建单据</div>
+        <div class="title">业务下单 100 件</div>
+        <div class="desc">此刻只是意向，库存还没有真正变化</div>
+      </div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node node-lock">
+        <div class="step">动作 ② · 锁定</div>
+        <div class="title">锁定 lock <span class="tag tag-lock">-200 订单锁定</span></div>
+        <div class="desc">可用 −100 · 锁定 +100</div>
+        <div class="total">库存总量：不变（−100 + 100 = 0）</div>
+      </div>
+      <div class="split-arrow">↙ 分两种情况 ↘</div>
+      <div class="flow-split">
+        <div>
+          <div class="branch-label">情况 A · 正常发货</div>
+          <div class="flow-node node-out">
+            <div class="step">动作 ③ · 出库</div>
+            <div class="title">真正出库 <span class="tag tag-out">-4 · in_out_type=2</span></div>
+            <div class="desc">锁定 −100</div>
+            <div class="total" style="color:var(--out)">库存总量：减少 ✅ 这才是「出库」</div>
+          </div>
+        </div>
+        <div>
+          <div class="branch-label">情况 B · 取消订单</div>
+          <div class="flow-node node-rel">
+            <div class="step">动作 ③′ · 释放</div>
+            <div class="title">取消 · 释放 <span class="tag tag-rel">in_out_type=空</span></div>
+            <div class="desc">锁定 −100 · 可用 +100</div>
+            <div class="total" style="color:var(--rel)">库存总量：不变 ❌ 不算出库</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><span class="k">关键点：</span>「真正发货」和「取消释放」都是「锁定 −100」，区别在一个叫 <span class="mono">in_out_type</span> 的字段 —— 发货是 <span class="mono">2</span>，取消是 <span class="mono">空</span>。系统靠这个字段天然把它们分开，不会混。</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">具体示例</p>
+    <h2>销售订单 100 件：下单 → 取消 → 重建 → 发货</h2>
+    <p class="sec-sub">这是最容易让人担心「算重了」的场景。看系统实际记的 7 条流水，只有最后 1 条是真正的出库，其余 6 条都是锁定/取消的内部转移。</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>动作</th>
+            <th>业务类型<br><span style="font-weight:400">business_type</span></th>
+            <th>库存类型<br><span style="font-weight:400">inventory_type</span></th>
+            <th>出入方向<br><span style="font-weight:400">in_out_type</span></th>
+            <th>数量变动</th>
+            <th>库存总量</th>
+            <th>算库龄吗</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="group-row"><td colspan="7">① 创建订单（下单 100 件）</td></tr>
+          <tr>
+            <td>锁定</td>
+            <td><span class="pill pill-lock">-200 订单锁定</span></td>
+            <td><span class="pill pill-rel">可用(1)</span></td>
+            <td class="mono">2 出库</td>
+            <td class="qty-neg">−100</td>
+            <td rowspan="2">不变</td>
+            <td class="verdict v-no">不算<span class="why">可用↔锁定的内部转移</span></td>
+          </tr>
+          <tr>
+            <td>锁定</td>
+            <td><span class="pill pill-lock">-200 订单锁定</span></td>
+            <td><span class="pill pill-lock">锁定(2)</span></td>
+            <td class="mono">2 出库</td>
+            <td class="qty-pos">+100</td>
+            <td class="verdict v-no">不算<span class="why">内部转移</span></td>
+          </tr>
+
+          <tr class="group-row"><td colspan="7">② 取消订单（不发货了）</td></tr>
+          <tr>
+            <td>释放</td>
+            <td><span class="pill pill-out">-4 销售出库</span></td>
+            <td><span class="pill pill-lock">锁定(2)</span></td>
+            <td class="mono" style="color:var(--rel)">空 ''</td>
+            <td class="qty-neg">−100</td>
+            <td rowspan="2">不变</td>
+            <td class="verdict v-no">不算<span class="why">取消冲正，总量不变</span></td>
+          </tr>
+          <tr>
+            <td>释放</td>
+            <td><span class="pill pill-out">-4 销售出库</span></td>
+            <td><span class="pill pill-rel">可用(1)</span></td>
+            <td class="mono" style="color:var(--rel)">空 ''</td>
+            <td class="qty-pos">+100</td>
+            <td class="verdict v-no">不算<span class="why">取消冲正</span></td>
+          </tr>
+
+          <tr class="group-row"><td colspan="7">③ 重新建单（又下单 100 件）</td></tr>
+          <tr>
+            <td>锁定</td>
+            <td><span class="pill pill-lock">-200 订单锁定</span></td>
+            <td><span class="pill pill-rel">可用(1)</span></td>
+            <td class="mono">2 出库</td>
+            <td class="qty-neg">−100</td>
+            <td rowspan="2">不变</td>
+            <td class="verdict v-no">不算<span class="why">内部转移</span></td>
+          </tr>
+          <tr>
+            <td>锁定</td>
+            <td><span class="pill pill-lock">-200 订单锁定</span></td>
+            <td><span class="pill pill-lock">锁定(2)</span></td>
+            <td class="mono">2 出库</td>
+            <td class="qty-pos">+100</td>
+            <td class="verdict v-no">不算<span class="why">内部转移</span></td>
+          </tr>
+
+          <tr class="group-row"><td colspan="7">④ 实际发货（真正卖出）</td></tr>
+          <tr>
+            <td>出库</td>
+            <td><span class="pill pill-out">-4 销售出库</span></td>
+            <td><span class="pill pill-lock">锁定(2)</span></td>
+            <td class="mono">2 出库</td>
+            <td class="qty-neg">−100</td>
+            <td><b style="color:var(--out)">减少 100</b></td>
+            <td class="verdict v-yes">算 ✅<span class="why">真正的库存出库</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p><span class="k">结论：</span>系统一共记了 <b>7 条流水</b>，但真正影响库龄的只有 <b>1 条</b>（④ 实际发货）。只要取数时排除「锁定类」和「释放类」的记录，就永远不会把「取消」当成「发货」重复计算。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="summary">
+      <h2>一句话记住</h2>
+      <ul>
+        <li><b>入库 / 出库</b>：真正改变库存总量，进库龄。</li>
+        <li><b>锁定 / 释放</b>：只是「可用 ↔ 锁定」的内部转移，总量不变，不进库龄。</li>
+        <li><b>靠 <span class="mono">in_out_type</span> 字段</b>区分「真发货」和「取消」，重复取数的问题系统已经天然规避。</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>EVA 出入库记账模型 · 供业务讨论参考</footer>
+</div>
