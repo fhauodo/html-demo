@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>新增调拨单</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --panel: #fff;
+      --line: #ebeef5;
+      --line-strong: #dcdfe6;
+      --text: #303133;
+      --muted: #909399;
+      --label: #606266;
+      --primary: #409eff;
+      --primary-hover: #66b1ff;
+      --primary-weak: #ecf5ff;
+      --red: #f56c6c;
+      --warn: #e6a23c;
+      --warn-weak: #fdf6ec;
+      --green: #67c23a;
+      --green-weak: #f0f9eb;
+      --header: #f5f7fa;
+      --disabled: #f5f7fa;
+      --shadow: 0 8px 24px rgba(0,0,0,.12);
+      --sub: #6b7a99;
+      --grey: #c4ccdb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 13px;
+    }
+    button, input, select, textarea { font: inherit; }
+    .workspace { padding: 16px; min-height: 100vh; }
+    .dialog {
+      max-width: 1280px;
+      margin: 0 auto;
+      background: var(--panel);
+      border-radius: 4px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-rows: 48px 1fr 56px;
+      min-height: calc(100vh - 32px);
+    }
+    .dialog-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; border-bottom: 1px solid var(--line);
+    }
+    .dialog-title { font-size: 16px; font-weight: 600; }
+    .close {
+      border: 0; background: transparent; color: #909399;
+      font-size: 18px; cursor: pointer; line-height: 1;
+    }
+    .dialog-body { padding: 8px 20px 20px; overflow: auto; }
+    .dialog-footer {
+      display: flex; justify-content: flex-end; align-items: center; gap: 8px;
+      padding: 0 20px; border-top: 1px solid var(--line);
+    }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 12px 0 16px; color: var(--text); font-weight: 600;
+    }
+    .divider::before { content: ""; width: 24px; height: 1px; background: var(--line-strong); }
+    .divider::after { content: ""; flex: 1; height: 1px; background: var(--line-strong); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px 8px;
+    }
+    .field {
+      display: grid;
+      grid-template-columns: 125px minmax(0, 1fr);
+      align-items: start;
+      gap: 4px;
+      min-width: 0;
+    }
+    .field.span2 { grid-column: span 2; }
+    .field.full { grid-column: 1 / -1; }
+    .label {
+      text-align: right;
+      color: var(--label);
+      padding-top: 7px;
+      white-space: nowrap;
+    }
+    .label.required::before { content: "*"; color: var(--red); margin-right: 2px; }
+    .label::after { content: " :"; }
+    .control, textarea {
+      width: 100%;
+      height: 32px;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      padding: 0 10px;
+      background: #fff;
+      color: var(--text);
+    }
+    .control:disabled { background: var(--disabled); color: var(--muted); }
+    textarea {
+      height: 72px;
+      padding: 8px 10px;
+      resize: vertical;
+    }
+    .char-count { text-align: right; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin: 8px 0 12px;
+    }
+    .btn {
+      height: 32px; padding: 0 14px;
+      border: 1px solid var(--line-strong); border-radius: 4px;
+      background: #fff; color: var(--text); cursor: pointer;
+    }
+    .btn:hover:not(:disabled) {
+      border-color: #c6e2ff; color: var(--primary); background: var(--primary-weak);
+    }
+    .btn:disabled {
+      opacity: .55; cursor: not-allowed; background: var(--disabled); color: var(--muted);
+    }
+    .btn-primary {
+      background: var(--primary); border-color: var(--primary); color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover); border-color: var(--primary-hover); color: #fff;
+    }
+    .btn-link {
+      border: 0; background: transparent; color: var(--primary);
+      padding: 0 4px; height: auto; cursor: pointer;
+    }
+    .btn-link.danger { color: var(--red); }
+
+    .table-wrap { border: 1px solid var(--line); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1180px; }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 8px 10px; text-align: left; vertical-align: middle;
+    }
+    th:last-child, td:last-child { border-right: 0; }
+    th {
+      background: var(--header); color: var(--label);
+      font-weight: 600; white-space: nowrap;
+    }
+    td input, td select {
+      width: 100%; height: 28px; border: 1px solid var(--line-strong);
+      border-radius: 4px; padding: 0 6px;
+    }
+    td input.qty-err { border-color: var(--red); background: #fef0f0; }
+    .empty { text-align: center; color: var(--muted); padding: 40px 16px; }
+    .check-col { width: 40px; text-align: center; }
+    .action-col { width: 88px; white-space: nowrap; }
+    .req { color: var(--red); margin-right: 2px; }
+    .sku-parent-row td { background: #f8fbff; font-weight: 500; }
+    .sku-child-row td { background: #fff; }
+    .expand-btn {
+      width: 22px; height: 22px; border: 0; background: transparent;
+      border-radius: 3px; cursor: pointer; color: #667085;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0; flex: 0 0 22px;
+    }
+    .expand-btn:hover { background: var(--primary-weak); color: var(--primary); }
+    .chevron {
+      width: 0; height: 0;
+      border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+      border-left: 6px solid currentColor;
+      transition: transform .16s ease;
+    }
+    .expand-btn.expanded .chevron { transform: rotate(90deg); }
+    .sku-main {
+      display: grid; grid-template-columns: 22px minmax(0, 1fr);
+      align-items: center; gap: 6px;
+    }
+    .child-indent {
+      display: block; padding-left: 28px; color: #697586;
+    }
+    .action-group { display: flex; align-items: center; gap: 4px; }
+    .summary-text { color: var(--label); font-size: 12px; }
+    .qty-total { font-weight: 700; }
+
+    .mask {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: none; align-items: center; justify-content: center; z-index: 80;
+    }
+    .mask.show { display: flex; }
+    .modal {
+      width: min(440px, calc(100vw - 32px)); background: #fff;
+      border-radius: 4px; box-shadow: var(--shadow); overflow: hidden;
+    }
+    .modal-hd { padding: 14px 16px; font-weight: 600; border-bottom: 1px solid var(--line); }
+    .modal-bd { padding: 16px; line-height: 1.7; }
+    .modal-ft {
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 12px 16px; border-top: 1px solid var(--line);
+    }
+    .toast {
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 90; padding: 8px 16px; border-radius: 4px; color: #fff;
+      background: rgba(0,0,0,.75); opacity: 0; pointer-events: none;
+      transition: opacity .2s; max-width: 520px;
+    }
+    .toast.show { opacity: 1; }
+    .toast.ok { background: var(--green); }
+    .toast.err { background: var(--red); }
+    .toast.warn { background: var(--warn); }
+
+    .demo-float {
+      position: fixed; top: 18px; left: 24px; z-index: 50;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 8px 12px; max-width: calc(100vw - 220px);
+      border: 1px solid rgba(64,158,255,.28); border-radius: 999px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      font-size: 12px; color: #606266;
+    }
+    .demo-float select {
+      height: 28px; border: 1px solid #dcdfe6; border-radius: 4px;
+      padding: 0 8px; max-width: 260px; background: #fff;
+    }
+    .demo-float a { color: #409eff; text-decoration: none; white-space: nowrap; }
+
+    .annotated {
+      position: relative; border-radius: 4px;
+      outline: 1.5px dashed rgba(64,158,255,.55); outline-offset: 4px;
+    }
+    .anno-no {
+      position: absolute; z-index: 6; top: -12px; left: -12px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: 2px solid #fff;
+      box-shadow: 0 3px 10px rgba(64,158,255,.35);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+    .anno-tip {
+      position: absolute; z-index: 10; top: -12px; left: 18px; width: 300px;
+      padding: 9px 11px; border-radius: 6px;
+      background: rgba(31,42,68,.96); color: #fff;
+      font-size: 12px; line-height: 1.55;
+      box-shadow: 0 8px 22px rgba(31,42,68,.2);
+      opacity: 0; pointer-events: none; transform: translateY(4px);
+      transition: opacity .15s ease, transform .15s ease;
+    }
+    .anno-tip::after {
+      content: ""; position: absolute; left: -12px; top: 5px;
+      border: 6px solid transparent; border-right-color: rgba(31,42,68,.96);
+    }
+    .annotated > .anno-no:hover + .anno-tip { opacity: 1; transform: translateY(0); }
+    .anno-control {
+      position: fixed; top: 18px; right: 20px; z-index: 50;
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border: 1px solid rgba(64,158,255,.3);
+      border-radius: 999px; background: rgba(255,255,255,.96);
+      color: var(--primary); box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .anno-control::before {
+      content: ""; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--primary); box-shadow: 0 0 0 4px var(--primary-weak);
+    }
+    body.anno-hidden .annotated { outline: none; }
+    body.anno-hidden .anno-no, body.anno-hidden .anno-tip { display: none; }
+    body.anno-hidden .anno-control { color: var(--sub); border-color: var(--line); }
+    body.anno-hidden .anno-control::before { background: var(--grey); box-shadow: 0 0 0 4px #eef2f8; }
+
+    @media (max-width: 1100px) {
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <button class="anno-control" type="button" id="annoToggle">隐藏交互提示</button>
+  <div class="demo-float">
+    <a href="./快进快出关联调拨-导航.html">← 导航</a>
+    <select id="sceneSelect" title="演示场景（非正式页面内容）">
+      <option value="normal">场景：有效关联号</option>
+      <option value="notfound">场景：关联号不存在</option>
+      <option value="cancelled">场景：关联号已取消</option>
+      <option value="empty">场景：无可导入明细</option>
+      <option value="none">场景：不填关联号</option>
+    </select>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <div class="workspace">
+    <div class="dialog">
+      <div class="dialog-header">
+        <div class="dialog-title">新增调拨单</div>
+        <button class="close" type="button">×</button>
+      </div>
+
+      <div class="dialog-body">
+        <div class="divider">基本信息</div>
+        <div class="form-grid">
+          <div class="field">
+            <div class="label">调拨单号</div>
+            <input class="control" disabled placeholder="系统自动生成" value="" />
+          </div>
+          <div class="field">
+            <div class="label required">始发仓</div>
+            <select class="control" id="fromWhId">
+              <option value="">请选择</option>
+              <option value="1" selected>深圳前置仓</option>
+              <option value="68">SPL中转仓</option>
+              <option value="3">东莞仓</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="label required">目的仓</div>
+            <select class="control" id="toWhId">
+              <option value="">请选择</option>
+              <option value="101" selected>荷兰仓</option>
+              <option value="102">德国仓</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="label required">运输方式</div>
+            <select class="control" id="shippingType">
+              <option value="">请选择</option>
+              <option value="1" selected>海运</option>
+              <option value="2">空运</option>
+              <option value="3">铁路</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="label required">期望发货时间</div>
+            <input class="control" type="date" id="expectSendTime" value="2026-08-15" />
+          </div>
+          <div class="field">
+            <div class="label required">期望上架日期</div>
+            <input class="control" type="date" id="expectShelfTime" value="2026-09-20" />
+          </div>
+          <div class="field">
+            <div class="label">状态</div>
+            <select class="control" disabled>
+              <option selected>新建</option>
+            </select>
+          </div>
+          <div class="field annotated" id="relatedWrap">
+            <span class="anno-no">1</span>
+            <div class="anno-tip">本期新增。R1：选填、始终展示、不限始发仓，切换始发仓不清空，不校验仓衔接。R2：不存在/已取消阻断——在点击「一键导入关联产品」或确定保存时校验，报错仅顶部弹出，不在填写框旁提示。</div>
+            <div class="label">关联调拨发货单号</div>
+            <input class="control" id="relatedShipmentNo" maxlength="64" />
+          </div>
+          <div class="field full">
+            <div class="label">备注</div>
+            <div>
+              <textarea id="remark" maxlength="200" placeholder="请输入内容"></textarea>
+              <div class="char-count"><span id="remarkCount">0</span>/200</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider">目的地信息</div>
+        <div class="form-grid">
+          <div class="field">
+            <div class="label">目的仓入库单号</div>
+            <input class="control" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label">公司名</div>
+            <input class="control" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label required">收件人</div>
+            <input class="control" value="Poppy Wan" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label required">收件人电话</div>
+            <input class="control" value="0416791623" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label required">收件人国家/地区</div>
+            <select class="control">
+              <option>澳大利亚</option>
+              <option>荷兰</option>
+              <option>德国</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="label required">收件人省/州</div>
+            <input class="control" value="New South Wales" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label required">城市</div>
+            <input class="control" value="Sydney" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label">区</div>
+            <input class="control" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label">邮编</div>
+            <input class="control" value="2106" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label">邮箱</div>
+            <input class="control" maxlength="128" />
+          </div>
+          <div class="field">
+            <div class="label">门牌号</div>
+            <input class="control" maxlength="100" />
+          </div>
+          <div class="field span2">
+            <div class="label required">地址1</div>
+            <input class="control" value="Unit 2 7-9 Meridan place Bella Vista NSW 2153" maxlength="100" />
+          </div>
+          <div class="field">
+            <div class="label">地址2</div>
+            <input class="control" maxlength="100" />
+          </div>
+        </div>
+
+        <div class="divider">调拨明细</div>
+        <div class="toolbar">
+          <button class="btn btn-primary" type="button" id="btnAdd">添加产品</button>
+          <button class="btn btn-primary" type="button" id="btnImportExcel">导入产品</button>
+          <span class="annotated" style="display:inline-flex;">
+            <span class="anno-no">2</span>
+            <div class="anno-tip">本期新增。R6：新建时可显示；已填关联号且已选始发仓、目的仓可点，否则置灰。点击时校验关联单号状态（不存在/已取消阻断，未收货放行）。R9：已有明细先确认覆盖。</div>
+            <button class="btn btn-primary" type="button" id="btnImportRelated">一键导入关联产品</button>
+          </span>
+          <button class="btn" type="button" id="btnBatchRemove">批量移除</button>
+          <button class="btn" type="button" id="btnExpandAll">全部展开</button>
+          <button class="btn" type="button" id="btnCollapseAll">全部收起</button>
+        </div>
+
+        <div class="annotated" id="tableWrap">
+          <span class="anno-no">3</span>
+          <div class="anno-tip">R7–R10：导入后按 SKU 聚合成父子行（与当前前端一致，默认展开）。上一段调入层级→调出渠道库存；上一段目的仓产品编码→始发仓第三方仓产品代码；子行可改调出/调入层级与调拨数量，同组合计不得超出关联发货数量。</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="check-col"><input type="checkbox" id="checkAll" /></th>
+                  <th><span class="req">*</span>SKU</th>
+                  <th>产品名称</th>
+                  <th><span class="req">*</span>调出渠道库存</th>
+                  <th><span class="req">*</span>调入渠道库存</th>
+                  <th>始发仓第三方仓产品代码</th>
+                  <th><span class="req">*</span>目的仓第三方仓产品代码</th>
+                  <th>可用数量</th>
+                  <th><span class="req">*</span>调拨数量</th>
+                  <th class="action-col">操作</th>
+                </tr>
+              </thead>
+              <tbody id="detailBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button class="btn" type="button">取消</button>
+        <button class="btn btn-primary" type="button" id="btnSave">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="mask">
+    <div class="modal">
+      <div class="modal-hd" id="modalTitle">确认</div>
+      <div class="modal-bd" id="modalBody"></div>
+      <div class="modal-ft">
+        <button class="btn" type="button" id="modalCancel">取消</button>
+        <button class="btn btn-primary" type="button" id="modalOk">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SOURCE = {
+      "AS20250801001": {
+        status: "partial",
+        items: [
+          { sku: "C121-AN-BK-FR-000-IVS", name: "OpenComm2", fnSku: "X001AA", inLevel: "可售", qty: 100, availableQty: 320 },
+          { sku: "C121-AN-BK-FR-000-IVS", name: "OpenComm2", fnSku: "X001AA", inLevel: "可售", qty: 50, availableQty: 320 },
+          { sku: "C121-AN-BK-FR-000-IVS", name: "OpenComm2", fnSku: "X001AA", inLevel: "次品", qty: 20, availableQty: 40 },
+          { sku: "S711-ST-GY-EU-000", name: "OpenSwim Pro", fnSku: "X002BB", inLevel: "可售", qty: 80, availableQty: 180 },
+          { sku: "8020100010", name: "运动头带", fnSku: "8020100010", inLevel: "次品", qty: 20, availableQty: 40 }
+        ]
+      },
+      "AS20250801003": { status: "shipped", items: [] },
+      "AS20250701999": { status: "cancelled", items: [] }
+    };
+    const LEVELS = ["可售", "次品", "待检"];
+
+    const $ = (id) => document.getElementById(id);
+    let itemList = [];
+    let expandedSku = new Set();
+    let importedFrom = "";
+    let prevRelated = "";
+    let pending = null;
+    let idSeq = 1;
+
+    const relatedNo = $("relatedShipmentNo");
+    const fromWh = $("fromWhId");
+    const toWh = $("toWhId");
+    const btnImport = $("btnImportRelated");
+    const detailBody = $("detailBody");
+    const toastEl = $("toast");
+
+    function toast(msg, type) {
+      toastEl.textContent = msg;
+      toastEl.className = "toast show" + (type ? " " + type : "");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toastEl.classList.remove("show"), 2600);
+    }
+
+    function lookup(no) {
+      const key = (no || "").trim();
+      if (!key) return { type: "empty" };
+      if (SOURCE[key]) return { type: "ok", data: SOURCE[key], no: key };
+      return { type: "notfound", no: key };
+    }
+
+    function newId() { return "r" + (idSeq++); }
+
+    // R7：按 SKU + 上一段调入层级 + 目的仓产品编码 合并为明细行
+    function mergeItems(items) {
+      const map = new Map();
+      items.forEach((it) => {
+        const key = [it.sku, it.inLevel, it.fnSku].join("|");
+        if (!map.has(key)) {
+          map.set(key, {
+            id: newId(),
+            sku: it.sku,
+            name: it.name,
+            outLevel: it.inLevel,
+            inLevel: "可售",
+            fromFnsku: it.fnSku,
+            toFnsku: it.fnSku,
+            availableQty: it.availableQty,
+            allocateQty: 0,
+            maxQty: 0,
+            fromImport: true,
+            checked: false
+          });
+        }
+        const row = map.get(key);
+        row.allocateQty += it.qty;
+        row.maxQty += it.qty;
+      });
+      return [...map.values()];
+    }
+
+    // 展示层：按 SKU 聚合成父子行（与当前前端一致）
+    function getGroups() {
+      const map = new Map();
+      itemList.forEach((item) => {
+        if (!map.has(item.sku)) {
+          map.set(item.sku, {
+            key: item.sku,
+            sku: item.sku,
+            name: item.name,
+            fromFnsku: item.fromFnsku,
+            toFnsku: item.toFnsku,
+            availableQty: item.availableQty,
+            children: []
+          });
+        }
+        map.get(item.sku).children.push(item);
+      });
+      return [...map.values()];
+    }
+
+    function outLevelSummary(group) {
+      return [...new Set(group.children.map(c => c.outLevel).filter(Boolean))].join("，") || "未选择";
+    }
+    function inLevelSummary(group) {
+      return [...new Set(group.children.map(c => c.inLevel).filter(Boolean))].join("，") || "未选择";
+    }
+    function parentQty(group) {
+      return group.children.reduce((s, c) => s + (Number(c.allocateQty) || 0), 0);
+    }
+    function parentOver(group) {
+      return group.children.some(c => c.fromImport && c.allocateQty > c.maxQty);
+    }
+
+    function resetRelatedHint() {
+      /* 关联号报错仅用顶部弹出，不在填写框旁展示 */
+    }
+
+    function checkRelatedStatus() {
+      const r = lookup(relatedNo.value);
+      if (r.type === "empty") return { ok: false, msg: "请先填写关联调拨发货单号", r };
+      if (r.type === "notfound") return { ok: false, msg: `未找到关联调拨发货单【${r.no}】，请确认`, r };
+      if (r.data.status === "cancelled") return { ok: false, msg: `关联调拨发货单【${r.no}】已取消，不支持关联`, r };
+      return { ok: true, msg: "", r };
+    }
+
+    function showRelatedStatusError(msg) {
+      toast(msg, "err");
+    }
+
+    function updateImportBtn() {
+      const no = relatedNo.value.trim();
+      const hasWh = fromWh.value && toWh.value;
+      let disabled = false;
+      let tip = "";
+      if (!no) {
+        disabled = true;
+        tip = "请先填写关联调拨发货单号";
+      } else if (!hasWh) {
+        disabled = true;
+        tip = "请先选择始发仓和目的仓";
+      }
+      btnImport.disabled = disabled;
+      btnImport.title = tip;
+    }
+
+    function renderTable() {
+      const groups = getGroups();
+      if (!groups.length) {
+        detailBody.innerHTML = `<tr><td colspan="10" class="empty">暂无数据</td></tr>`;
+        $("checkAll").checked = false;
+        return;
+      }
+      detailBody.innerHTML = groups.map((g) => {
+        const expanded = expandedSku.has(g.key);
+        const groupChecked = g.children.every(c => c.checked);
+        const over = parentOver(g);
+        const parent = `
+          <tr class="sku-parent-row" data-sku="${g.key}">
+            <td class="check-col"><input type="checkbox" data-action="checkGroup" data-sku="${g.key}" ${groupChecked ? "checked" : ""} /></td>
+            <td>
+              <div class="sku-main">
+                <button type="button" class="expand-btn ${expanded ? "expanded" : ""}" data-action="toggle" data-sku="${g.key}" title="${expanded ? "收起" : "展开"}">
+                  <span class="chevron"></span>
+                </button>
+                <span>${g.sku}</span>
+              </div>
+            </td>
+            <td>${g.name}</td>
+            <td><span class="summary-text">${outLevelSummary(g)}</span></td>
+            <td><span class="summary-text">${inLevelSummary(g)}</span></td>
+            <td>${g.fromFnsku}</td>
+            <td>${g.toFnsku}</td>
+            <td>${g.availableQty ?? "—"}</td>
+            <td><span class="qty-total ${over ? "qty-err" : ""}">${parentQty(g)}</span></td>
+            <td class="action-col">
+              <div class="action-group">
+                <button class="btn-link" type="button" data-action="addChild" data-sku="${g.key}" title="新增子行">＋</button>
+                <button class="btn-link danger" type="button" data-action="delGroup" data-sku="${g.key}" title="删除SKU">删除</button>
+              </div>
+            </td>
+          </tr>`;
+        if (!expanded) return parent;
+        const children = g.children.map((c) => {
+          const childOver = c.fromImport && c.allocateQty > c.maxQty;
+          return `
+            <tr class="sku-child-row" data-id="${c.id}" data-sku="${g.key}">
+              <td class="check-col"><input type="checkbox" data-action="checkChild" data-id="${c.id}" ${c.checked ? "checked" : ""} /></td>
+              <td><span class="child-indent">└</span></td>
+              <td></td>
+              <td>
+                <select data-action="field" data-id="${c.id}" data-f="outLevel">
+                  ${LEVELS.map(l => `<option ${l === c.outLevel ? "selected" : ""}>${l}</option>`).join("")}
+                </select>
+              </td>
+              <td>
+                <select data-action="field" data-id="${c.id}" data-f="inLevel">
+                  ${LEVELS.map(l => `<option ${l === c.inLevel ? "selected" : ""}>${l}</option>`).join("")}
+                </select>
+              </td>
+              <td>${c.fromFnsku}</td>
+              <td>${c.toFnsku}</td>
+              <td>${c.availableQty ?? "—"}</td>
+              <td><input class="${childOver ? "qty-err" : ""}" type="number" min="1" data-action="field" data-id="${c.id}" data-f="allocateQty" value="${c.allocateQty}" /></td>
+              <td class="action-col">
+                <button class="btn-link danger" type="button" data-action="delChild" data-id="${c.id}">删除</button>
+              </td>
+            </tr>`;
+        }).join("");
+        return parent + children;
+      }).join("");
+      $("checkAll").checked = itemList.length > 0 && itemList.every(r => r.checked);
+    }
+
+    function findItem(id) {
+      return itemList.find(r => r.id === id);
+    }
+
+    function doImport(force) {
+      if (!fromWh.value || !toWh.value) {
+        toast("请先选择始发仓和目的仓", "warn");
+        return;
+      }
+      const check = checkRelatedStatus();
+      if (!check.ok) {
+        showRelatedStatusError(check.msg);
+        return;
+      }
+      resetRelatedHint();
+      const r = check.r;
+      if (!r.data.items.length) {
+        toast("关联调拨发货单暂无可导入的产品明细", "warn");
+        return;
+      }
+      if (itemList.length && !force) {
+        openModal("覆盖确认", "当前已有产品明细，导入将整表覆盖已有明细，是否继续？", () => doImport(true));
+        return;
+      }
+      itemList = mergeItems(r.data.items);
+      expandedSku = new Set(itemList.map(i => i.sku));
+      importedFrom = r.no;
+      renderTable();
+      updateImportBtn();
+      toast(`已导入 ${itemList.length} 行明细（${getGroups().length} 个SKU）`, "ok");
+    }
+
+    function openModal(title, body, onOk) {
+      $("modalTitle").textContent = title;
+      $("modalBody").textContent = body;
+      pending = onOk;
+      $("mask").classList.add("show");
+    }
+
+    function applyScene() {
+      const map = {
+        normal: "AS20250801001",
+        notfound: "AS99999999999",
+        cancelled: "AS20250701999",
+        empty: "AS20250801003",
+        none: ""
+      };
+      relatedNo.value = map[$("sceneSelect").value] || "";
+      prevRelated = relatedNo.value;
+      itemList = [];
+      expandedSku.clear();
+      importedFrom = "";
+      fromWh.value = "1";
+      toWh.value = "101";
+      resetRelatedHint();
+      updateImportBtn();
+      renderTable();
+    }
+
+    $("remark").addEventListener("input", () => {
+      $("remarkCount").textContent = $("remark").value.length;
+    });
+    relatedNo.addEventListener("focus", () => { prevRelated = relatedNo.value.trim(); });
+    relatedNo.addEventListener("change", () => {
+      const next = relatedNo.value.trim();
+      if (importedFrom && itemList.some(r => r.fromImport) && next !== prevRelated) {
+        openModal("修改关联号确认", "已导入关联产品，修改关联调拨发货单号将清空已导入明细。确认修改？", () => {
+          itemList = [];
+          expandedSku.clear();
+          importedFrom = "";
+          prevRelated = next;
+          resetRelatedHint();
+          updateImportBtn();
+          renderTable();
+          toast("已清空已导入关联产品", "ok");
+        });
+        relatedNo.value = prevRelated;
+        return;
+      }
+      prevRelated = next;
+      resetRelatedHint();
+      updateImportBtn();
+    });
+    relatedNo.addEventListener("input", () => {
+      resetRelatedHint();
+      updateImportBtn();
+    });
+    fromWh.addEventListener("change", updateImportBtn);
+    toWh.addEventListener("change", updateImportBtn);
+    $("sceneSelect").addEventListener("change", applyScene);
+
+    btnImport.addEventListener("click", () => doImport(false));
+    $("btnAdd").addEventListener("click", () => {
+      const sku = "MANUAL-SKU-001";
+      itemList.push({
+        id: newId(),
+        sku, name: "手工添加产品",
+        outLevel: "可售", inLevel: "可售",
+        fromFnsku: "M001", toFnsku: "M001",
+        availableQty: 0, allocateQty: 1, maxQty: 0,
+        fromImport: false, checked: false
+      });
+      expandedSku.add(sku);
+      renderTable();
+    });
+    $("btnImportExcel").addEventListener("click", () => toast("打开导入产品", "ok"));
+    $("btnExpandAll").addEventListener("click", () => {
+      getGroups().forEach(g => expandedSku.add(g.key));
+      renderTable();
+    });
+    $("btnCollapseAll").addEventListener("click", () => {
+      expandedSku.clear();
+      renderTable();
+    });
+    $("btnBatchRemove").addEventListener("click", () => {
+      const keep = itemList.filter(r => !r.checked);
+      if (keep.length === itemList.length) {
+        toast("请先勾选要移除的明细", "warn");
+        return;
+      }
+      openModal("温馨提示", "确认批量移除?", () => {
+        itemList = keep;
+        expandedSku = new Set(itemList.map(i => i.sku));
+        if (!itemList.some(r => r.fromImport)) importedFrom = "";
+        updateImportBtn();
+        renderTable();
+        toast("已批量移除", "ok");
+      });
+    });
+    $("checkAll").addEventListener("change", () => {
+      itemList.forEach(r => { r.checked = $("checkAll").checked; });
+      renderTable();
+    });
+
+    detailBody.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
+      if (action === "toggle") {
+        const sku = btn.dataset.sku;
+        if (expandedSku.has(sku)) expandedSku.delete(sku);
+        else expandedSku.add(sku);
+        renderTable();
+        return;
+      }
+      if (action === "addChild") {
+        const sku = btn.dataset.sku;
+        const first = itemList.find(r => r.sku === sku);
+        if (!first) return;
+        itemList.push({
+          id: newId(),
+          sku: first.sku,
+          name: first.name,
+          outLevel: first.outLevel,
+          inLevel: "可售",
+          fromFnsku: first.fromFnsku,
+          toFnsku: first.toFnsku,
+          availableQty: first.availableQty,
+          allocateQty: 1,
+          maxQty: first.fromImport ? first.maxQty : 0,
+          fromImport: first.fromImport,
+          checked: false
+        });
+        expandedSku.add(sku);
+        renderTable();
+        return;
+      }
+      if (action === "delGroup") {
+        const sku = btn.dataset.sku;
+        itemList = itemList.filter(r => r.sku !== sku);
+        expandedSku.delete(sku);
+        if (!itemList.some(r => r.fromImport)) importedFrom = "";
+        updateImportBtn();
+        renderTable();
+        return;
+      }
+      if (action === "delChild") {
+        const id = btn.dataset.id;
+        const row = findItem(id);
+        if (!row) return;
+        const same = itemList.filter(r => r.sku === row.sku);
+        if (same.length <= 1) {
+          itemList = itemList.filter(r => r.sku !== row.sku);
+          expandedSku.delete(row.sku);
+        } else {
+          itemList = itemList.filter(r => r.id !== id);
+        }
+        if (!itemList.some(r => r.fromImport)) importedFrom = "";
+        updateImportBtn();
+        renderTable();
+      }
+    });
+
+    detailBody.addEventListener("change", (e) => {
+      const el = e.target;
+      const action = el.dataset.action;
+      if (action === "checkGroup") {
+        itemList.forEach(r => {
+          if (r.sku === el.dataset.sku) r.checked = el.checked;
+        });
+        renderTable();
+        return;
+      }
+      if (action === "checkChild") {
+        const row = findItem(el.dataset.id);
+        if (row) row.checked = el.checked;
+        renderTable();
+        return;
+      }
+      if (action === "field") {
+        const row = findItem(el.dataset.id);
+        if (!row) return;
+        row[el.dataset.f] = el.dataset.f === "allocateQty" ? Number(el.value || 0) : el.value;
+        renderTable();
+      }
+    });
+
+    $("btnSave").addEventListener("click", () => {
+      if (!fromWh.value || !toWh.value || !$("shippingType").value) {
+        toast("请完善必填项", "warn");
+        return;
+      }
+      if (relatedNo.value.trim()) {
+        const check = checkRelatedStatus();
+        if (!check.ok) {
+          showRelatedStatusError(check.msg);
+          return;
+        }
+      }
+      if (itemList.some(r => r.fromImport && r.allocateQty > r.maxQty)) {
+        toast("存在超出关联调拨发货单数量的明细，请调减", "err");
+        return;
+      }
+      toast("保存成功", "ok");
+    });
+    $("modalCancel").addEventListener("click", () => {
+      $("mask").classList.remove("show");
+      pending = null;
+    });
+    $("modalOk").addEventListener("click", () => {
+      const fn = pending;
+      $("mask").classList.remove("show");
+      pending = null;
+      if (fn) fn();
+    });
+    $("annoToggle").addEventListener("click", () => {
+      const hidden = document.body.classList.toggle("anno-hidden");
+      $("annoToggle").textContent = hidden ? "显示交互提示" : "隐藏交互提示";
+    });
+
+    applyScene();
+  </script>
+</body>
+</html>
