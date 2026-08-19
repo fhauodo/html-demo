@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>库存层级（基础数据优化）原型</title>
+<style>
+  :root{
+    --primary:#1890ff; --primary-hover:#40a9ff; --primary-weak:#e6f4ff; --primary-border:#91caff;
+    --bg:#f0f2f5; --card:#ffffff; --text:#262626; --text-2:#595959; --text-3:#8c8c8c;
+    --border:#e8e8e8; --header-bg:#fafafa; --row-hover:#f5f9ff; --danger:#ff4d4f; --success:#52c41a; --warn:#faad14;
+    --radius:8px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Helvetica Neue",Helvetica,"PingFang SC","Microsoft YaHei",Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-width:1180px}
+  button{font-family:inherit;cursor:pointer}
+  .topbar{height:46px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;position:relative;z-index:20}
+  .topbar .menu-btn{font-size:18px;color:var(--text-2);padding:0 10px;cursor:pointer}
+  .tabs{display:flex;align-items:center;height:100%;flex:1;overflow:hidden}
+  .tab{height:100%;display:flex;align-items:center;padding:0 14px;font-size:13px;color:var(--text-2);border-right:1px solid var(--border);white-space:nowrap;cursor:pointer}
+  .tab.active{color:var(--primary);border-top:2px solid var(--primary);height:45px}
+  .tab .x{margin-left:6px;color:var(--text-3);font-size:12px}
+  .topbar .right{display:flex;align-items:center;gap:14px;color:var(--text-2);font-size:15px;margin-left:10px}
+  .right .ic{position:relative;cursor:pointer}
+  .right .dot{position:absolute;top:-3px;right:-3px;width:7px;height:7px;background:var(--danger);border-radius:50%}
+  .right .user{font-size:13px;margin-left:4px}
+  .layout{display:flex;align-items:flex-start}
+  .sidebar{width:212px;background:#fff;border-right:1px solid var(--border);min-height:calc(100vh - 46px);padding:10px 0;flex-shrink:0}
+  .menu-group{font-size:13px;color:var(--text-2)}
+  .menu-group>.g{display:flex;justify-content:space-between;padding:9px 16px;cursor:pointer}
+  .menu-group>.g .arrow{color:var(--text-3);transition:.15s}
+  .menu-group.open>.g .arrow{transform:rotate(90deg)}
+  .menu-group .sub{padding:3px 0 8px;display:none}
+  .menu-group.open .sub{display:block}
+  .menu-group .sub .s{padding:7px 16px 7px 34px;color:var(--text-2);cursor:pointer}
+  .menu-group .sub .s.active{color:var(--primary);background:var(--primary-weak);font-weight:600;border-right:2px solid var(--primary)}
+  .main{flex:1;padding:14px 16px;min-width:0}
+  .page-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px 18px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;position:relative}
+  .page-head h1{font-size:19px;font-weight:600}
+  .page-head .desc{color:var(--text-3);font-size:12.5px;margin-top:5px;line-height:1.6;max-width:880px}
+  .toggle-notes{background:var(--primary-weak);color:var(--primary);border:1px solid var(--primary-border);border-radius:4px;padding:5px 12px;font-size:12.5px;flex-shrink:0}
+  .search-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .search-card .f{display:flex;align-items:center;gap:6px}
+  .search-card label{color:var(--text-2);white-space:nowrap}
+  .search-card input{border:1px solid var(--border);border-radius:4px;height:30px;padding:0 10px;width:170px;font-size:13px;outline:none}
+  .search-card input:focus{border-color:var(--primary)}
+  .btn{border:1px solid var(--border);background:#fff;border-radius:4px;padding:0 14px;height:30px;font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:5px}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.primary:hover{background:var(--primary-hover)}
+  .btn:hover{border-color:var(--primary);color:var(--primary)}
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .toolbar .btn{background:var(--primary-weak);border-color:var(--primary-border);color:var(--primary)}
+  .table-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:auto;max-height:64vh}
+  table{width:100%;border-collapse:collapse;min-width:1180px}
+  thead th{background:var(--header-bg);color:var(--text-2);font-weight:600;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:2}
+  tbody td{border-bottom:1px solid #f0f0f0;padding:8px 12px;white-space:nowrap;vertical-align:middle}
+  tbody tr:hover td{background:var(--row-hover)}
+  tbody tr.root-row td{background:#f9fbfe}
+  .tree-cell{display:flex;align-items:center;gap:4px}
+  .expander{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-3);cursor:pointer;flex-shrink:0}
+  .expander.empty{visibility:hidden}
+  .v-root{font-weight:600;color:var(--primary)}
+  .v-special{color:var(--warn);font-weight:500}
+  .v-virtual{color:var(--text)}
+  .v-root::after{content:"（虚拟聚合根）";font-weight:400;color:var(--text-3);font-size:11px;margin-left:6px}
+  .link{background:none;border:none;color:var(--primary);font-size:12.5px;padding:0 5px}
+  .link:hover{color:var(--primary-hover)}
+  .link.danger{color:var(--danger)}
+  .link.danger:hover{color:#ff7875}
+  .ops{display:flex;align-items:center}
+  /* 悬浮标注层 */
+  .note{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:15px;height:15px;background:var(--primary);color:#fff;font-size:10px;border-radius:50%;margin-left:6px;cursor:help;vertical-align:middle;font-style:normal;font-weight:600}
+  .note::after{content:attr(data-note);position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:6px;width:250px;background:#fff;color:var(--text);border:1px solid var(--primary-border);border-radius:6px;box-shadow:0 3px 10px rgba(0,0,0,.12);padding:8px 10px;font-size:12px;line-height:1.6;white-space:normal;z-index:30;display:none;font-weight:400;text-align:left}
+  .note:hover::after{display:block}
+  body.no-notes .note{display:none}
+  /* 弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:center;justify-content:center}
+  .mask.show{display:flex}
+  .modal{background:#fff;border-radius:6px;width:520px;max-width:92vw;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600}
+  .modal-head .close{cursor:pointer;color:var(--text-3);font-size:16px}
+  .modal-body{padding:16px 20px 4px}
+  .m-row{display:flex;margin-bottom:14px;align-items:flex-start}
+  .m-row label{width:92px;color:var(--text-2);padding-top:6px;flex-shrink:0}
+  .m-row label.req::before{content:"*";color:var(--danger);margin-right:3px}
+  .m-row .ctl{flex:1}
+  .m-row select,.m-row input[type=text],.m-row input[type=number]{border:1px solid var(--border);border-radius:4px;height:32px;padding:0 10px;width:100%;font-size:13px;outline:none;background:#fff}
+  .m-row select:focus,.m-row input:focus{border-color:var(--primary)}
+  .m-row textarea{border:1px solid var(--border);border-radius:4px;padding:8px 10px;width:100%;font-size:13px;outline:none;resize:vertical;min-height:60px;font-family:inherit}
+  .m-row input[readonly],.m-row select[disabled],.m-row input[disabled]{background:#f5f5f5;color:var(--text-3);cursor:not-allowed}
+  .m-row .hint{font-size:11.5px;color:var(--text-3);margin-top:4px}
+  .m-row .hint b{color:var(--primary);font-weight:500}
+  .m-row .radio-group{display:flex;gap:22px;padding-top:6px}
+  .m-row .radio{cursor:pointer;font-size:13px;color:var(--text-1);display:inline-flex;align-items:center;gap:4px}
+  .m-row .radio input{margin:0}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:12px 20px 16px}
+  .modal-foot .btn{height:32px;padding:0 18px}
+  /* 确认弹窗 */
+  .confirm{width:400px;text-align:center}
+  .confirm .c-body{padding:24px 24px 6px}
+  .confirm .c-icon{width:44px;height:44px;border-radius:50%;background:#fff2f0;color:var(--danger);font-size:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .confirm .c-title{font-size:15px;font-weight:600}
+  .confirm .c-desc{color:var(--text-3);font-size:12.5px;margin-top:8px;line-height:1.6}
+  /* toast */
+  .toast-wrap{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast{background:#fff;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:9px 16px;font-size:13px;display:flex;align-items:center;gap:8px;border:1px solid var(--border);animation:tin .18s ease-out}
+  .toast.ok{color:var(--success)} .toast.err{color:var(--danger)}
+  @keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="topbar">
+    <span class="menu-btn">☰</span>
+    <div class="tabs">
+      <div class="tab">调拨列表</div><div class="tab">首页</div><div class="tab">备货计划</div>
+      <div class="tab">仓库列表</div><div class="tab">第三方仓配置</div>
+      <div class="tab active">库存层级<span class="x">✕</span></div>
+      <div class="tab">调拨发货单</div><div class="tab">店铺管理</div>
+      <div class="tab">分销订单区域层级管理</div><div class="tab">FBA货件计划</div>
+    </div>
+    <div class="right">
+      <span class="ic">⌕</span><span class="ic">▦</span>
+      <span class="ic">🔔<span class="dot"></span></span>
+      <span class="ic">⛶</span>
+      <span class="user">017163</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- 左侧菜单 -->
+    <aside class="sidebar">
+      <div class="menu-group"><div class="g">库存同步<span class="arrow">▸</span></div></div>
+      <div class="menu-group"><div class="g">退货管理<span class="arrow">▸</span></div></div>
+      <div class="menu-group"><div class="g">库存管理<span class="arrow">▸</span></div></div>
+      <div class="menu-group"><div class="g">调拨管理<span class="arrow">▸</span></div></div>
+      <div class="menu-group"><div class="g">发货管理<span class="arrow">▸</span></div></div>
+      <div class="menu-group"><div class="g">出入库<span class="arrow">▸</span></div></div>
+      <div class="menu-group open">
+        <div class="g">仓储设置<span class="arrow">▸</span></div>
+        <div class="sub">
+          <div class="s">第三方仓配置</div>
+          <div class="s">仓库列表</div>
+          <div class="s active">库存层级</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main">
+      <div class="page-card">
+        <div class="page-head">
+          <div>
+            <h1>库存层级</h1>
+            <p class="desc">本期：树顶部新增「全部」聚合根（虚拟节点）；本页为纯基础配置，不展示库存数量（库存数量在「汇总库存/层级库存」页查看）；列表不再展示层级编码列；二层节点新增时必选仓库，名称与编码自动取仓库主数据。</p>
+          </div>
+          <button class="toggle-notes" id="toggleNotes" onclick="toggleNotes()">隐藏交互提示</button>
+        </div>
+
+        <div class="search-card">
+          <div class="f"><label>层级名称：</label><input id="qName" placeholder="层级名称" onkeydown="if(event.key==='Enter')doSearch()"></div>
+          <button class="btn primary" onclick="doSearch()">⌕ 搜索</button>
+          <button class="btn" onclick="resetSearch()">↻ 重置</button>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn" onclick="toggleExpandAll()">⇅ 展开/折叠</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>层级名称<i class="note" data-note="本期列表不再展示层级编码列；层级编码只在新增/编辑/查看层级时展示，由系统自动生成（R1-R3）。">2</i></th>
+                <th>创建人</th>
+                <th>创建时间</th>
+                <th>更新人</th>
+                <th>更新时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 新增/编辑/查看 弹窗 -->
+  <div class="mask" id="formMask">
+    <div class="modal">
+      <div class="modal-head"><span id="formTitle">新增层级</span><span class="close" onclick="closeForm()">✕</span></div>
+      <div class="modal-body">
+        <div class="m-row"><label class="req">父层级</label><div class="ctl"><select id="fParent" onchange="onParentChange()"></select></div></div>
+        <div class="m-row" id="whRow"><label class="req">关联仓库<i class="note" data-note="在「全部」下新增二层时，必须选择启用中的仓库，否则无法保存；同一仓库已有二层节点时拦截（R14、R19）。">4</i></label>
+          <div class="ctl">
+            <select id="fWarehouse" onchange="onWarehouseChange()"></select>
+          </div>
+        </div>
+        <div class="m-row"><label class="req">层级编码</label><div class="ctl"><input type="text" id="fCode" readonly><div class="hint">系统自动生成，不可编辑</div></div></div>
+        <div class="m-row"><label class="req">层级名称</label><div class="ctl"><input type="text" id="fName" placeholder="请输入层级名称" maxlength="128"></div></div>
+        <div class="m-row"><label>显示排序</label><div class="ctl"><input type="number" id="fSort" min="0" value="1"></div></div>
+        <div class="m-row"><label class="req">是否售后库存层级<i class="note" data-note="保留现有字段「是否售后库存层级」（level_type：1=售后层级/0=正常层级，新增默认「否」）：标记为「是」的层级用于售后库存查询接口（供顺丰 SF 查库存），未配则接口返回空；与本期「公共层级标记」is_public 是不同字段。">6</i></label><div class="ctl"><div class="radio-group">
+          <label class="radio"><input type="radio" name="levelType" id="fLevelType1" value="1"> 是</label>
+          <label class="radio"><input type="radio" name="levelType" id="fLevelType0" value="0" checked> 否</label>
+        </div></div></div>
+        <div class="m-row"><label>备注</label><div class="ctl"><textarea id="fRemark" maxlength="100" placeholder="请输入内容"></textarea></div></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="closeForm()">取消</button>
+        <button class="btn primary" id="formOk" onclick="handleSave()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除确认 -->
+  <div class="mask" id="delMask">
+    <div class="modal confirm">
+      <div class="c-body">
+        <div class="c-icon">!</div>
+        <div class="c-title">确认删除该层级？</div>
+        <div class="c-desc" id="delDesc"></div>
+      </div>
+      <div class="modal-foot" style="justify-content:center;padding-top:0">
+        <button class="btn" onclick="closeDel()">取消</button>
+        <button class="btn primary" style="background:var(--danger);border-color:var(--danger)" onclick="confirmDel()">确定删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toasts"></div>
+
+<script>
+/* ============ 仓库主数据（示例：启用/停用 状态） ============ */
+const WAREHOUSES = [
+  {id:1, code:'UK001', name:'英国仓', status:'启用'},
+  {id:2, code:'FR001', name:'法国仓', status:'启用'},
+  {id:3, code:'SPL001', name:'SPL仓', status:'启用'},
+  {id:4, code:'SPL002', name:'SPL售后仓', status:'启用'},
+  {id:6, code:'GC001', name:'谷仓英国仓', status:'启用'},
+  {id:7, code:'WYT001', name:'德国万邑通仓', status:'启用'},
+  {id:8, code:'TSC001', name:'澳洲TSC仓', status:'启用'},
+  {id:10, code:'KR001', name:'KR-韩国菜鸟仓', status:'启用'},
+  {id:11, code:'JP001', name:'JP-POP UP活动销售仓', status:'启用'},
+  {id:12, code:'JDH001', name:'筋斗云DWA仓', status:'启用'},
+  {id:13, code:'JDH002', name:'筋斗云GLC仓', status:'启用'},
+  {id:14, code:'US001', name:'美国海外仓', status:'启用'},
+  {id:15, code:'CA001', name:'加拿大仓', status:'启用'},
+  {id:99, code:'TEST01', name:'停用-测试仓', status:'停用'}
+];
+const whOf = id => WAREHOUSES.find(w => w.id === id);
+
+/* ============ 层级树数据（目标结构：全部 → 公共/仓库 → 虚拟层级） ============ */
+let seq = 100;
+const mk = (o) => Object.assign({code:'', type:'virtual', whId:null, enableStock:true, levelType:0, createBy:'', createTime:'', updateBy:'', updateTime:'', stock:{avail:0,lock:0,onroad:0}, children:[]}, o, {id:o.id || ('n'+(seq++))});
+
+let treeData = [ mk({
+  id:'root', name:'全部', type:'all', enableStock:false, stock:{avail:0,lock:0,onroad:0},
+  children: [
+    mk({id:'pub', name:'公共', type:'special', code:'', createBy:'admin', createTime:'2025-01-17 10:23:45', stock:{avail:4372,lock:0,onroad:0}, children:[]}),
+    mk({id:'w7', name:'德国万邑通仓', type:'warehouse', whId:7, code:'WYT001', createBy:'Stone', createTime:'2025-03-05 14:02:11', stock:{avail:0,lock:0,onroad:0}, children:[
+      mk({id:'c7a', name:'德国万邑通仓_公共', code:'WYT001_01', createBy:'Stone', createTime:'2025-03-05 14:03:00', stock:{avail:980,lock:0,onroad:0}}),
+      mk({id:'c7b', name:'售后_EU', code:'WYT001_02', createBy:'Stone', createTime:'2025-03-06 09:30:00', stock:{avail:210,lock:12,onroad:30}}),
+      mk({id:'c7c', name:'Shopify_UK', code:'WYT001_03', createBy:'015675', createTime:'2025-05-11 16:45:00', stock:{avail:96,lock:20,onroad:66}})
+    ]}),
+    mk({id:'w6', name:'谷仓英国仓', type:'warehouse', whId:6, code:'GC001', createBy:'Stone', createTime:'2025-02-18 11:20:33', stock:{avail:0,lock:0,onroad:0}, children:[
+      mk({id:'c6a', name:'谷仓英国仓_公共', code:'GC001_01', createBy:'Stone', createTime:'2025-02-18 11:21:00', stock:{avail:1540,lock:0,onroad:0}}),
+      mk({id:'c6b', name:'谷仓英国仓_售后', code:'GC001_02', createBy:'Stone', createTime:'2025-02-20 08:12:00', stock:{avail:473,lock:40,onroad:120}})
+    ]}),
+    mk({id:'w1', name:'英国仓', type:'warehouse', whId:1, code:'UK001', createBy:'Stone', createTime:'2025-01-20 09:00:00', stock:{avail:1512,lock:0,onroad:0}}),
+    mk({id:'w2', name:'法国仓', type:'warehouse', whId:2, code:'FR001', createBy:'Stone', createTime:'2025-01-20 09:05:00', stock:{avail:876,lock:0,onroad:0}}),
+    mk({id:'w3', name:'SPL仓', type:'warehouse', whId:3, code:'SPL001', createBy:'Stone', createTime:'2025-01-22 10:11:00', stock:{avail:1234,lock:0,onroad:0}}),
+    mk({id:'w4', name:'SPL售后仓', type:'warehouse', whId:4, code:'SPL002', createBy:'Stone', createTime:'2025-02-01 15:30:00', stock:{avail:342,lock:0,onroad:0}}),
+    mk({id:'w8', name:'澳洲TSC仓', type:'warehouse', whId:8, code:'TSC001', createBy:'015675', createTime:'2025-04-12 13:22:00', stock:{avail:720,lock:0,onroad:0}}),
+    mk({id:'w10', name:'KR-韩国菜鸟仓', type:'warehouse', whId:10, code:'KR001', createBy:'015675', createTime:'2025-04-25 09:44:00', stock:{avail:293,lock:0,onroad:0}}),
+    mk({id:'w11', name:'JP-POP UP活动销售仓', type:'warehouse', whId:11, code:'JP001', createBy:'015675', createTime:'2025-06-01 18:02:00', enableStock:false, stock:{avail:0,lock:0,onroad:0}})
+  ]
+})];
+
+/* ============ 状态 ============ */
+let expanded = new Set(['root','w7','w6']);   // 默认展开到三层首层
+let filter = {name:''};
+let searchMode = false;
+let form = {mode:'add', node:null, parent:null};
+
+/* ============ 工具 ============ */
+const findNode = (id, list=treeData) => { for(const n of list){ if(n.id===id) return n; const r=findNode(id,n.children); if(r) return r; } return null; };
+const findParent = (id, list=treeData, p=null) => { for(const n of list){ if(n.id===id) return p; const r=findParent(id,n.children,n); if(r) return r; } return null; };
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* ============ 渲染树表 ============ */
+function flatten(){
+  const out = [];
+  (function walk(nodes, depth, ancestorMatched){
+    for(const n of nodes){
+      const selfMatch = searchMode && match(n);
+      const subMatch = searchMode && hasMatchInSubtree(n);
+      // 搜索态：与关键字无关的整棵子树直接跳过
+      if(searchMode && !ancestorMatched && !selfMatch && !subMatch) continue;
+      out.push({n, depth});
+      if(searchMode){
+        // 命中节点展开其子树作为上下文；未命中但含命中子节点的按父链展示
+        if(selfMatch || subMatch) walk(n.children, depth+1, ancestorMatched || selfMatch);
+      } else if(expanded.has(n.id) && (n.children||[]).length){
+        walk(n.children, depth+1, true);
+      }
+    }
+  })(treeData, 0, false);
+  return out;
+}
+const match = n => !!(filter.name && (n.name||'').includes(filter.name));
+const hasMatchInSubtree = n => match(n) || (n.children||[]).some(hasMatchInSubtree);
+
+function render(){
+  const rows = flatten();
+  let html = '';
+  let warehouseAnnotated = false;
+  let pubAnnotated = false;
+  for(const r of rows){
+    const {n, depth} = r;
+    const hasChild = (n.children||[]).length > 0;
+    const isOpen = expanded.has(n.id);
+    const indent = depth*22;
+    const nameCls = n.type==='all' ? 'v-root' : n.type==='special' ? 'v-special' : n.type==='virtual' ? 'v-virtual' : '';
+    // 标注：三层公共层级手动建（对第一个仓_公共行）；关联仓库说明（对第一个仓库节点）
+    let nameNote = '';
+    if(n.type==='all') nameNote = '<i class="note" data-note="「全部」为本期新增的虚拟聚合根：前端/查询层合成、不落数据行，公共与各仓库归入二层（R12）。">1</i>';
+    else if(n.type==='warehouse' && !warehouseAnnotated){ warehouseAnnotated = true; nameNote = '<i class="note" data-note="二层节点与仓库主数据关联：新增时必选仓库，名称/编码自动取仓库主数据且只读置灰；同一仓库仅一个二层节点（R14、R18-R19）。">3</i>'; }
+    else if(n.name && /_公共$/.test(n.name) && !pubAnnotated){ pubAnnotated = true; nameNote = '<i class="note" data-note="三层公共层级不再默认建，由业务手动新增；公共标记字段本期只加定义、不填值（R14、R4）。">5</i>'; }
+    const ops = opsHtml(n);
+    html += `<tr class="${n.type==='all'?'root-row':''}">
+      <td><div class="tree-cell" style="padding-left:${indent}px">
+        <span class="expander ${hasChild?'':'empty'}" onclick="toggleRow('${n.id}')">${hasChild?(isOpen?'▼':'▸'):''}</span>
+        <span class="${nameCls}">${esc(n.name)}</span>${nameNote}
+      </div></td>
+      <td>${esc(n.createBy)}</td><td>${esc(n.createTime)}</td>
+      <td>${esc(n.updateBy||'—')}</td><td>${esc(n.updateTime||'—')}</td>
+      <td><div class="ops">${ops}</div></td>
+    </tr>`;
+  }
+  document.getElementById('tbody').innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:30px">未找到匹配的层级</td></tr>';
+}
+
+function opsHtml(n){
+  const out = [];
+  out.push(`<button class="link" onclick="openForm('view','${n.id}')">查看</button>`);
+  if(n.type!=='all') out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增</button>`);
+  else out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增<i class="note" data-note="点击新增：在「全部」下新增二层节点，弹窗中必须选择仓库，否则无法保存；新增时父层级、名称/编码均只读置灰，不提供能否存货选项（R14、R19）。">4</i></button>`);
+  if(n.type!=='all') out.push(`<button class="link" onclick="openForm('edit','${n.id}')">编辑</button>`);
+  if(n.type!=='all') out.push(`<button class="link danger" onclick="openDel('${n.id}')">删除</button>`);
+  return out.join('');
+}
+
+const toggleRow = id => { expanded.has(id)?expanded.delete(id):expanded.add(id); render(); };
+function toggleExpandAll(){
+  const rows = flatten();
+  const anyClosed = rows.some(r => r.n.children && r.n.children.length && !expanded.has(r.n.id));
+  rows.forEach(r => { if(r.n.children && r.n.children.length) anyClosed ? expanded.add(r.n.id) : expanded.delete(r.n.id); });
+  render();
+}
+
+/* ============ 搜索 ============ */
+function doSearch(){ filter.name = document.getElementById('qName').value.trim(); searchMode = !!filter.name; render(); }
+function resetSearch(){ document.getElementById('qName').value=''; filter={name:''}; searchMode=false; render(); }
+
+/* ============ 弹窗表单 ============ */
+function buildParentOptions(){
+  const opts = [];
+  (function walk(nodes, depth){
+    for(const n of nodes){
+      opts.push({id:n.id, name:n.name, depth});
+      walk(n.children, depth+1);
+    }
+  })(treeData, 0);
+  const sel = document.getElementById('fParent');
+  sel.innerHTML = opts.map(o => `<option value="${o.id}">${'　'.repeat(o.depth)}${esc(o.name)}</option>`).join('');
+  return opts;
+}
+function buildWarehouseOptions(){
+  const sel = document.getElementById('fWarehouse');
+  const enabled = WAREHOUSES.filter(w=>w.status==='启用');
+  const has = id => !!findNode(String(id)) || treeData[0].children.some(c => c.type==='warehouse' && c.whId===id);
+  sel.innerHTML = enabled.map(w => `<option value="${w.id}">${esc(w.name)}（${w.code}）${has(w.id)?' · 已建层级':''}</option>`).join('');
+}
+
+function openForm(mode, id){
+  const node = id? findNode(id) : treeData[0];
+  form.mode = mode; form.node = node;
+  buildParentOptions();
+  buildWarehouseOptions();
+  const parentSel = document.getElementById('fParent');
+  const isView = mode==='view';
+  document.getElementById('formTitle').textContent = (mode==='view'?'查看':mode==='edit'?'编辑':'新增')+'层级';
+  document.getElementById('whRow').style.display = 'none';
+  if(mode==='add'){
+    // 父层级预选：新增节点的父 = 当前行
+    parentSel.value = node.id;
+    form.parent = node;
+    const par = findNode(node.id);
+    // 仅当父层级=「全部」时，需要选仓库（新增二层）
+    document.getElementById('fName').value=''; document.getElementById('fCode').value='';
+    if(par && par.type==='all'){
+      document.getElementById('whRow').style.display='';
+      document.getElementById('fWarehouse').value='';
+      onWarehouseChange(true);
+    } else if(par && (par.type==='warehouse' || par.whId || par.type==='special')){
+      document.getElementById('fCode').value = nextSeq(par);
+    }
+    document.getElementById('formOk').style.display='';
+  } else {
+    // 编辑/查看
+    const par = findParent(node.id);
+    parentSel.value = par ? par.id : '';
+    document.getElementById('fParent').disabled = true;
+    document.getElementById('fCode').value = node.code || '';
+    document.getElementById('fName').value = node.name || '';
+    if(node.type==='warehouse'){
+      document.getElementById('whRow').style.display='';
+      document.getElementById('fWarehouse').value = String(node.whId||'');
+      document.getElementById('fWarehouse').disabled = true;
+    } else {
+      document.getElementById('whRow').style.display='none';
+      document.getElementById('fWarehouse').disabled = false;
+    }
+    document.getElementById('formOk').style.display = isView ? 'none' : '';
+  }
+  document.getElementById('fSort').value = node.levelSort!=null?node.levelSort:1;
+  document.getElementById('fRemark').value = node.remark || '';
+  // 是否售后库存层级：新增默认「否」，编辑/查看回显节点值
+  setLevelType(mode==='add' ? 0 : (form.node.levelType!=null ? form.node.levelType : 0));
+  // 只读态：查看全禁；编辑/新增可编辑（仓库与父层级按需锁定）
+  document.querySelectorAll('#formMask input, #formMask textarea, #formMask select').forEach(el => { el.disabled = isView; el.readOnly = isView; });
+  // 层级编码一律系统自动生成、不可编辑：新增/编辑/查看均置灰
+  document.getElementById('fCode').disabled = true;
+  if(isView){ document.getElementById('fWarehouse').disabled = true; document.getElementById('fParent').disabled = true; }
+  if(mode==='edit'){ document.getElementById('fParent').disabled = true; }
+  if(mode==='edit' && form.node && form.node.type==='warehouse'){ document.getElementById('fWarehouse').disabled = true; document.getElementById('fName').disabled = true; }
+  // 新增态：父层级、二层名称/编码只读置灰（二层名称随仓库主数据自动带出）；三层名称可编辑
+  if(mode==='add'){
+    document.getElementById('fParent').disabled = true;
+    if(form.parent && form.parent.type==='all') document.getElementById('fName').disabled = true;
+  }
+  document.getElementById('formMask').classList.add('show');
+}
+
+const nextSeq = par => {
+  const base = par.code ? par.code+'_' : '';
+  const existing = (par.children||[]).map(c=>c.code).filter(c=>c&&c.includes('_'));
+  const n = existing.length+1;
+  return base+String(n).padStart(2,'0');
+};
+
+const getLevelType = () => document.getElementById('fLevelType1').checked ? 1 : 0;
+const setLevelType = v => { document.getElementById('fLevelType1').checked = (v===1); document.getElementById('fLevelType0').checked = (v===0); };
+
+function onWarehouseChange(first){
+  const wId = document.getElementById('fWarehouse').value;
+  const w = wId ? whOf(parseInt(wId)) : null;
+  if(w && form.mode==='add' && form.parent && form.parent.type==='all'){
+    document.getElementById('fCode').value = w.code;
+    document.getElementById('fName').value = w.name;
+  }
+}
+
+function onParentChange(){
+  if(form.mode!=='add') return;
+  const par = findNode(document.getElementById('fParent').value);
+  form.parent = par;
+  const whRow = document.getElementById('whRow');
+  const fName = document.getElementById('fName');
+  const fCode = document.getElementById('fCode');
+  if(par && par.type==='all'){
+    whRow.style.display='';
+    document.getElementById('fWarehouse').value='';
+    document.getElementById('fWarehouse').disabled=false;
+    fName.value=''; fCode.value='';
+  } else if(par){
+    whRow.style.display='none';
+    fName.value=''; fCode.value = nextSeq(par);
+  }
+}
+
+function handleSave(){
+  const mode = form.mode;
+  if(mode==='view') return;
+  const parent = mode==='add' ? form.parent : findParent(form.node);
+  const name = document.getElementById('fName').value.trim();
+  const code = document.getElementById('fCode').value.trim();
+  const sort = document.getElementById('fSort').value;
+  const remark = document.getElementById('fRemark').value;
+  if(!name){ toast('层级名称不能为空','err'); return; }
+  if(mode==='add'){
+    if(parent.type==='all'){
+      const wId = document.getElementById('fWarehouse').value;
+      if(!wId){ toast('请在「全部」下新增二层时选择关联仓库','err'); return; }
+      const dup = treeData[0].children.find(c => c.type==='warehouse' && c.whId===parseInt(wId));
+      if(dup){ toast('该仓库已存在二层节点，不能重复新增（同一仓库仅一个二层节点）','err'); return; }
+      const w = whOf(parseInt(wId));
+      const nn = mk({name:w.name, code:w.code, type:'warehouse', whId:w.id, enableStock:true, levelType:getLevelType(), levelSort:parseInt(sort)||1, remark, createBy:'017163', createTime:now(), stock:{avail:0,lock:0,onroad:0}});
+      parent.children.push(nn);
+      expanded.add(parent.id);
+      toast('新增成功：已为该仓库创建二层节点','ok');
+    } else {
+      const nn = mk({name, code: code || nextSeq(parent), type:'virtual', whId: parent.whId||null, enableStock:true, levelType:getLevelType(), levelSort:parseInt(sort)||1, remark, createBy:'017163', createTime:now(), stock:{avail:0,lock:0,onroad:0}});
+      parent.children.push(nn);
+      expanded.add(parent.id);
+      toast('新增成功','ok');
+    }
+  } else {
+    form.node.name = name;
+    form.node.levelSort = parseInt(sort)||1;
+    form.node.remark = remark;
+    form.node.levelType = getLevelType();
+    form.node.updateBy = '017163'; form.node.updateTime = now();
+    toast('保存成功','ok');
+  }
+  closeForm(); render();
+}
+
+function openDel(id){ form.node = findNode(id); document.getElementById('delDesc').textContent = '删除后该层级及其相关引用将不可用。当前删除对象：'+form.node.name+'。'; document.getElementById('delMask').classList.add('show'); }
+function closeDel(){ document.getElementById('delMask').classList.remove('show'); }
+function confirmDel(){
+  const n = form.node;
+  if(n.children && n.children.length){ toast('存在子层级，请先删除子层级后再删除','err'); closeDel(); return; }
+  const p = findParent(n.id);
+  if(!p){ toast('虚拟根节点不可删除','err'); closeDel(); return; }
+  p.children = p.children.filter(c=>c.id!==n.id);
+  toast('删除成功','ok'); closeDel(); render();
+}
+
+const closeForm = () => document.getElementById('formMask').classList.remove('show');
+function toast(msg, type){
+  const w = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast '+type;
+  t.textContent = (type==='ok'?'✓ ':'✕ ')+msg;
+  w.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2200);
+}
+function toggleNotes(){
+  const b = document.body.classList.toggle('no-notes');
+  document.getElementById('toggleNotes').textContent = b ? '显示交互提示' : '隐藏交互提示';
+}
+const now = () => { const d=new Date(); const p=x=>String(x).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); };
+
+render();
+</script>
+</body>
+</html>
