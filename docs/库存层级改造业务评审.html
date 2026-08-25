@@ -1,0 +1,496 @@
+<title>库存层级改造业务评审</title>
+<style>
+  :root{
+    --bg:#f0f2f5; --surface:#ffffff; --surface-2:#fafafa;
+    --border:#e8e8e8; --border-strong:#d9d9d9;
+    --text:#262626; --text-2:#595959; --text-3:#8c8c8c;
+    --primary:#1890ff; --primary-hover:#40a9ff; --primary-weak:#e6f4ff; --primary-border:#91caff;
+    --danger:#ff4d4f; --danger-weak:#fff1f0; --danger-border:#ffa39e;
+    --warn:#faad14; --warn-weak:#fffbe6; --warn-border:#ffe58f;
+    --success:#52c41a; --success-weak:#f6ffed; --success-border:#b7eb8f;
+    --radius:8px; --shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#141414; --surface:#1f1f1f; --surface-2:#262626;
+      --border:#303030; --border-strong:#434343;
+      --text:rgba(255,255,255,.85); --text-2:rgba(255,255,255,.68); --text-3:rgba(255,255,255,.45);
+      --primary:#177ddc; --primary-hover:#3c9ae8; --primary-weak:#111d2c; --primary-border:#153450;
+      --danger:#a61d24; --danger-weak:#2a1215; --danger-border:#58181c;
+      --warn:#d89614; --warn-weak:#2b2111; --warn-border:#594214;
+      --success:#49aa19; --success-weak:#162312; --success-border:#274916;
+      --shadow:0 1px 3px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#141414; --surface:#1f1f1f; --surface-2:#262626;
+    --border:#303030; --border-strong:#434343;
+    --text:rgba(255,255,255,.85); --text-2:rgba(255,255,255,.68); --text-3:rgba(255,255,255,.45);
+    --primary:#177ddc; --primary-hover:#3c9ae8; --primary-weak:#111d2c; --primary-border:#153450;
+    --danger:#a61d24; --danger-weak:#2a1215; --danger-border:#58181c;
+    --warn:#d89614; --warn-weak:#2b2111; --warn-border:#594214;
+    --success:#49aa19; --success-weak:#162312; --success-border:#274916;
+    --shadow:0 1px 3px rgba(0,0,0,.45);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  body{background:var(--bg)}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 64px}
+
+  /* 封面 */
+  .cover{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .cover::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--primary)}
+  .cover .eyebrow{font-size:12px;letter-spacing:.14em;color:var(--primary);font-weight:600;margin-bottom:10px}
+  .cover h1{font-size:25px;font-weight:700;line-height:1.35;margin-bottom:10px;text-wrap:balance}
+  .cover .thesis{font-size:14.5px;color:var(--text-2);max-width:640px;line-height:1.75}
+  .cover .meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:18px;font-size:12.5px;color:var(--text-3)}
+  .cover .meta b{color:var(--text-2);font-weight:600}
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 10px;border-radius:100px;border:1px solid}
+
+  /* 一页纸 */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+  .tile .num{font-size:30px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+  .tile .lbl{font-size:12.5px;color:var(--text-2);margin-top:6px}
+  .tile .sub{font-size:11.5px;color:var(--text-3);margin-top:2px}
+  .tile.warn{border-top:3px solid var(--warn)}
+  .tile.danger{border-top:3px solid var(--danger)}
+  .tile.primary{border-top:3px solid var(--primary)}
+  .tile.success{border-top:3px solid var(--success)}
+  .tile .num.warn{color:var(--warn)} .tile .num.danger{color:var(--danger)}
+  .tile .num.primary{color:var(--primary)} .tile .num.success{color:var(--success)}
+
+  /* 章节 */
+  section{margin:34px 0}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:10px}
+  .sec-head .idx{font-size:12px;font-weight:700;color:var(--primary);letter-spacing:.08em}
+  .sec-head h2{font-size:19px;font-weight:700}
+  .sec-head .note{font-size:12.5px;color:var(--text-3)}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;box-shadow:var(--shadow)}
+  .card + .card{margin-top:16px}
+  .card h3{font-size:15.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+
+  .callout{border-radius:var(--radius);padding:14px 18px;font-size:13.5px;line-height:1.75;border:1px solid}
+  .callout.danger{background:var(--danger-weak);border-color:var(--danger-border);color:var(--text)}
+  .callout.warn{background:var(--warn-weak);border-color:var(--warn-border);color:var(--text)}
+  .callout.calm{background:var(--primary-weak);border-color:var(--primary-border);color:var(--text)}
+
+  /* 改造点卡片 */
+  .chg .row{margin-top:12px}
+  .chg .k{font-weight:600;font-size:13px}
+  table.cmp{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  table.cmp th,table.cmp td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+  table.cmp th{background:var(--surface-2);font-weight:600;white-space:nowrap}
+  table.cmp td.muted{color:var(--text-3)}
+  .tbl-wrap{overflow-x:auto}
+
+  /* 树结构 */
+  .tree-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+  @media (max-width:720px){.tree-col{grid-template-columns:1fr}}
+  .tree-col .panel{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .tree-col .panel .phead{font-size:12.5px;font-weight:700;padding:8px 14px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+  .tree-col .panel.now .phead{color:var(--text-2)}
+  .tree-col .panel.new .phead{color:var(--primary)}
+  .tree{padding:12px 14px}
+  .tree ul{list-style:none}
+  .tree li{position:relative;padding:3px 0 3px 16px;margin-left:6px}
+  .tree li::before{content:'';position:absolute;left:0;top:0;bottom:0;border-left:1px solid var(--border-strong)}
+  .tree li::after{content:'';position:absolute;left:0;top:17px;width:12px;height:1px;background:var(--border-strong)}
+  .tree li:last-child::before{height:17px}
+  .tree > ul > li{padding-left:0;margin-left:0}
+  .tree > ul > li::before,.tree > ul > li::after{display:none}
+  .node{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface);line-height:1.5}
+  .node .b{font-size:10.5px;font-weight:600;padding:0 5px;border-radius:3px;white-space:nowrap}
+  .node.root{border-color:var(--primary-border);background:var(--primary-weak)}
+  .node.root .b{background:var(--primary);color:#fff}
+  .node.pub{border-color:var(--success-border);background:var(--success-weak)}
+  .node.pub .b{background:var(--success);color:#fff}
+  .node.wh{border-color:var(--warn-border);background:var(--warn-weak)}
+  .node.wh .b{background:var(--warn);color:#fff}
+  .node.stock{background:var(--surface)}
+  .node.stock .b{background:var(--text-3);color:#fff}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:var(--text-3);margin-top:12px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+  /* 决策卡 */
+  .dcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .dcard + .dcard{margin-top:18px}
+  .dcard .dhead{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+  .dcard .dnum{font-size:26px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums;line-height:1}
+  .dcard .dtitle{font-size:15.5px;font-weight:700;flex:1}
+  .pri{font-size:11.5px;font-weight:600;padding:2px 10px;border-radius:100px;white-space:nowrap}
+  .pri.hi{background:var(--danger-weak);color:var(--danger);border:1px solid var(--danger-border)}
+  .pri.mid{background:var(--warn-weak);color:var(--warn);border:1px solid var(--warn-border)}
+  .pri.low{background:var(--primary-weak);color:var(--primary);border:1px solid var(--primary-border)}
+  .dcard .dbody{padding:18px 22px}
+  .dcard .bgbox{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:12px 16px;font-size:13px;line-height:1.8;color:var(--text-2)}
+  .dcard .bgbox b{color:var(--text)}
+  .dcard .opts{margin-top:14px}
+  .opt{display:flex;align-items:flex-start;gap:12px;border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-top:10px}
+  .opt.rec{border-color:var(--success);border-left:3px solid var(--success);background:var(--success-weak)}
+  .opt .otag{font-weight:700;color:var(--primary);white-space:nowrap;font-size:13px}
+  .opt .odesc{font-size:13px;color:var(--text-2);line-height:1.75}
+  .opt .orec{margin-left:auto;flex-shrink:0;font-size:11.5px;font-weight:700;color:var(--success);padding:2px 9px;border:1px solid var(--success);border-radius:100px;background:var(--surface)}
+  .dcard .why{margin-top:14px;font-size:12.5px;color:var(--text-3);padding-left:12px;border-left:3px solid var(--border-strong)}
+
+  /* 登记表 */
+  table.sign{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+  table.sign th,table.sign td{border:1px solid var(--border);padding:10px 12px;text-align:left}
+  table.sign th{background:var(--surface-2);font-weight:600;white-space:nowrap}
+  table.sign td.idx{font-weight:700;color:var(--primary);font-variant-numeric:tabular-nums}
+  table.sign .blank{color:var(--text-3)}
+
+  .pages{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .page-chip{font-size:12.5px;padding:5px 12px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--text-2)}
+  .page-chip.hot{border-color:var(--danger-border);color:var(--danger);background:var(--danger-weak)}
+
+  @media (max-width:620px){
+    .tiles{grid-template-columns:1fr 1fr}
+    .cover{padding:22px 20px}
+  }
+</style>
+
+<div class="wrap">
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="eyebrow">WMS 库存基础数据优化 · 业务评审材料</div>
+    <h1>库存的「归属改造」：这次改了什么、要您拍板什么</h1>
+    <p class="thesis">一句话：<b>现在的层级像"公共大仓库，谁都能塞货、也能借别人的位置放货"；改完后，每个仓库都有自己名下的层级，层级只能挂在它自己的仓库下。</b>改变的是"库存归属的地基"，所以请业务一起确认几个方向。</p>
+    <div class="meta">
+      <span><b>日期</b> 2026-08-19</span>
+      <span><b>数据快照</b> 2026-08-19（生产库）</span>
+      <span><b>范围</b> eva_wms / PMS / SMS</span>
+      <span><b>随附</b> 《当前实现与新模型的冲突》《历史表影响梳理》</span>
+    </div>
+  </div>
+
+  <!-- 一页纸 -->
+  <div class="tiles">
+    <div class="tile primary">
+      <div class="num primary">4</div>
+      <div class="lbl">改造大类</div>
+      <div class="sub">结构 / 按钮规则 / 仓库联动 / 选择器</div>
+    </div>
+    <div class="tile warn">
+      <div class="num warn">5</div>
+      <div class="lbl">需业务拍板</div>
+      <div class="sub">其中 1 项是数据里挖出的地雷</div>
+    </div>
+    <div class="tile danger">
+      <div class="num danger">12</div>
+      <div class="lbl">第三方仓在"借层级"</div>
+      <div class="sub">改造后无层级可用，需承接</div>
+    </div>
+    <div class="tile success">
+      <div class="num success">4,389</div>
+      <div class="lbl">公共池库存行数</div>
+      <div class="sub">另有 224 行悬空库存待清</div>
+    </div>
+  </div>
+
+  <!-- 一、改造点 -->
+  <section>
+    <div class="sec-head"><span class="idx">壹</span><h2>这次改了什么（4 类改造点）</h2><span class="note">业务看得懂的版本</span></div>
+
+    <div class="card chg">
+      <h3>改造点 1｜层级"家庭关系"变清晰</h3>
+      <p style="font-size:13.5px;color:var(--text-2)">现在顶层只有「公共」一个；改后顶层多出 25 个仓库和「公共」并列，另外加一个只管展示的「全部」来兜底分组。</p>
+      <div class="tree-col">
+        <div class="panel now">
+          <div class="phead">现在的结构（3 层）</div>
+          <div class="tree">
+            <ul>
+              <li><span class="node pub">公共 <span class="b">唯一顶层</span></span>
+                <ul>
+                  <li><span class="node wh">德国万邑通仓 <span class="b">仓库</span></span>
+                    <ul>
+                      <li><span class="node stock">德国万邑通_公共 <span class="b">库存</span></span></li>
+                      <li><span class="node stock">售后_EU <span class="b">库存</span></span></li>
+                    </ul>
+                  </li>
+                  <li><span class="node wh">英国谷仓 <span class="b">仓库</span></span>
+                    <ul>
+                      <li><span class="node stock">英国谷仓_公共 <span class="b">库存</span></span></li>
+                      <li><span class="node stock">Shopify_UK <span class="b">库存</span></span></li>
+                    </ul>
+                  </li>
+                  <li><span class="node stock" style="color:var(--text-3)">… 共 25 个二层、109 个三层</span></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="panel new">
+          <div class="phead">改造后的结构</div>
+          <div class="tree">
+            <ul>
+              <li><span class="node root">全部 <span class="b">虚拟分组</span></span>
+                <ul>
+                  <li><span class="node pub">公共 <span class="b">跨仓池</span></span></li>
+                  <li><span class="node wh">德国万邑通仓 <span class="b">仓库</span></span>
+                    <ul>
+                      <li><span class="node stock">德国万邑通_公共 <span class="b">库存</span></span></li>
+                      <li><span class="node stock">售后_EU <span class="b">库存</span></span></li>
+                    </ul>
+                  </li>
+                  <li><span class="node wh">英国谷仓 <span class="b">仓库</span></span>
+                    <ul>
+                      <li><span class="node stock">英国谷仓_公共 <span class="b">库存</span></span></li>
+                      <li><span class="node stock">Shopify_UK <span class="b">库存</span></span></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--primary)"></i>虚拟分组「全部」</span>
+        <span><i style="background:var(--success)"></i>「公共」跨仓池</span>
+        <span><i style="background:var(--warn)"></i>仓库层（挂哪个仓）</span>
+        <span><i style="background:var(--text-3)"></i>实际库存层</span>
+      </div>
+    </div>
+
+    <div class="card chg">
+      <h3>改造点 2｜新增 / 编辑 / 删除的按钮规则收紧</h3>
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <tr><th style="width:96px">按钮</th><th>现在</th><th>改后</th></tr>
+          <tr><td><b>新增</b></td><td>随便哪个节点都能点"新增"往下加</td><td>「公共」下<b>禁建子级</b>；三层（如「德国万邑通_公共」「售后_EU」）下<b>禁建四层</b>。只有「全部」和仓库层能新增</td></tr>
+          <tr><td><b>编辑</b></td><td>名称、能否存货都能改</td><td>仓库层（「德国万邑通仓」「英国谷仓」…）的<b>名称、上级、能否存货全部只读</b>，跟着仓库走</td></tr>
+          <tr><td><b>删除</b></td><td>只查"有没有子层级"</td><td>还要查"有没有库存、有没有被单据引用"；有货的被拦</td></tr>
+          <tr><td><b>能否存货开关</b></td><td>手动勾</td><td>由层级类型自动定，业务不用再管</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card chg">
+      <h3>改造点 3｜仓库增删改，自动联动层级</h3>
+      <div class="tbl-wrap">
+        <table class="cmp">
+          <tr><th style="width:130px">仓库操作</th><th>改后联动</th></tr>
+          <tr><td><b>新增仓库</b></td><td>自动同步建一个同名"仓库层"，否则会出现"有仓库但没层级"</td></tr>
+          <tr><td><b>仓库改名</b></td><td>同步改层级名，否则层级还叫旧名、在层级页找不到</td></tr>
+          <tr><td><b>仓库停用/删除</b></td><td>先检查下面还有没有层级、有没有库存，再处理</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card chg">
+      <h3>改造点 4｜所有"选层级"的地方，仓库层只能看不能选</h3>
+      <p style="font-size:13.5px;color:var(--text-2);margin-bottom:6px">涉及页面：</p>
+      <div class="pages">
+        <span class="page-chip">调拨单</span>
+        <span class="page-chip">备货计划</span>
+        <span class="page-chip">采购入库</span>
+        <span class="page-chip">质检入库</span>
+        <span class="page-chip">其他入库</span>
+        <span class="page-chip">其他出库</span>
+        <span class="page-chip">盘点</span>
+        <span class="page-chip">库存分配</span>
+        <span class="page-chip">店铺管理·扣减层级</span>
+        <span class="page-chip">商品管理·导入SKU</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-3);margin-top:10px">规则：仓库层（「德国万邑通仓」这种）只当分组展示、不能选中；能选的是「公共」和实际库存层；切换仓库时层级下拉重新加载，并自动清掉不属于该仓的旧选择。</p>
+    </div>
+  </section>
+
+  <!-- 二、地雷 + 海报 -->
+  <section>
+    <div class="sec-head"><span class="idx">贰</span><h2>一个必须提前拍板的地雷</h2><span class="note" style="color:var(--warn)">数据里挖出来的</span></div>
+
+    <div class="card">
+      <h3>12 个第三方仓，正在"借"别人的层级</h3>
+      <p style="font-size:13.5px;color:var(--text-2);margin-bottom:14px">澳洲亚马逊仓、英国亚马逊仓、Lazada马来海外仓、德国亚马逊仓、Shopee马来西亚官方仓、韩国菜鸟售后仓等 12 个第三方/售后仓，<b>自己名下根本没建层级</b>，是"借用"了「德国万邑通」「英国谷仓」名下的层级在落库存。</p>
+
+      <div class="dbody" style="border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--surface-2)">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="background:var(--success-weak);border:1px solid var(--success-border);border-radius:6px;padding:12px 16px">
+            <div style="font-size:12px;font-weight:700;color:var(--success);margin-bottom:4px">有自己层级的仓</div>
+            <div style="font-weight:600">德国万邑通仓 · 英国谷仓 · 万邑通德国仓 …</div>
+            <div style="font-size:12px;color:var(--text-2);margin-top:4px">名下层级：售后_EU、Shopify_UK、德国万邑通_公共、英国谷仓_公共 …</div>
+          </div>
+          <div style="text-align:center;color:var(--warn);font-size:12px;font-weight:700">▲ 借用（虚线依赖）▲</div>
+          <div style="background:var(--warn-weak);border:1px solid var(--warn-border);border-radius:6px;padding:12px 16px">
+            <div style="font-size:12px;font-weight:700;color:var(--warn);margin-bottom:4px">没建层级、靠借用的仓（12 个）</div>
+            <div style="font-weight:600">澳洲亚马逊仓 · 英国亚马逊仓 · Lazada马来海外仓 · 德国亚马逊仓 · Shopee马来西亚官方仓 · Shopee马来西亚官方售后仓 · KR-韩国菜鸟售后仓 · shokz全球-马来菜鸟售后仓 · SPL退运仓 · JP-POP UP活动销售仓 · 东莞Allways中转仓 …</div>
+            <div style="font-size:12px;color:var(--text-2);margin-top:4px">自己没有层级，落库存时借用上面那些仓的层级</div>
+          </div>
+          <div class="callout danger" style="margin-top:4px">
+            <b>改造后：</b>一个层级只能归属一个仓库 → 这些第三方仓将<b>「无层级可用」</b>，入库、库存同步一起卡住。这是必须业务先拍板的承接问题（见"决策 1"）。
+          </div>
+        </div>
+      </div>
+
+      <div class="callout calm" style="margin-top:14px">
+        <b>放宽心的一点：</b>真正"一个层级被两个仓同时塞着货"的很少——抽查下来，一个层级散到别的仓只有个位数到十几行量，不是大规模迁移。真正的活，在"怎么承接这些借来的层级"这件事上。
+      </div>
+    </div>
+  </section>
+
+  <!-- 四、需拍板 -->
+  <section>
+    <div class="sec-head"><span class="idx">叁</span><h2>需要业务拍板的问题（5 项）</h2><span class="note">请评审会逐项勾选</span></div>
+
+    <!-- 决策1 -->
+    <div class="dcard">
+      <div class="dhead">
+        <div class="dnum">01</div>
+        <div class="dtitle">12 个第三方仓的层级，怎么承接？</div>
+        <span class="pri hi">高优先 · 影响最大</span>
+      </div>
+      <div class="dbody">
+        <div class="bgbox"><b>背景：</b>澳洲亚马逊仓、Lazada马来海外仓、Shopee马来西亚官方仓、德国亚马逊仓等 12 个第三方/售后仓自己没建层级，靠借用「德国万邑通」「英国谷仓」名下层级落库存（见"地雷"一节）。改成"一个层级只属于一个仓库"后，它们会没有可选层级。</div>
+        <div class="opts">
+          <div class="opt rec">
+            <span class="otag">方案 A</span>
+            <span class="odesc">给每个第三方仓<b>复制一套自己的层级</b>。工作量大、一次性，但彻底合规，符合"一仓一层级"大原则。</span>
+            <span class="orec">推荐</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 B</span>
+            <span class="odesc">保留"共享层级"特例，第三方仓继续借用。上线快，但<b>违背大原则</b>，要在全链路留一套特例逻辑，长期是个坑。</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 C</span>
+            <span class="odesc">第三方仓改用「公共」承接，不再用借来的明细层级。取决于业务上这些仓<b>是否只需记公共池</b>——需和运营确认。</span>
+          </div>
+        </div>
+        <div class="why">为什么必须现在定：不定的话，第三方仓的入库和库存同步会全部卡住，这个改造没法上线。</div>
+      </div>
+    </div>
+
+    <!-- 决策2 -->
+    <div class="dcard">
+      <div class="dhead">
+        <div class="dnum">02</div>
+        <div class="dtitle">4 个已删层级，挂着的库存和单据怎么清理？</div>
+        <span class="pri mid">中优先</span>
+      </div>
+      <div class="dbody">
+        <div class="bgbox"><b>背景：</b>「分销_2B」「MKT_EU」「英国不良品仓」「法国不良品仓」4 个层级<u>早已删除</u>，但至今还被引用——库存 <b>224 行</b>、流水 <b>843 行</b>、分配明细 <b>396 行</b>、其他出入库 <b>54 行</b>（其中 MKT_EU 占大头）。改造后，这些早已删除的层级仍挂着库存和单据，会留成"对不上账"的残留，需业务定清理方式。</div>
+        <div class="opts">
+          <div class="opt rec">
+            <span class="otag">方案 A</span>
+            <span class="odesc">按业务归属<b>合并到现有有效层级</b>。需业务指出每批数据各自合并到哪个层级。</span>
+            <span class="orec">推荐</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 B</span>
+            <span class="odesc">新建"历史归档层级"承接，保留但<b>与正常库存隔离</b>。</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 C</span>
+            <span class="odesc">本期暂不处理、维持现状。<b>风险：</b>这些已删层级的历史数据会一直挂着，账面始终对不齐。</span>
+          </div>
+        </div>
+        <div class="why">需要业务提供"各自合并到哪"的映射意见，否则开发只能选方案 B 先归档。</div>
+      </div>
+    </div>
+
+    <!-- 决策3 -->
+    <div class="dcard">
+      <div class="dhead">
+        <div class="dnum">03</div>
+        <div class="dtitle">「公共」层级的未来定位？</div>
+        <span class="pri hi">高优先 · 牵扯 4,389 行</span>
+      </div>
+      <div class="dbody">
+        <div class="bgbox"><b>背景：</b>公共池现有 <b>4,389 行</b>库存，调拨收货"选公共"的场景全依赖它。改造后「公共」从"唯一顶层"变成"和 25 个仓库并列的节点"——它是继续当跨仓公共池，还是逐步拆回各仓？</div>
+        <div class="opts">
+          <div class="opt rec">
+            <span class="otag">方案 A</span>
+            <span class="odesc">「公共」<b>保留为跨仓公共池</b>，继续允许作为收货/调入目标。改动最小，调拨逻辑影响小。</span>
+            <span class="orec">推荐</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 B</span>
+            <span class="odesc">逐步取消公共池，把 4,389 行<b>按仓拆回各自仓库层级</b>。更彻底，但迁移工作量大、要逐个仓定映射。</span>
+          </div>
+        </div>
+        <div class="why">「公共」是新结构里唯一"不属于任何仓库"的池子，它的定位会影响调拨收货"选公共"这个用法还留不留，建议先定方向。</div>
+      </div>
+    </div>
+
+    <!-- 决策4 -->
+    <div class="dcard">
+      <div class="dhead">
+        <div class="dnum">04</div>
+        <div class="dtitle">25 个存量二层 + 占位节点，下线的节奏？</div>
+        <span class="pri mid">中优先</span>
+      </div>
+      <div class="dbody">
+        <div class="bgbox"><b>背景：</b>25 个存量二层里，10 个还挂 <b>292 行</b>库存（德国万邑通退货仓 89、亚马逊仓 65、shokz全球-泰国菜鸟仓 49、Anchanto韩国仓 35、KR-韩国菜鸟仓 31、英国谷仓 11、新加坡待维修仓 11、筋斗云 1），其余 15 个是空的。另有一个占位节点「(请选择公共层级)」无库存无子节点。</div>
+        <div class="opts">
+          <div class="opt rec">
+            <span class="otag">方案 A</span>
+            <span class="odesc">空的下线、有库存的<b>先冻结观察</b>、占位节点一起下线。</span>
+            <span class="orec">推荐</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 B</span>
+            <span class="odesc">全部先冻结，下个周期再清。</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 C</span>
+            <span class="odesc">一次性全部下线，把 292 行库存腾挪到新结构。快，但要先搞定腾挪目标。</span>
+          </div>
+        </div>
+        <div class="why">建议优先处理；10 个有库存的二层若仓促下线会出负库存，需和仓库确认。</div>
+      </div>
+    </div>
+
+    <!-- 决策5 -->
+    <div class="dcard">
+      <div class="dhead">
+        <div class="dnum">05</div>
+        <div class="dtitle">15 个售后层级，在新结构里放哪？</div>
+        <span class="pri low">低优先 · 但别漏</span>
+      </div>
+      <div class="dbody">
+        <div class="bgbox"><b>背景：</b>现有 15 个"售后"层级独立存在，涉及顺丰售后查询等入口。新结构下，售后层级归属哪个仓库、挂在第几层，需要明确。</div>
+        <div class="opts">
+          <div class="opt rec">
+            <span class="otag">方案 A</span>
+            <span class="odesc">售后层级作为<b>对应仓库的"实际库存层"之一</b>，归属到该仓下。</span>
+            <span class="orec">推荐</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 B</span>
+            <span class="odesc">售后层级<b>单独成组</b>，不归任何仓（保留现状的独立语义）。</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 C</span>
+            <span class="odesc">售后层级<b>合并进普通层级</b>，不再单独区分。</span>
+          </div>
+        </div>
+        <div class="why">如果售后查询强依赖"售后"这个类型，建议选 A 或 B 保留类型；选 C 则要先确认售后查询不受影响。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 五、决策登记表 -->
+  <section>
+    <div class="sec-head"><span class="idx">肆</span><h2>决策登记（评审会现场签）</h2></div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="sign">
+          <tr><th style="width:42px">#</th><th style="width:220px">决策事项</th><th style="width:110px">结论</th><th>备注 / 合并去向</th><th style="width:90px">责任人</th></tr>
+          <tr><td class="idx">01</td><td>第三方仓层级承接方式</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
+          <tr><td class="idx">02</td><td>4 个已删层级数据清理</td><td class="blank">□ A　□ B　□ C</td><td class="blank">合并去向：___</td><td class="blank"></td></tr>
+          <tr><td class="idx">03</td><td>「公共」层级定位</td><td class="blank">□ A　□ B</td><td class="blank"></td><td class="blank"></td></tr>
+          <tr><td class="idx">04</td><td>25 个二层下线节奏</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
+          <tr><td class="idx">05</td><td>售后层级归属</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text-3);margin-top:12px">建议先定 01、03（两个高优先），其余三项可会后反馈。</p>
+    </div>
+  </section>
+
+</div>

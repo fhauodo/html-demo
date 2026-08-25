@@ -345,8 +345,21 @@ function render(){
 function opsHtml(n){
   const out = [];
   out.push(`<button class="link" onclick="openForm('view','${n.id}')">查看</button>`);
-  if(n.type!=='all') out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增</button>`);
-  else out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增<i class="note" data-note="点击新增：在「全部」下新增二层节点，弹窗中必须选择仓库，否则无法保存；新增时父层级、名称/编码均只读置灰，不提供能否存货选项（R14、R19）。">4</i></button>`);
+  // 新增按钮：全部可新增二层；仓库可新增三层；公共/三层虚拟层级不允许新增子级
+  if(n.type==='all'){
+    out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增<i class="note" data-note="点击新增：在「全部」下新增二层节点，弹窗中必须选择仓库，否则无法保存；新增时父层级、名称/编码均只读置灰，不提供能否存货选项（R14、R19）。">4</i></button>`);
+  } else if(n.type==='special'){
+    // 二层公共：不允许新增子级
+  } else if(n.type==='virtual'){
+    const parent = findParent(n.id);
+    if(!parent || parent.type!=='warehouse'){
+      // 非三层虚拟层级（未来扩展），允许新增
+      out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增</button>`);
+    }
+    // 三层虚拟层级（父级=仓库）：不允许新增四层层级
+  } else {
+    out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增</button>`);
+  }
   if(n.type!=='all') out.push(`<button class="link" onclick="openForm('edit','${n.id}')">编辑</button>`);
   if(n.type!=='all') out.push(`<button class="link danger" onclick="openDel('${n.id}')">删除</button>`);
   return out.join('');
@@ -491,6 +504,9 @@ function handleSave(){
   const remark = document.getElementById('fRemark').value;
   if(!name){ toast('层级名称不能为空','err'); return; }
   if(mode==='add'){
+    // 安全校验：二层公共不允许新建子级；三层虚拟层级不允许新建四层层级
+    if(parent.type==='special'){ toast('二层公共层级不允许新建子级','err'); return; }
+    if(parent.type==='virtual'){ toast('三层虚拟层级不允许继续新建下层层级','err'); return; }
     if(parent.type==='all'){
       const wId = document.getElementById('fWarehouse').value;
       if(!wId){ toast('请在「全部」下新增二层时选择关联仓库','err'); return; }
