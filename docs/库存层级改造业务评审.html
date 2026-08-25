@@ -176,7 +176,7 @@
       <div class="sub">结构 / 按钮规则 / 仓库联动 / 选择器</div>
     </div>
     <div class="tile warn">
-      <div class="num warn">5</div>
+      <div class="num warn">6</div>
       <div class="lbl">需业务拍板</div>
       <div class="sub">其中 1 项是数据里挖出的地雷</div>
     </div>
@@ -336,7 +336,7 @@
 
   <!-- 四、需拍板 -->
   <section>
-    <div class="sec-head"><span class="idx">叁</span><h2>需要业务拍板的问题（5 项）</h2><span class="note">请评审会逐项勾选</span></div>
+    <div class="sec-head"><span class="idx">叁</span><h2>需要业务拍板的问题（6 项）</h2><span class="note">请评审会逐项勾选</span></div>
 
     <!-- 决策1 -->
     <div class="dcard">
@@ -473,6 +473,34 @@
         <div class="why">如果售后查询强依赖"售后"这个类型，建议选 A 或 B 保留类型；选 C 则要先确认售后查询不受影响。</div>
       </div>
     </div>
+
+    <!-- 决策6 -->
+    <div class="dcard">
+      <div class="dhead">
+        <div class="dnum">06</div>
+        <div class="dtitle">数据组 / 数仓的取数，会不会被这次改造打断？</div>
+        <span class="pri mid">中优先 · 影响数仓取数</span>
+      </div>
+      <div class="dbody">
+        <div class="bgbox"><b>背景：</b>数据组做「逻辑库龄」，取数靠<b>层级编号（level_id）</b>把流水和库存串到层级上。好消息：这次改造可以<b>让层级编号保持不变</b>——只新增一个「全部」虚拟节点、把公共和各仓的父级从「公共」改挂到「全部」下。编号不动，数仓的历史流水/快照就能照旧关联；唯一要同步的是层级树的拓扑变了。</div>
+        <div class="opts">
+          <div class="opt rec">
+            <span class="otag">方案 A</span>
+            <span class="odesc"><b>层级编号保持不变</b>，只改父级归属 + 新增「全部」节点。数仓历史取数不受影响，只需同步新的树结构和字段口径。</span>
+            <span class="orec">推荐</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 B</span>
+            <span class="odesc">层级编号<b>重新生成</b>，则必须提供「旧编号→新编号」映射表给数仓重刷历史，工作量大、风险高，不划算。</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 C</span>
+            <span class="odesc">数仓改用<b>「仓库+层级名称」</b>关联，不再依赖编号。名称有重名风险，需数据组评估。</span>
+          </div>
+        </div>
+        <div class="why">层级编号是否保持，直接决定数仓要不要重刷历史。方案 A 改动最小，确认后数仓只需跟着新的树结构取数即可。</div>
+      </div>
+    </div>
   </section>
 
   <!-- 五、决策登记表 -->
@@ -487,9 +515,10 @@
           <tr><td class="idx">03</td><td>「公共」层级定位</td><td class="blank">□ A　□ B</td><td class="blank"></td><td class="blank"></td></tr>
           <tr><td class="idx">04</td><td>25 个二层下线节奏</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
           <tr><td class="idx">05</td><td>售后层级归属</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
+          <tr><td class="idx">06</td><td>数仓取数是否随改造一起兜住</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
         </table>
       </div>
-      <p style="font-size:12px;color:var(--text-3);margin-top:12px">建议先定 01、03（两个高优先），其余三项可会后反馈。</p>
+      <p style="font-size:12px;color:var(--text-3);margin-top:12px">建议先定 01、03（两个高优先），其余四项可会后反馈。</p>
     </div>
   </section>
 
