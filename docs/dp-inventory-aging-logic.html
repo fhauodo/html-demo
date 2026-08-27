@@ -1,0 +1,429 @@
+<title>DP 库龄取数逻辑</title>
+
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --accent: #0d9488;
+    --accent-subtle: #f0fdfa;
+    --amber: #d97706;
+    --amber-subtle: #fffbeb;
+    --red: #dc2626;
+    --red-subtle: #fef2f2;
+    --blue: #2563eb;
+    --blue-subtle: #eff6ff;
+    --purple: #7c3aed;
+    --code-bg: #f1f5f9;
+    --table-stripe: #f8fafc;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #2dd4bf;
+      --accent-subtle: #042f2e;
+      --amber: #fbbf24;
+      --amber-subtle: #422006;
+      --red: #f87171;
+      --red-subtle: #450a0a;
+      --blue: #60a5fa;
+      --blue-subtle: #172554;
+      --purple: #a78bfa;
+      --code-bg: #1e293b;
+      --table-stripe: #1a2332;
+      --shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #2dd4bf;
+    --accent-subtle: #042f2e;
+    --amber: #fbbf24;
+    --amber-subtle: #422006;
+    --red: #f87171;
+    --red-subtle: #450a0a;
+    --blue: #60a5fa;
+    --blue-subtle: #172554;
+    --purple: #a78bfa;
+    --code-bg: #1e293b;
+    --table-stripe: #1a2332;
+    --shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .page { max-width: 960px; margin: 0 auto; }
+
+  .header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .header .eyebrow {
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--accent);
+    margin-bottom: .5rem;
+  }
+  .header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
+  .header .meta {
+    margin-top: .75rem;
+    font-size: .875rem;
+    color: var(--text-secondary);
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+  }
+
+  section { margin-bottom: 2.5rem; }
+  h2 {
+    font-size: 1.2rem; font-weight: 650;
+    margin-bottom: 1rem; padding-bottom: .5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: .5rem;
+  }
+  h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.5rem; height: 1.5rem; border-radius: 4px;
+    background: var(--accent); color: #fff;
+    font-size: .75rem; font-weight: 700; flex-shrink: 0;
+  }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 .5rem; }
+  h4 { font-size: .9rem; font-weight: 600; margin: 0 0 .5rem; }
+  p { margin-bottom: .75rem; color: var(--text-secondary); }
+  p strong { color: var(--text); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+
+  .info {
+    padding: .75rem 1rem; border-radius: 6px;
+    font-size: .875rem; margin-bottom: 1rem; line-height: 1.5;
+  }
+  .info-accent { background: var(--accent-subtle); border-left: 3px solid var(--accent); }
+  .info-amber { background: var(--amber-subtle); border-left: 3px solid var(--amber); }
+  .info-red { background: var(--red-subtle); border-left: 3px solid var(--red); }
+  .info-blue { background: var(--blue-subtle); border-left: 3px solid var(--blue); }
+
+  .table-wrap {
+    overflow-x: auto; margin-bottom: 1rem;
+    border: 1px solid var(--border); border-radius: 6px;
+    box-shadow: var(--shadow);
+  }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: .875rem; font-variant-numeric: tabular-nums;
+  }
+  thead { background: var(--code-bg); }
+  thead th {
+    text-align: left; padding: .625rem .75rem;
+    font-weight: 600; font-size: .8rem; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+    border-bottom: 2px solid var(--border);
+  }
+  tbody td {
+    padding: .5rem .75rem; border-bottom: 1px solid var(--border);
+    color: var(--text); vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--table-stripe); }
+  tbody tr:last-child td { border-bottom: none; }
+  td code, p code, li code {
+    background: var(--code-bg); padding: .1em .35em; border-radius: 3px;
+    font-size: .85em; font-family: "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+    border: 1px solid var(--border);
+  }
+
+  .flow {
+    display: flex; flex-wrap: wrap; gap: .4rem; align-items: center;
+    margin-bottom: 1rem; font-size: .85rem;
+  }
+  .flow .step {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: .4rem .65rem;
+    font-weight: 600; color: var(--text); box-shadow: var(--shadow);
+  }
+  .flow .step.accent { border-color: var(--accent); background: var(--accent-subtle); }
+  .flow .arrow { color: var(--text-muted); font-weight: 700; }
+
+  .code-block {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1rem;
+    font-family: "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+    font-size: .8rem; line-height: 1.7; overflow-x: auto;
+    white-space: pre; color: var(--text);
+  }
+
+  .tree {
+    font-family: "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+    font-size: .78rem; line-height: 1.7; padding: .75rem 1rem;
+    background: var(--code-bg); border-radius: 6px; margin-bottom: 1rem;
+    white-space: pre; overflow-x: auto; color: var(--text);
+  }
+
+  ul, ol { margin: .5rem 0 .75rem 1.25rem; color: var(--text-secondary); }
+  li { margin-bottom: .35rem; }
+  li strong { color: var(--text); }
+
+  .badge {
+    display: inline-block; padding: .15em .5em; border-radius: 3px;
+    font-size: .75rem; font-weight: 600; letter-spacing: .02em;
+  }
+  .badge-green { background: var(--accent-subtle); color: var(--accent); }
+  .badge-amber { background: var(--amber-subtle); color: var(--amber); }
+  .badge-red { background: var(--red-subtle); color: var(--red); }
+  .badge-blue { background: var(--blue-subtle); color: var(--blue); }
+
+  .grid-2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;
+  }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .highlight { background: var(--accent-subtle); border-radius: 3px; padding: 0 .2em; }
+</style>
+
+<div class="page">
+
+<header class="header">
+  <div class="eyebrow">DP 库龄计算方案</div>
+  <h1>逻辑库龄：业务操作如何影响库龄</h1>
+  <div class="meta">
+    <span>方案版本：5.6.0（继承库龄仅存在于「库存分配」场景）</span>
+    <span>目标仓库：第三方仓海外仓</span>
+    <span>更新：2026-08-26</span>
+  </div>
+</header>
+
+<!-- ===== 1. 方案定位 ===== -->
+<section>
+<h2><span class="num">1</span> 方案定位</h2>
+
+<p>按 <strong>「层级仓 × SKU × 批次」</strong> 三个维度，用 <strong>FIFO（先进先出）</strong> 推演出每一批货的剩余数量和库龄天数，回答业务问题：<strong>现在躺在仓库里的货，各自压了多久了？</strong></p>
+
+<div class="info info-accent">
+  <strong>三条核心规则，记住这三条就够：</strong>
+  <br>① 库龄 = 目标日 − 批次入库日（用<strong>业务时间</strong>，不是系统写流水的时间）；
+  <br>② FIFO：出库时总是先扣<strong>最早入库</strong>的那批；
+  <br>③ 库龄「继承」<strong>只发生在「库存分配」一个动作</strong>——其他任何入库都是重新计龄，任何出库都是消耗最老批次。
+</div>
+
+<p>一句话区分「继承」与「重算」：<strong>货物理上没动、只是改了记账层级，库龄要继承；货真的进仓/出仓了，库龄就重算/消耗。</strong></p>
+</section>
+
+<!-- ===== 2. 业务操作如何影响库龄 ===== -->
+<section>
+<h2><span class="num">2</span> 业务操作如何影响库龄（核心）</h2>
+
+<p>库龄不是事后「算」出来的玄学，而是由<strong>你在系统里做的每一个操作</strong>决定的。下表把「操作」和「库龄后果」一一对应：</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>业务操作</th><th>系统里发生了什么</th><th>库龄后果</th><th>业务类型</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>采购入库</strong> / 盘点入库 / 退货入库 / 维修入库 / 加工入库 / 移除入库 / 其他入库</td><td>货物到仓上架</td><td><span class="badge badge-green">🆕 新起批次</span>，库龄从到货日算起</td><td><code>1/2/4/5/6/7/100</code></td></tr>
+    <tr><td><strong>调拨入库</strong></td><td>货从 A 仓运到 B 仓</td><td><span class="badge badge-green">🆕 新起批次</span>，按 B 仓到货日重新计龄（<strong>不继承</strong>源仓）</td><td><code>3</code></td></tr>
+    <tr><td><strong>销售出库 / 调拨出库 / 盘亏 / 加工出库 / 其他出库</strong></td><td>货物离开仓库</td><td><span class="badge badge-blue">⬇️ 先出最老</span>，FIFO 扣减最早入库的批次</td><td><code>-4 / -3 / -2 / -6 / -100</code></td></tr>
+    <tr><td><strong>库存分配（IA）</strong></td><td>同一仓库内，层级 A → 层级 B 转移，货<strong>没动</strong></td><td><span class="badge badge-amber">🔄 继承库龄</span>（唯一继承场景），沿用原批次日期</td><td><code>1000</code></td></tr>
+    <tr><td>下单占用 / 取消订单释放</td><td>可用 ↔ 锁定的内部转移</td><td><span class="badge badge-amber">➖ 不影响</span>，不算出入库</td><td><code>-200 ~ -600</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="info info-blue">
+  <strong>为什么「调拨入库」不继承、而「库存分配」继承？</strong>调拨是<strong>跨仓库</strong>搬运，货到了新仓就是新仓的「新可用库存」，库龄从头算；库存分配是<strong>同一仓库内改归属标签</strong>，货没挪窝，只是换了记账层级——如果重新计龄，等于把旧库存「洗白」，掩盖真实滞销。详见第 3、4 节。
+</div>
+</section>
+
+<!-- ===== 3. 库存分配：唯一继承库龄的场景 ===== -->
+<section>
+<h2><span class="num">3</span> 库存分配 —— 唯一继承库龄的场景</h2>
+
+<h3>业务场景是什么</h3>
+<p>把一批货从<strong>「公共层级」</strong>划一部分到<strong>「分销_FR_SPL」</strong>层级。货还放在同一个仓库的同一批库存里，<strong>物理位置、SKU、数量都没变，变的只是「这批货记在哪个层级名下」</strong>。</p>
+
+<h3>为什么必须「继承」库龄，不能重新计龄</h3>
+<div class="info info-red">
+  <strong>假设不继承：</strong>一批货 3 月入库，放了 5 个月；8 月做一次「库存分配」移到分销层级。如果按 8 月分配日重新计龄，这批货的库龄瞬间从「150 天」归零成「0 天」——系统会把它当新货卖，<strong>掩盖了真实滞销，库龄报表严重失真</strong>。
+</div>
+<p>正确做法：分配后，目标层级承接的货<strong>沿用它在原层级时的入库日期</strong>，该多少天还是多少天。</p>
+
+<h3>继承机制（数据上怎么体现）</h3>
+<p>一次库存分配会写<strong>两条</strong>流水，用同一个分配单号（IA 单号）串起来：</p>
+
+<div class="code-block">【层级 A 出腿】private_log:
+  business_type = 1000, change_qty = -200, private_id = A
+  → A 层级的 FIFO 队列扣掉最老的 200 件（例：100 件是 6/15 入的、100 件是 7/1 入的）
+
+【层级 B 入腿】private_log:
+  business_type = 1000, change_qty = +200, private_id = B
+  → B 层级新增的 200 件，批次日期<strong>照抄</strong>刚才 A 扣掉的那两批：6/15(100)、7/1(100)
+  → 而不是用「分配日」当批次日期</div>
+
+<div class="flow">
+  <span class="step">A 层最老批次<br>6/15 × 100 / 7/1 × 100</span>
+  <span class="arrow">→</span>
+  <span class="step accent">分配单 IA</span>
+  <span class="arrow">→</span>
+  <span class="step">B 层继承批次<br>6/15 × 100 / 7/1 × 100</span>
+  <span class="arrow">→</span>
+  <span class="step">库龄不变<br>该 150 天还是 150 天</span>
+</div>
+
+<div class="info info-accent">
+  <strong>关键点：</strong>行业内通常叫「层级库龄 / 逻辑库龄继承」。记住一句话——<strong>分配是「改标签」不是「搬货」，标签变了，货的年龄不能变。</strong>
+</div>
+</section>
+
+<!-- ===== 4. 调拨为什么不继承 ===== -->
+<section>
+<h2><span class="num">4</span> 调拨为什么「不继承」库龄</h2>
+
+<p><strong>调拨 = 跨仓库搬运</strong>。货从 A 仓发货（<code>-3</code> 调拨出库），在途一段时间，到 B 仓收货（<code>3</code> 调拨入库）。</p>
+
+<div class="code-block">【源仓 A】发货：business_type=-3，FIFO 扣掉 A 仓最老批次 200 件
+   （A 仓这 200 件的库龄到这里「终结」）
+
+【在途】... 2-3 周 ...
+
+【目标仓 B】到货：business_type=3，按 B 仓到货日 inbound_time 新起一批 200 件
+   （B 仓这 200 件的库龄从「到货日」开始算，0 天起）</div>
+
+<div class="info info-blue">
+  <strong>业务含义：</strong>对 B 仓而言，到货的是一批「新到可用库存」。库龄口径是<strong>分仓独立计算</strong>——B 仓从这批货进自己仓库起算它的年龄。在途时间不是「丢失」，而是 B 仓库龄的天经定义。这也是为什么调拨入库在数据上按普通入库一样处理，<strong>不需要</strong>关联源仓批次做继承。
+</div>
+</section>
+
+<!-- ===== 5. 技术落点：数据取数与推演 ===== -->
+<section>
+<h2><span class="num">5</span> 技术落点：数据取数与 FIFO 推演</h2>
+
+<p class="text-secondary" style="font-size:.875rem;color:var(--text-muted);">本节面向数据/开发，业务同学可跳过，只看结论即可。</p>
+
+<h3>5.1 数据源与业务时间锚点</h3>
+<p>层级库存变动的<strong>唯一数据源</strong>是 <code>t_wms_inventory_private_log</code>（层级库存流水表）。但它的 <code>create_time</code> 是<strong>系统写流水的时刻</strong>，比真实业务时间晚 15-40 小时，<strong>不能用来算库龄</strong>。</p>
+
+<div class="info info-accent">
+  <strong>业务时间必须回表取：</strong>入库取单据的 <code>inbound_time</code>（上架时间），出库取 <code>outbound_time</code>（发货时间）。关联方式：入库 <code>bound_no → t_wms_inbound.inbound_no</code>，出库 <code>bound_no → t_wms_outbound.outbound_no</code>。
+</div>
+
+<h3>5.2 出库流水 bound_no 大量为空（不是数据缺漏）</h3>
+<p>销售/调拨出库是「先占用、后发货」两段式，流水分多批写：</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>阶段</th><th>inventory_type</th><th>change_qty</th><th>bound_no</th><th>对库龄</th></tr></thead>
+  <tbody>
+    <tr><td>占用·扣可用</td><td>1（可用）</td><td>负</td><td>空</td><td>跳过（内部转移）</td></tr>
+    <tr><td>占用·加锁定</td><td>2（锁定）</td><td>正</td><td>空</td><td>跳过（内部转移）</td></tr>
+    <tr><td><strong>发货·扣锁定（真出库）</strong></td><td>2（锁定）</td><td>负</td><td><strong>有值</strong></td><td>FIFO 消耗</td></tr>
+    <tr><td>释放·退订</td><td>2→1</td><td>负→正</td><td>空</td><td>跳过（内部转移）</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="info info-red">
+  <strong>甄别真出库的唯一稳定口径：<code>in_out_type='2'</code> 且 <code>bound_no</code> 非空。</strong>占用/释放是「可用↔锁定」内部转移，总量不变，必须跳过，否则库存被提前扣掉、库龄整体偏新。
+</div>
+
+<h3>5.3 库存分配（IA）在数据上的识别</h3>
+<p>库存分配不走标准在库/在途出库模型，特征如下：</p>
+<ul>
+  <li><code>business_type = '1000'</code>（<code>INVENTORY_ASSIGN</code>）；</li>
+  <li>一次分配是<strong>两条</strong>流水，同 <code>business_no</code>（= 分配单号 assignNo）：一条 <code>change_qty&lt;0</code>（from 层级出）、一条 <code>change_qty&gt;0</code>（to 层级入）；</li>
+  <li>两条都在<strong>同一仓库</strong>内，仓库总量不变，只变层级。</li>
+</ul>
+
+<h3>5.4 FIFO 推演伪代码</h3>
+<div class="code-block">// batch_queue: Map&lt;(wh_id, private_id, sku_id), Deque&lt;Batch&gt;&gt;  按批次日期升序
+// assign_consumed: Map&lt;assignNo, [批次]&gt;   库存分配的「出腿消耗」缓存
+
+// 1. 初始化：起始日快照作为各层级初始批次（批次日期用起始日前一天近似）
+
+// 2. 逐笔推演（按 biz_time 升序，同时刻入在前出在后）
+FOR EACH doc IN docs:
+    IF doc.business_type == '1000':            // —— 库存分配（唯一继承场景）——
+        IF doc.change_qty &lt; 0:                 // 出腿：from 层级 FIFO 消耗
+            assign_consumed[doc.business_no] = FIFO_deduct(from_key, |change_qty|)
+        ELSE:                                  // 入腿：to 层级继承 from 消耗的批次
+            FOR EACH batch IN assign_consumed[doc.business_no]:
+                batch_queue[to_key].push({date: batch.date, qty: batch.qty})
+
+    ELSE IF doc.in_out_type == '1':            // —— 普通入库（含调拨入库）——
+        batch_queue[key].push({date: doc.inbound_time, qty: doc.change_qty})  // 新起批次
+
+    ELSE IF doc.in_out_type == '2' AND doc.bound_no 非空:   // —— 真出库 ——
+        FIFO_deduct(key, doc.change_qty)       // 消耗最老批次
+
+    // 其他（占用/释放/调拨出库的占用腿等）：一律跳过
+
+// 3. 算库龄：对每个 (wh, private, sku) 的每个 batch，aging = 目标日 − batch.date</div>
+
+<h3>5.5 库龄区间</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>区间</th><th>范围</th></tr></thead>
+  <tbody>
+    <tr><td>0-30天</td><td>aging_days ≤ 30</td></tr>
+    <tr><td>31-60天</td><td>31 ≤ aging_days ≤ 60</td></tr>
+    <tr><td>61-90天</td><td>61 ≤ aging_days ≤ 90</td></tr>
+    <tr><td>91-180天</td><td>91 ≤ aging_days ≤ 180</td></tr>
+    <tr><td>180天+</td><td>aging_days &gt; 180</td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<!-- ===== 6. 风险与交付 ===== -->
+<section>
+<h2><span class="num">6</span> 关键风险与交付</h2>
+
+<div class="info info-red">
+  <strong>风险1：误把「库存分配」当普通出库+入库。</strong>如果数据组不识别 <code>business_type=1000</code> 的双流水继承关系，分配的货会被「出库一条 + 重新入库一条」拆开重算，库龄被洗白。这是本方案最核心的一处，务必第一优先验证。
+</div>
+
+<div class="info info-amber">
+  <strong>风险2：占用/释放混入真出库。</strong>销售/调拨的「占用、取消释放」流水 <code>in_out_type</code> 也是 '2'，仅靠方向判断会误扣库存，必须用 <code>bound_no</code> 非空兜底。
+</div>
+
+<div class="info info-amber">
+  <strong>风险3：SPL中转仓层级缺失。</strong>SPL中转仓（wh_id=68）目前仅配「公共」层级，若要拆分中转仓库龄，需先完成层级初始化。
+</div>
+
+<div class="info info-amber">
+  <strong>风险4：初始库存批次日期为近似值。</strong>起始日库存统一按「起始日前一天」作为批次日期，对 180 天+ 长库龄的分类无影响，精确批次需从历史快照恢复。
+</div>
+
+<h3>交付节奏</h3>
+<div class="flow">
+  <span class="step">9/2 前<br>SPL仓数据验证<br>重点：库存分配继承</span>
+  <span class="arrow">→</span>
+  <span class="step accent">9/20 前<br>整体交付</span>
+</div>
+
+</section>
+
+</div>
