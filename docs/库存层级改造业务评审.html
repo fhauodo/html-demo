@@ -147,6 +147,38 @@
   .page-chip{font-size:12.5px;padding:5px 12px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--text-2)}
   .page-chip.hot{border-color:var(--danger-border);color:var(--danger);background:var(--danger-weak)}
 
+  .prob-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+  @media (max-width:720px){.prob-col{grid-template-columns:1fr}}
+  .prob{border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;background:var(--surface-2)}
+  .prob .pt{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .prob .pt .mark{font-size:11px;font-weight:700;padding:1px 8px;border-radius:100px;border:1px solid}
+  .prob.disp .mark{color:var(--warn);border-color:var(--warn-border);background:var(--warn-weak)}
+  .prob.store .mark{color:var(--danger);border-color:var(--danger-border);background:var(--danger-weak)}
+  .prob ul{margin:0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:1.75}
+  .need-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  @media (max-width:720px){.need-row{grid-template-columns:1fr}}
+  .need{border:1px solid var(--primary-border);border-radius:6px;padding:12px 14px;background:var(--primary-weak)}
+  .need .nt{font-size:13px;font-weight:700;margin-bottom:4px}
+  .need .nd{font-size:12.5px;color:var(--text-2);line-height:1.7}
+
+  /* 总览 */
+  table.ov{width:100%;border-collapse:collapse;margin-top:12px;font-size:12.5px}
+  table.ov th,table.ov td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  table.ov th{background:var(--surface-2);font-weight:600;white-space:nowrap}
+  table.ov td.idx{font-weight:700;color:var(--primary)}
+  table.ov .must{color:var(--danger);font-weight:600;white-space:nowrap}
+  table.ov .can{color:var(--text-3);white-space:nowrap}
+
+  .biz-impact{margin-top:14px;border:1px solid var(--primary-border);border-radius:6px;padding:12px 16px;background:var(--primary-weak)}
+  .biz-impact .bi-title{font-size:12.5px;font-weight:700;color:var(--primary);margin-bottom:8px}
+  .biz-impact ul{margin:0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:1.75}
+  .biz-impact li + li{margin-top:4px}
+  table.mod{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  table.mod th,table.mod td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  table.mod th{background:var(--surface-2);font-weight:600;white-space:nowrap}
+  table.mod td.now{color:var(--text-3)}
+  table.mod td.new b{color:var(--text)}
+
   @media (max-width:620px){
     .tiles{grid-template-columns:1fr 1fr}
     .cover{padding:22px 20px}
@@ -158,8 +190,8 @@
   <!-- 封面 -->
   <div class="cover">
     <div class="eyebrow">WMS 库存基础数据优化 · 业务评审材料</div>
-    <h1>库存的「归属改造」：这次改了什么、要您拍板什么</h1>
-    <p class="thesis">一句话：<b>现在的层级像"公共大仓库，谁都能塞货、也能借别人的位置放货"；改完后，每个仓库都有自己名下的层级，层级只能挂在它自己的仓库下。</b>改变的是"库存归属的地基"，所以请业务一起确认几个方向。</p>
+    <h1>库存的「归属改造」：这次改了什么、需要您确认什么</h1>
+    <p class="thesis">一句话：<b>现在的层级像"公共大仓库，谁都能塞货、也能借别人的位置放货"；改完后，每个仓库都有自己名下的层级，层级只能挂在它自己的仓库下。</b>先把展示和存储结构理顺，才能接着做逻辑库龄、层级间分配这些库存模块需求。改变的是"库存归属的地基"，所以请业务一起确认几个方向。</p>
     <div class="meta">
       <span><b>日期</b> 2026-08-19</span>
       <span><b>数据快照</b> 2026-08-19（生产库）</span>
@@ -176,9 +208,9 @@
       <div class="sub">结构 / 按钮规则 / 仓库联动 / 选择器</div>
     </div>
     <div class="tile warn">
-      <div class="num warn">6</div>
-      <div class="lbl">需业务拍板</div>
-      <div class="sub">其中 1 项是数据里挖出的地雷</div>
+      <div class="num warn">7</div>
+      <div class="lbl">需业务确认</div>
+      <div class="sub">含第三方仓、公共池、亚马逊等关键项</div>
     </div>
     <div class="tile danger">
       <div class="num danger">12</div>
@@ -192,9 +224,52 @@
     </div>
   </div>
 
+  <!-- 零、改造背景 -->
+  <section>
+    <div class="sec-head"><span class="idx">壹</span><h2>为什么要改（改造背景）</h2></div>
+
+    <div class="card">
+      <p style="font-size:13.5px;color:var(--text-2);line-height:1.8">目前库存层级同时存在<b>展示问题</b>和<b>数据存储结构问题</b>：树上看到的归属，和库里真正记的归属对不齐；一个层级还可以被多个仓"借用"。这样的地基撑不住后面的库存模块需求。为更好满足后续能力开展——例如<b>逻辑库龄计算、层级间分配库存</b>等——需要先把库存层级优化到位。</p>
+
+      <div class="prob-col">
+        <div class="prob disp">
+          <div class="pt"><span class="mark">展示</span>页面上看不清、选不准</div>
+          <ul>
+            <li>整棵树顶上只有「公共」，仓库被压在第二层，看不出「这个层级属于哪个仓」</li>
+            <li>父层只是分组展示，点进去不能汇总子层库存，对账和看总量都费劲</li>
+            <li>仓库层和实际存货层混在下拉里，选层级时容易选到不能存货的节点</li>
+          </ul>
+        </div>
+        <div class="prob store">
+          <div class="pt"><span class="mark">存储</span>归属对不齐、身份不稳</div>
+          <ul>
+            <li>仓库和层级是多对多绑定：同一层级可以被多个仓借用落货</li>
+            <li>层级身份主要靠名称，编码可空可重复；改个名就可能对不上历史单据</li>
+            <li>已删层级仍挂着库存和流水，账面和树对不齐</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="need-row">
+        <div class="need">
+          <div class="nt">后续：逻辑库龄计算</div>
+          <div class="nd">库龄要按「仓库 + 层级」把入库时间串起来。归属不清、编号不稳，同一批货就算不准、也对不齐数仓取数。</div>
+        </div>
+        <div class="need">
+          <div class="nt">后续：层级间分配库存</div>
+          <div class="nd">仓内渠道之间调库存（公共池分到店铺、售后回良等），必须先分清「从哪个层级到哪个层级、是否同仓」。现在可以跨仓借用层级，分配口径会乱。</div>
+        </div>
+      </div>
+
+      <div class="callout calm" style="margin-top:14px">
+        <b>这次改造要做的：</b>把层级的展示树和存储归属对齐——每个仓库有自己名下的层级，层级只能挂在它自己的仓库下。先把地基打稳，后面的库龄、分配、对账才能接着做。
+      </div>
+    </div>
+  </section>
+
   <!-- 一、改造点 -->
   <section>
-    <div class="sec-head"><span class="idx">壹</span><h2>这次改了什么（4 类改造点）</h2><span class="note">业务看得懂的版本</span></div>
+    <div class="sec-head"><span class="idx">贰</span><h2>这次改了什么（4 类改造点）</h2></div>
 
     <div class="card chg">
       <h3>改造点 1｜层级"家庭关系"变清晰</h3>
@@ -255,6 +330,14 @@
         <span><i style="background:var(--warn)"></i>仓库层（挂哪个仓）</span>
         <span><i style="background:var(--text-3)"></i>实际库存层</span>
       </div>
+      <div class="biz-impact">
+        <div class="bi-title">对业务操作的影响</div>
+        <ul>
+          <li><b>库存层级页（看树）：</b>树顶多出一个「全部」分组；「公共」从唯一顶层降到与各仓库并列的二层，一眼能看出「这个仓下面有哪些层级」。</li>
+          <li><b>层级库存页（查数）：</b>选某个<b>二层仓库层</b>（如「英国谷仓」）时，会<b>汇总展示其下所有三层</b>（英国谷仓_公共、Shopify_UK…）的库存——以前只能看单层，现在点仓库层就能看整仓合计。</li>
+          <li><b>和后面改造点的区别：</b>层级库存<b>可以选二层查数</b>；但调拨、入库、分配等<b>操作类页面不能选二层落账</b>，只能选「公共」或三层实际库存层（见改造点 4）。</li>
+        </ul>
+      </div>
     </div>
 
     <div class="card chg">
@@ -268,6 +351,15 @@
           <tr><td><b>能否存货开关</b></td><td>手动勾</td><td>由层级类型自动定，业务不用再管</td></tr>
         </table>
       </div>
+      <div class="biz-impact">
+        <div class="bi-title">对业务操作的影响</div>
+        <ul>
+          <li><b>想自己在「公共」下面加仓库层：</b>不行。「公共」下<b>禁建子级</b>，仓库层只能随仓库主数据新增/联动出现。</li>
+          <li><b>想在某个三层下面再加一层：</b>不行。三层已是实际库存层，<b>禁建四层</b>；要加业务层级，只能在对应仓库层下新增。</li>
+          <li><b>想改「德国万邑通仓」这层级的名字：</b>不行。仓库层名称、上级、能否存货<b>全部只读</b>，须去仓库列表改名，层级页自动同步。</li>
+          <li><b>想删掉还有货或被单据引用的层级：</b>系统会拦。删除前会查子层级、库存量、调拨/分配/出入库等引用，有货或有引用删不掉。</li>
+        </ul>
+      </div>
     </div>
 
     <div class="card chg">
@@ -280,11 +372,82 @@
           <tr><td><b>仓库停用/删除</b></td><td>先检查下面还有没有层级、有没有库存，再处理</td></tr>
         </table>
       </div>
+      <div class="biz-impact">
+        <div class="bi-title">对业务操作的影响</div>
+        <ul>
+          <li><b>仓库列表 · 新增仓库：</b>保存后系统自动建同名「仓库层」，业务不用再去层级页手工补一层；若没自动出现，说明联动异常需提工单。</li>
+          <li><b>仓库列表 · 改名：</b>层级页里对应仓库层名称<b>同步变更</b>；以后在各页面按新名字找层级即可，不用两边各改一次。</li>
+          <li><b>仓库列表 · 停用/删除：</b>若该仓下还有层级或库存，会先被拦住；须先把货挪走、子层级处理好，才能停/delete。</li>
+        </ul>
+      </div>
     </div>
 
     <div class="card chg">
-      <h3>改造点 4｜所有"选层级"的地方，仓库层只能看不能选</h3>
-      <p style="font-size:13.5px;color:var(--text-2);margin-bottom:6px">涉及页面：</p>
+      <h3>改造点 4｜所有"选层级"的操作页：二层仓库层只能看、不能选</h3>
+      <p style="font-size:13.5px;color:var(--text-2);margin-bottom:10px">核心规则：<b>「德国万邑通仓」「英国谷仓」这类二层仓库层，在下拉里只当分组展示，不能作为收货/调入/调出/扣减的目标层级。</b>能选的是跨仓「公共」和各仓库下的三层实际库存层（如「英国谷仓_公共」「Shopify_UK」「售后_EU」）。</p>
+      <div class="callout warn" style="margin-bottom:12px;font-size:13px">
+        <b>和「层级库存」的区别：</b>层级库存页<b>可以选二层查汇总</b>；下面各模块是<b>操作落账</b>，二层仓库层一律不可选。
+      </div>
+      <div class="tbl-wrap">
+        <table class="mod">
+          <tr><th style="width:108px">模块 / 页面</th><th style="width:140px">涉及的日常操作</th><th>改前业务习惯</th><th>改后业务感受</th></tr>
+          <tr>
+            <td><b>调拨单</b></td>
+            <td>选调出层级、调入层级</td>
+            <td class="now">有时直接选「英国谷仓」这层仓库节点</td>
+            <td class="new">仓库层<b>灰掉/不可选</b>；须选「英国谷仓_公共」或具体店铺/售后层。切换始发/目的仓后，层级下拉<b>只显示该仓名下层级</b>，旧选择自动清空。</td>
+          </tr>
+          <tr>
+            <td><b>备货计划</b></td>
+            <td>选收货层级</td>
+            <td class="now">可调拨收货时选「公共」或某仓库层</td>
+            <td class="new">仓库层不可选；选「公共」仍可用（须等公共定位逻辑一并改完）。收货层级须落到<b>能存货的三层</b>或公共池。</td>
+          </tr>
+          <tr>
+            <td><b>采购入库<br/>质检入库<br/>其他出入库</b></td>
+            <td>选入库/出库层级</td>
+            <td class="now">层级列表较杂，仓库层与存货层混在一起</td>
+            <td class="new">先选仓库 → 层级下拉<b>仅加载该仓可选层</b>；仓库层只作分组标题。Excel 导入时不能只填「售后」，须能对应到<b>「当前仓库 + 层级名称」</b>，否则导入失败或写错仓。</td>
+          </tr>
+          <tr>
+            <td><b>盘点</b></td>
+            <td>选盘点层级</td>
+            <td class="now">可选任意层级节点</td>
+            <td class="new">仓库层不可选；只能对「公共」或具体三层做盘点范围。</td>
+          </tr>
+          <tr>
+            <td><b>库存分配</b></td>
+            <td>选调出/调入层级</td>
+            <td class="now">调出调入层级可能跨仓、甚至选到仓库层</td>
+            <td class="new">仓库层不可选；调出调入须为<b>同仓</b>下的可存货三层（或公共相关规则）。不能再用「借来的」别的仓的层级。</td>
+          </tr>
+          <tr>
+            <td><b>店铺管理</b></td>
+            <td>配置扣减层级顺序</td>
+            <td class="now">按层级名称绑定，不校验是否属当前仓</td>
+            <td class="new">只能选该店铺对应仓库名下的三层；若绑定到已删/不属于该仓的层级，订单锁库存时会报「请先维护店铺扣减库存优先顺序」。</td>
+          </tr>
+          <tr>
+            <td><b>商品管理</b></td>
+            <td>Excel 导入 SKU 并指定层级</td>
+            <td class="now">填「售后」「Amazon」等名称即可，系统全局按名匹配</td>
+            <td class="new">改后不同仓可有同名层级；导入须带<b>仓库 + 层级名称</b>，否则可能把货写到别的仓的「售后」里。</td>
+          </tr>
+          <tr>
+            <td><b>SMS 订单</b></td>
+            <td>审核/下发时自动锁库存</td>
+            <td class="now">按店铺绑定的扣减顺序找层级</td>
+            <td class="new">锁定前校验绑定层级仍属当前仓库且有效；层级迁移/下线后若未重绑店铺，会出现<b>锁不上货</b>。</td>
+          </tr>
+          <tr>
+            <td><b>第三方 / FBA 仓</b></td>
+            <td>入库、库存同步落层级</td>
+            <td class="now">无自己层级，借用别的仓的层级或落公共池</td>
+            <td class="new">改造后「借用」失效；若无自有层级或公共承接方案，<b>同步/入库会直接卡住</b>（见叁、决策 01/07）。</td>
+          </tr>
+        </table>
+      </div>
+      <p style="font-size:12.5px;color:var(--text-3);margin-top:10px">涉及页面入口：</p>
       <div class="pages">
         <span class="page-chip">调拨单</span>
         <span class="page-chip">备货计划</span>
@@ -297,13 +460,12 @@
         <span class="page-chip">店铺管理·扣减层级</span>
         <span class="page-chip">商品管理·导入SKU</span>
       </div>
-      <p style="font-size:13px;color:var(--text-3);margin-top:10px">规则：仓库层（「德国万邑通仓」这种）只当分组展示、不能选中；能选的是「公共」和实际库存层；切换仓库时层级下拉重新加载，并自动清掉不属于该仓的旧选择。</p>
     </div>
   </section>
 
   <!-- 二、地雷 + 海报 -->
   <section>
-    <div class="sec-head"><span class="idx">贰</span><h2>一个必须提前拍板的地雷</h2><span class="note" style="color:var(--warn)">数据里挖出来的</span></div>
+    <div class="sec-head"><span class="idx">叁</span><h2>必须提前确认的问题</h2></div>
 
     <div class="card">
       <h3>12 个第三方仓，正在"借"别人的层级</h3>
@@ -323,7 +485,7 @@
             <div style="font-size:12px;color:var(--text-2);margin-top:4px">自己没有层级，落库存时借用上面那些仓的层级</div>
           </div>
           <div class="callout danger" style="margin-top:4px">
-            <b>改造后：</b>一个层级只能归属一个仓库 → 这些第三方仓将<b>「无层级可用」</b>，入库、库存同步一起卡住。这是必须业务先拍板的承接问题（见"决策 1"）。
+            <b>改造后：</b>一个层级只能归属一个仓库 → 这些第三方仓将<b>「无层级可用」</b>，入库、库存同步一起卡住。须先确认承接方案（见决策 01、07）。
           </div>
         </div>
       </div>
@@ -331,12 +493,37 @@
       <div class="callout calm" style="margin-top:14px">
         <b>放宽心的一点：</b>真正"一个层级被两个仓同时塞着货"的很少——抽查下来，一个层级散到别的仓只有个位数到十几行量，不是大规模迁移。真正的活，在"怎么承接这些借来的层级"这件事上。
       </div>
+      <div class="biz-impact">
+        <div class="bi-title">对业务操作的影响（第三方 / FBA 仓）</div>
+        <ul>
+          <li><b>亚马逊、Lazada、Shopee 等平台仓：</b>目前入库、FBA 库存同步靠「借层级」或落公共池；改造后借层级不可用，<b>若不先定承接方案，这些仓日常入库和同步会中断</b>。</li>
+          <li><b>运营侧：</b>需确认每个平台仓是「继续走公共」还是「新建仓_公共等业务层级」（决策 07 专讲亚马逊）；定完后才能恢复正常的选层级、落库存。</li>
+          <li><b>和改造点 4 的关系：</b>承接方案定好后，这些仓的操作页也会遵守同一规则——<b>不能选二层仓库层</b>，只能选名下的三层或（若业务确认）公共池。</li>
+        </ul>
+      </div>
     </div>
   </section>
 
   <!-- 四、需拍板 -->
   <section>
-    <div class="sec-head"><span class="idx">叁</span><h2>需要业务拍板的问题（6 项）</h2><span class="note">请评审会逐项勾选</span></div>
+    <div class="sec-head"><span class="idx">肆</span><h2>需要业务确认的问题（7 项）</h2></div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h3 style="margin-bottom:10px">决策总览（一页速查）</h3>
+      <div class="tbl-wrap">
+        <table class="ov">
+          <tr><th>#</th><th>待确认事项</th><th>优先级</th><th>建议方案</th></tr>
+          <tr><td class="idx">01</td><td>12 个第三方仓的层级怎么承接</td><td class="must">高</td><td>A 各仓复制一套层级</td></tr>
+          <tr><td class="idx">03</td><td>「公共」层级未来定位（4,389 行）</td><td class="must">高</td><td>A 保留跨仓公共池</td></tr>
+          <tr><td class="idx">07</td><td>亚马逊仓继续用公共还是新建层级</td><td class="must">高</td><td>B 各站点新建层级</td></tr>
+          <tr><td class="idx">02</td><td>4 个已删层级挂的库存/单据清理</td><td>中</td><td>A 合并到有效层级</td></tr>
+          <tr><td class="idx">04</td><td>25 个存量二层下线节奏</td><td>中</td><td>A 空的下线、有货冻结</td></tr>
+          <tr><td class="idx">06</td><td>数仓取数是否随改造兜住</td><td>中</td><td>A 编号保持不变</td></tr>
+          <tr><td class="idx">05</td><td>15 个售后层级在新结构放哪</td><td>低</td><td>A 归到对应仓库下</td></tr>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text-3);margin-top:10px">01 / 03 / 07 三者有关联：01 定「借层级仓怎么接」，03 定「公共池留不留」，07 定「亚马逊这 8 个站走公共还是自建」——建议连着讨论。</p>
+    </div>
 
     <!-- 决策1 -->
     <div class="dcard">
@@ -346,7 +533,7 @@
         <span class="pri hi">高优先 · 影响最大</span>
       </div>
       <div class="dbody">
-        <div class="bgbox"><b>背景：</b>澳洲亚马逊仓、Lazada马来海外仓、Shopee马来西亚官方仓、德国亚马逊仓等 12 个第三方/售后仓自己没建层级，靠借用「德国万邑通」「英国谷仓」名下层级落库存（见"地雷"一节）。改成"一个层级只属于一个仓库"后，它们会没有可选层级。</div>
+        <div class="bgbox"><b>背景：</b>澳洲亚马逊仓、Lazada马来海外仓、Shopee马来西亚官方仓、德国亚马逊仓等 12 个第三方/售后仓自己没建层级，靠借用「德国万邑通」「英国谷仓」名下层级落库存（见上一节）。改成"一个层级只属于一个仓库"后，它们会没有可选层级。</div>
         <div class="opts">
           <div class="opt rec">
             <span class="otag">方案 A</span>
@@ -363,6 +550,14 @@
           </div>
         </div>
         <div class="why">为什么必须现在定：不定的话，第三方仓的入库和库存同步会全部卡住，这个改造没法上线。</div>
+        <div class="biz-impact" style="margin-top:14px">
+          <div class="bi-title">定了以后，日常操作怎么变</div>
+          <ul>
+            <li><b>方案 A：</b>各第三方仓有自己的三层可选，调拨/入库/同步按<b>本仓名下层级</b>落账，和自营仓操作一致。</li>
+            <li><b>方案 C：</b>这些仓统一落「公共」，操作页里选公共即可，但<b>按站点/按仓看库存、算库龄会混在一起</b>。</li>
+            <li><b>方案 B（不推荐）：</b>继续借用，操作习惯几乎不变，但长期留特例，和「一仓一层级」目标冲突。</li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -415,6 +610,13 @@
           </div>
         </div>
         <div class="why">「公共」是新结构里唯一"不属于任何仓库"的池子，它的定位会影响调拨收货"选公共"这个用法还留不留，建议先定方向。</div>
+        <div class="biz-impact" style="margin-top:14px">
+          <div class="bi-title">定了以后，日常操作怎么变</div>
+          <ul>
+            <li><b>方案 A（推荐）：</b>调拨/备货「收货层级选公共」<b>继续可用</b>；4389 行存量不动，业务无感迁移。</li>
+            <li><b>方案 B：</b>逐步取消公共池，以后收货/调入<b>不能再选公共</b>，须指定到各仓三层；4389 行要按仓拆分迁移，工作量大。</li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -501,11 +703,47 @@
         <div class="why">层级编号是否保持，直接决定数仓要不要重刷历史。方案 A 改动最小，确认后数仓只需跟着新的树结构取数即可。</div>
       </div>
     </div>
+
+    <!-- 决策7 -->
+    <div class="dcard">
+      <div class="dhead">
+        <div class="dnum">07</div>
+        <div class="dtitle">亚马逊仓的库存层级，怎么管？</div>
+        <span class="pri hi">高优先 · 平台/FBA 仓</span>
+      </div>
+      <div class="dbody">
+        <div class="bgbox"><b>背景：</b>澳洲亚马逊仓、英国亚马逊仓、德国亚马逊仓等约 <b>8 个</b>亚马逊 FBA 仓，目前<b>自己名下没建层级</b>——部分库存落在跨仓「公共」池（公共池里约 <b>930 行</b>来自平台/FBA 仓），部分靠借用其他仓的明细层级落货。改造后每个仓都要有明确归属：亚马逊各站点是继续记「公共」，还是各自新建「仓_公共」等业务层级？这会影响 FBA 库存同步落点、逻辑库龄按站点拆分，以及后续层级间分配能不能按站点管。</div>
+        <div class="opts">
+          <div class="opt">
+            <span class="otag">方案 A</span>
+            <span class="odesc">亚马逊仓<b>继续用「公共」承接</b>，不单独建层级。改动最小，但各站点库存混在一个跨仓池里，按站点看库龄、做对账、做分配都拆不开。</span>
+          </div>
+          <div class="opt rec">
+            <span class="otag">方案 B</span>
+            <span class="odesc">各亚马逊仓<b>新建自己的层级</b>（如「英国亚马逊仓_公共」），公共池里属于该仓的库存迁入名下。符合"一仓一层级"，可按站点独立管理，但需一次性建层并定迁移映射。</span>
+            <span class="orec">推荐</span>
+          </div>
+          <div class="opt">
+            <span class="otag">方案 C</span>
+            <span class="odesc"><b>分站点定</b>：有独立运营、需单独看库存/库龄的站点建新层级；暂只记总量、不需拆分的站点继续走「公共」。灵活，但要逐个站点确认并留清单。</span>
+          </div>
+        </div>
+        <div class="why">和决策 01（第三方仓承接）、决策 03（公共池定位）相关：若选 A，公共池会长期承担 FBA 库存；若选 B/C，需同步定各站点存量从公共迁出还是保留。建议运营按站点使用情况一起定。</div>
+        <div class="biz-impact" style="margin-top:14px">
+          <div class="bi-title">定了以后，亚马逊日常操作怎么变</div>
+          <ul>
+            <li><b>方案 A 继续公共：</b>FBA 同步、入库仍选「公共」落账；<b>英/德/澳等各站点库存混在一个池</b>，层级库存、库龄、分配按站点拆不开。</li>
+            <li><b>方案 B 各站自建层级：</b>每个亚马逊仓下有自己的「仓_公共」等三层，同步/入库<b>落到本仓层级</b>；操作页仍不能选二层仓库层，要选其下三层。</li>
+            <li><b>方案 C 分站点：</b>重点站点自建、其余走公共；操作规则同上，但<b>不同站点规则不一致</b>，培训和导入模板要分开维护。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- 五、决策登记表 -->
   <section>
-    <div class="sec-head"><span class="idx">肆</span><h2>决策登记（评审会现场签）</h2></div>
+    <div class="sec-head"><span class="idx">伍</span><h2>决策登记</h2></div>
     <div class="card">
       <div class="tbl-wrap">
         <table class="sign">
@@ -516,9 +754,10 @@
           <tr><td class="idx">04</td><td>25 个二层下线节奏</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
           <tr><td class="idx">05</td><td>售后层级归属</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
           <tr><td class="idx">06</td><td>数仓取数是否随改造一起兜住</td><td class="blank">□ A　□ B　□ C</td><td class="blank"></td><td class="blank"></td></tr>
+          <tr><td class="idx">07</td><td>亚马逊仓层级管理方式</td><td class="blank">□ A　□ B　□ C</td><td class="blank">站点清单：___</td><td class="blank"></td></tr>
         </table>
       </div>
-      <p style="font-size:12px;color:var(--text-3);margin-top:12px">建议先定 01、03（两个高优先），其余四项可会后反馈。</p>
+      <p style="font-size:12px;color:var(--text-3);margin-top:12px">建议优先确认 01、03、07，三者互相关联。</p>
     </div>
   </section>
 
