@@ -1,4 +1,4 @@
-<title>DP 库龄取数逻辑</title>
+<title>DP 库龄 EVA 底表取数说明</title>
 
 <style>
   :root {
@@ -16,92 +16,59 @@
     --red-subtle: #fef2f2;
     --blue: #2563eb;
     --blue-subtle: #eff6ff;
-    --purple: #7c3aed;
     --code-bg: #f1f5f9;
     --table-stripe: #f8fafc;
     --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --border: #334155;
-      --text: #e2e8f0;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      --accent: #2dd4bf;
-      --accent-subtle: #042f2e;
-      --amber: #fbbf24;
-      --amber-subtle: #422006;
-      --red: #f87171;
-      --red-subtle: #450a0a;
-      --blue: #60a5fa;
-      --blue-subtle: #172554;
-      --purple: #a78bfa;
-      --code-bg: #1e293b;
-      --table-stripe: #1a2332;
+      --bg: #0f172a; --surface: #1e293b; --border: #334155;
+      --text: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+      --accent: #2dd4bf; --accent-subtle: #042f2e;
+      --amber: #fbbf24; --amber-subtle: #422006;
+      --red: #f87171; --red-subtle: #450a0a;
+      --blue: #60a5fa; --blue-subtle: #172554;
+      --code-bg: #1e293b; --table-stripe: #1a2332;
       --shadow: 0 1px 3px rgba(0,0,0,.3);
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --border: #334155;
-    --text: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --accent: #2dd4bf;
-    --accent-subtle: #042f2e;
-    --amber: #fbbf24;
-    --amber-subtle: #422006;
-    --red: #f87171;
-    --red-subtle: #450a0a;
-    --blue: #60a5fa;
-    --blue-subtle: #172554;
-    --purple: #a78bfa;
-    --code-bg: #1e293b;
-    --table-stripe: #1a2332;
+    --bg: #0f172a; --surface: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+    --accent: #2dd4bf; --accent-subtle: #042f2e;
+    --amber: #fbbf24; --amber-subtle: #422006;
+    --red: #f87171; --red-subtle: #450a0a;
+    --blue: #60a5fa; --blue-subtle: #172554;
+    --code-bg: #1e293b; --table-stripe: #1a2332;
     --shadow: 0 1px 3px rgba(0,0,0,.3);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
+    background: var(--bg); color: var(--text); line-height: 1.6;
     padding: 2rem 1.5rem 4rem;
   }
-
   .page { max-width: 960px; margin: 0 auto; }
 
   .header {
-    margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
+    margin-bottom: 2.5rem; padding-bottom: 1.5rem;
     border-bottom: 2px solid var(--border);
   }
   .header .eyebrow {
-    font-size: .75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: var(--accent);
-    margin-bottom: .5rem;
+    font-size: .75rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--accent); margin-bottom: .5rem;
   }
   .header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -.02em; }
   .header .meta {
-    margin-top: .75rem;
-    font-size: .875rem;
-    color: var(--text-secondary);
+    margin-top: .75rem; font-size: .875rem; color: var(--text-secondary);
     display: flex; gap: 1.5rem; flex-wrap: wrap;
   }
 
   section { margin-bottom: 2.5rem; }
   h2 {
-    font-size: 1.2rem; font-weight: 650;
-    margin-bottom: 1rem; padding-bottom: .5rem;
-    border-bottom: 1px solid var(--border);
+    font-size: 1.2rem; font-weight: 650; margin-bottom: 1rem;
+    padding-bottom: .5rem; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; gap: .5rem;
   }
   h2 .num {
@@ -110,6 +77,7 @@
     background: var(--accent); color: #fff;
     font-size: .75rem; font-weight: 700; flex-shrink: 0;
   }
+  h2.ref .num { background: var(--text-muted); }
   h3 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 .5rem; }
   h4 { font-size: .9rem; font-weight: 600; margin: 0 0 .5rem; }
   p { margin-bottom: .75rem; color: var(--text-secondary); }
@@ -117,10 +85,8 @@
 
   .card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;
-    box-shadow: var(--shadow);
+    border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow);
   }
-
   .info {
     padding: .75rem 1rem; border-radius: 6px;
     font-size: .875rem; margin-bottom: 1rem; line-height: 1.5;
@@ -130,10 +96,16 @@
   .info-red { background: var(--red-subtle); border-left: 3px solid var(--red); }
   .info-blue { background: var(--blue-subtle); border-left: 3px solid var(--blue); }
 
+  .divider {
+    margin: 3rem 0 2rem; padding-top: 1rem;
+    border-top: 2px dashed var(--border);
+    font-size: .8rem; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .06em;
+  }
+
   .table-wrap {
     overflow-x: auto; margin-bottom: 1rem;
-    border: 1px solid var(--border); border-radius: 6px;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border); border-radius: 6px; box-shadow: var(--shadow);
   }
   table {
     width: 100%; border-collapse: collapse;
@@ -141,8 +113,8 @@
   }
   thead { background: var(--code-bg); }
   thead th {
-    text-align: left; padding: .625rem .75rem;
-    font-weight: 600; font-size: .8rem; color: var(--text-secondary);
+    text-align: left; padding: .625rem .75rem; font-weight: 600;
+    font-size: .8rem; color: var(--text-secondary);
     text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
     border-bottom: 2px solid var(--border);
   }
@@ -178,211 +150,793 @@
     white-space: pre; color: var(--text);
   }
 
-  .tree {
-    font-family: "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
-    font-size: .78rem; line-height: 1.7; padding: .75rem 1rem;
-    background: var(--code-bg); border-radius: 6px; margin-bottom: 1rem;
-    white-space: pre; overflow-x: auto; color: var(--text);
-  }
-
   ul, ol { margin: .5rem 0 .75rem 1.25rem; color: var(--text-secondary); }
   li { margin-bottom: .35rem; }
   li strong { color: var(--text); }
 
   .badge {
     display: inline-block; padding: .15em .5em; border-radius: 3px;
-    font-size: .75rem; font-weight: 600; letter-spacing: .02em;
+    font-size: .75rem; font-weight: 600;
   }
   .badge-green { background: var(--accent-subtle); color: var(--accent); }
   .badge-amber { background: var(--amber-subtle); color: var(--amber); }
   .badge-red { background: var(--red-subtle); color: var(--red); }
   .badge-blue { background: var(--blue-subtle); color: var(--blue); }
+  .badge-gray { background: var(--code-bg); color: var(--text-muted); }
 
   .grid-2 {
     display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;
   }
   @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
 
-  .highlight { background: var(--accent-subtle); border-radius: 3px; padding: 0 .2em; }
+  .link-chain { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1rem; }
+  .link-item {
+    display: flex; gap: .75rem; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: .875rem 1rem; box-shadow: var(--shadow);
+  }
+  .link-item .link-idx {
+    flex-shrink: 0; width: 1.5rem; height: 1.5rem; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: .75rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: .1rem;
+  }
+  .link-item .link-body { flex: 1; min-width: 0; }
+  .link-item .link-title { font-weight: 650; font-size: .9rem; margin-bottom: .25rem; }
+  .link-item .link-desc { font-size: .85rem; color: var(--text-secondary); line-height: 1.55; }
+  .link-item .link-desc code { font-size: .82em; }
 </style>
 
 <div class="page">
 
 <header class="header">
-  <div class="eyebrow">DP 库龄计算方案</div>
-  <h1>逻辑库龄：业务操作如何影响库龄</h1>
+  <div class="eyebrow">DP 逻辑库龄 · 数据组取数同步</div>
+  <h1>EVA 底表取数说明（层级仓 × SKU 库龄）</h1>
   <div class="meta">
-    <span>方案版本：5.6.0（继承库龄仅存在于「库存分配」场景）</span>
-    <span>目标仓库：第三方仓海外仓</span>
-    <span>更新：2026-08-26</span>
+    <span>文档用途：同步 EVA 生产底表结构与取数口径</span>
+    <span>计算实现：数据组侧（FIFO 等推演逻辑见附录）</span>
+    <span>更新：2026-08-28</span>
   </div>
 </header>
 
-<!-- ===== 1. 方案定位 ===== -->
+<!-- ===== 1. 文档说明 ===== -->
 <section>
-<h2><span class="num">1</span> 方案定位</h2>
+<h2><span class="num">1</span> 文档说明与取数目标</h2>
 
-<p>按 <strong>「层级仓 × SKU × 批次」</strong> 三个维度，用 <strong>FIFO（先进先出）</strong> 推演出每一批货的剩余数量和库龄天数，回答业务问题：<strong>现在躺在仓库里的货，各自压了多久了？</strong></p>
+<p>本文面向<strong>数据组</strong>，说明从 EVA 生产库（<code>eva_wms</code>）抽取逻辑库龄计算所需底表的<strong>表结构、关联关系与取值规则</strong>。</p>
 
 <div class="info info-accent">
-  <strong>三条核心规则，记住这三条就够：</strong>
-  <br>① 库龄 = 目标日 − 批次入库日（用<strong>业务时间</strong>，不是系统写流水的时间）；
-  <br>② FIFO：出库时总是先扣<strong>最早入库</strong>的那批；
-  <br>③ 库龄「继承」<strong>只发生在「库存分配」一个动作</strong>——其他任何入库都是重新计龄，任何出库都是消耗最老批次。
+  <strong>取数目标：</strong>按 <strong>「仓库 × 层级仓（private_id）× SKU」</strong> 维度，导出层级库存变动流水及初始化快照，供数据组在自有环境完成库龄推演。<br>
+  <strong>边界：</strong>整仓逻辑库龄（默认 FIFO）已存在；本次重点是<strong>拆到层级仓</strong>。具体 FIFO 推演、库龄区间划分等计算逻辑在数据组侧实现，本文附录仅作业务口径参考。
 </div>
 
-<p>一句话区分「继承」与「重算」：<strong>货物理上没动、只是改了记账层级，库龄要继承；货真的进仓/出仓了，库龄就重算/消耗。</strong></p>
+<div class="flow">
+  <span class="step accent">EVA 底表</span>
+  <span class="arrow">→</span>
+  <span class="step">过滤 / 关联 / 回表取时间</span>
+  <span class="arrow">→</span>
+  <span class="step">数据组导出层</span>
+  <span class="arrow">→</span>
+  <span class="step">数据组 FIFO 推演（附录参考）</span>
+</div>
+
+<p><strong>试点范围（示例）：</strong>SPL 仓体系 wh_id ∈ {21, 22, 68, 74, 117}；当前流水主要集中在 <code>wh_id=21</code>（SPL仓），其余子仓可按需扩展。</p>
 </section>
 
-<!-- ===== 2. 业务操作如何影响库龄 ===== -->
+<!-- ===== 2. 底表概况 ===== -->
 <section>
-<h2><span class="num">2</span> 业务操作如何影响库龄（核心）</h2>
+<h2><span class="num">2</span> EVA 相关底表概况</h2>
 
-<p>库龄不是事后「算」出来的玄学，而是由<strong>你在系统里做的每一个操作</strong>决定的。下表把「操作」和「库龄后果」一一对应：</p>
+<p>算层级库龄，本质上需要两类数据：</p>
+<ul>
+  <li><strong>起始日各层级仓有多少货</strong> → 来自快照表 <code>t_wms_inventory_private</code></li>
+  <li><strong>起始日之后每笔入/出/分配怎么变</strong> → 来自流水表 <code>t_wms_inventory_private_log</code></li>
+</ul>
+<p>其余表都是<strong>辅助</strong>：给 ID 翻译成名称、给流水补上真实的出入库时间。</p>
+
+<div class="info info-accent">
+  <strong>一句话理解表关系：</strong>以<strong>流水表</strong>为中心往外连——左边连层级/仓库表拿名称，右边连出入库单拿真实时间；快照表单独取，作为推演起点。
+</div>
+
+<h3>2.0 取数链路（按这个顺序理解）</h3>
+<div class="link-chain">
+  <div class="link-item">
+    <div class="link-idx">①</div>
+    <div class="link-body">
+      <div class="link-title">从流水表取「谁、在哪、变了多少」</div>
+      <div class="link-desc">主表 <code>t_wms_inventory_private_log</code>：每条记录是一次库存变动。关键字段：<code>private_id</code>（哪个层级仓）、<code>wh_id</code>（哪个仓库）、<code>sku</code>、<code>change_qty</code>（±数量）、<code>business_type</code>（入库/出库/分配）。</div>
+    </div>
+  </div>
+  <div class="link-item">
+    <div class="link-idx">②</div>
+    <div class="link-body">
+      <div class="link-title">关联层级表 / 仓库表 → 把 ID 翻译成名称</div>
+      <div class="link-desc">流水.<code>private_id</code> = 层级表.<code>level_id</code> → 得到「分销_FR_SPL」等层级名；流水.<code>wh_id</code> = 仓库表.<code>wh_id</code> → 得到「SPL仓」等仓库名。<strong>只是翻译，不产生新数据。</strong></div>
+    </div>
+  </div>
+  <div class="link-item">
+    <div class="link-idx">③</div>
+    <div class="link-body">
+      <div class="link-title">用 bound_no 回出入库单 → 取真实业务时间</div>
+      <div class="link-desc">流水上的 <code>create_time</code> 是系统写账时间，<strong>不能用来算库龄</strong>。入库流水用 <code>bound_no</code> 关联 <code>t_wms_inbound.inbound_no</code> 取 <code>inbound_time</code>；出库流水关联 <code>t_wms_outbound.outbound_no</code> 取 <code>outbound_time</code>。</div>
+    </div>
+  </div>
+  <div class="link-item">
+    <div class="link-idx">④</div>
+    <div class="link-body">
+      <div class="link-title">单独取快照表 → 作为推演起始库存</div>
+      <div class="link-desc"><code>t_wms_inventory_private</code> 记录某一时点（如 8/30）各层级仓 SKU 的可用/锁定结存，<strong>不是变动流水</strong>，而是告诉数据组「从这天开始，各层级仓手里有多少货」。</div>
+    </div>
+  </div>
+</div>
+
+<h3>2.1 各表分工一览</h3>
+<table>
+  <thead>
+    <tr><th>表名</th><th>库</th><th>角色</th><th>取什么 / 怎么连</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>t_wms_inventory_private_log</code></td>
+      <td>eva_wms</td>
+      <td><span class="badge badge-green">主表</span></td>
+      <td>层级库存变动流水；<strong>主表，所有变动从这里出</strong></td>
+    </tr>
+    <tr>
+      <td><code>t_wms_inventory_level</code></td>
+      <td>eva_wms</td>
+      <td><span class="badge badge-blue">维度</span></td>
+      <td>层级仓名称；<strong>LEFT JOIN</strong> 流水.<code>private_id = level_id</code></td>
+    </tr>
+    <tr>
+      <td><code>t_wms_inventory_private</code></td>
+      <td>eva_wms</td>
+      <td><span class="badge badge-blue">快照</span></td>
+      <td>起始日各层级 SKU 结存；<strong>独立查询</strong>，不 JOIN 流水</td>
+    </tr>
+    <tr>
+      <td><code>t_wms_warehouse</code></td>
+      <td>eva_wms</td>
+      <td><span class="badge badge-gray">维度</span></td>
+      <td>仓库名称；<strong>LEFT JOIN</strong> 流水.<code>wh_id = wh_id</code>，或用于 WHERE 过滤</td>
+    </tr>
+    <tr>
+      <td><code>t_wms_inbound</code></td>
+      <td>eva_wms</td>
+      <td><span class="badge badge-amber">回表</span></td>
+      <td>入库真实时间；流水.<code>bound_no = inbound_no</code> → 取 <code>inbound_time</code></td>
+    </tr>
+    <tr>
+      <td><code>t_wms_outbound</code></td>
+      <td>eva_wms</td>
+      <td><span class="badge badge-amber">回表</span></td>
+      <td>出库真实时间；流水.<code>bound_no = outbound_no</code> → 取 <code>outbound_time</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>2.2 主表：层级库存流水 <code>t_wms_inventory_private_log</code></h3>
+<p>一条记录 = 一次库存变动。<strong>同一业务动作可能写多条流水</strong>（按库存类型拆分，如可用/锁定各一条）。</p>
 
 <div class="table-wrap">
 <table>
   <thead>
-    <tr><th>业务操作</th><th>系统里发生了什么</th><th>库龄后果</th><th>业务类型</th></tr>
+    <tr><th>字段</th><th>说明</th><th>取值要点</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>采购入库</strong> / 盘点入库 / 退货入库 / 维修入库 / 加工入库 / 移除入库 / 其他入库</td><td>货物到仓上架</td><td><span class="badge badge-green">🆕 新起批次</span>，库龄从到货日算起</td><td><code>1/2/4/5/6/7/100</code></td></tr>
-    <tr><td><strong>调拨入库</strong></td><td>货从 A 仓运到 B 仓</td><td><span class="badge badge-green">🆕 新起批次</span>，按 B 仓到货日重新计龄（<strong>不继承</strong>源仓）</td><td><code>3</code></td></tr>
-    <tr><td><strong>销售出库 / 调拨出库 / 盘亏 / 加工出库 / 其他出库</strong></td><td>货物离开仓库</td><td><span class="badge badge-blue">⬇️ 先出最老</span>，FIFO 扣减最早入库的批次</td><td><code>-4 / -3 / -2 / -6 / -100</code></td></tr>
-    <tr><td><strong>库存分配（IA）</strong></td><td>同一仓库内，层级 A → 层级 B 转移，货<strong>没动</strong></td><td><span class="badge badge-amber">🔄 继承库龄</span>（唯一继承场景），沿用原批次日期</td><td><code>1000</code></td></tr>
-    <tr><td>下单占用 / 取消订单释放</td><td>可用 ↔ 锁定的内部转移</td><td><span class="badge badge-amber">➖ 不影响</span>，不算出入库</td><td><code>-200 ~ -600</code></td></tr>
+    <tr><td><code>private_id</code></td><td>层级仓 ID</td><td>关联 <code>t_wms_inventory_level.level_id</code>；库龄拆分的主维度</td></tr>
+    <tr><td><code>wh_id</code></td><td>仓库 ID</td><td>过滤取数范围（如 SPL 仓 = 21）</td></tr>
+    <tr><td><code>sku_id</code> / <code>sku</code></td><td>SKU</td><td>与层级仓组成推演粒度</td></tr>
+    <tr><td><code>change_qty</code></td><td>变更数量</td><td>正 = 增，负 = 减</td></tr>
+    <tr><td><code>result_qty</code></td><td>变更后结存</td><td>可用于勾稽校验</td></tr>
+    <tr><td><code>business_type</code></td><td>业务类型编码</td><td><strong>区分入库/出库/锁定/分配</strong>（见第 3 节）</td></tr>
+    <tr><td><code>inventory_type</code></td><td>库存类型</td><td>1 可用 / 2 锁定 / 4 调拨在途</td></tr>
+    <tr><td><code>in_out_type</code></td><td>出入方向</td><td>1 入库 / 2 出库 / 空 = 冲正；须配合 business_type 与 bound_no 判断</td></tr>
+    <tr><td><code>bound_no</code></td><td>出入库单号</td><td>回表取业务时间；<strong>真出库甄别关键字段</strong></td></tr>
+    <tr><td><code>business_no</code></td><td>业务单据号</td><td>库存分配（1000）出腿/入腿配对用</td></tr>
+    <tr><td><code>create_time</code></td><td>流水创建时间</td><td>仅用于排序；<strong>不能作为库龄时间锚点</strong></td></tr>
+    <tr><td><code>del_flag</code></td><td>删除标记</td><td>必须 = 0</td></tr>
   </tbody>
 </table>
 </div>
 
-<div class="info info-blue">
-  <strong>为什么「调拨入库」不继承、而「库存分配」继承？</strong>调拨是<strong>跨仓库</strong>搬运，货到了新仓就是新仓的「新可用库存」，库龄从头算；库存分配是<strong>同一仓库内改归属标签</strong>，货没挪窝，只是换了记账层级——如果重新计龄，等于把旧库存「洗白」，掩盖真实滞销。详见第 3、4 节。
-</div>
-</section>
-
-<!-- ===== 3. 库存分配：唯一继承库龄的场景 ===== -->
-<section>
-<h2><span class="num">3</span> 库存分配 —— 唯一继承库龄的场景</h2>
-
-<h3>业务场景是什么</h3>
-<p>把一批货从<strong>「公共层级」</strong>划一部分到<strong>「分销_FR_SPL」</strong>层级。货还放在同一个仓库的同一批库存里，<strong>物理位置、SKU、数量都没变，变的只是「这批货记在哪个层级名下」</strong>。</p>
-
-<h3>为什么必须「继承」库龄，不能重新计龄</h3>
-<div class="info info-red">
-  <strong>假设不继承：</strong>一批货 3 月入库，放了 5 个月；8 月做一次「库存分配」移到分销层级。如果按 8 月分配日重新计龄，这批货的库龄瞬间从「150 天」归零成「0 天」——系统会把它当新货卖，<strong>掩盖了真实滞销，库龄报表严重失真</strong>。
-</div>
-<p>正确做法：分配后，目标层级承接的货<strong>沿用它在原层级时的入库日期</strong>，该多少天还是多少天。</p>
-
-<h3>继承机制（数据上怎么体现）</h3>
-<p>一次库存分配会写<strong>两条</strong>流水，用同一个分配单号（IA 单号）串起来：</p>
-
-<div class="code-block">【层级 A 出腿】private_log:
-  business_type = 1000, change_qty = -200, private_id = A
-  → A 层级的 FIFO 队列扣掉最老的 200 件（例：100 件是 6/15 入的、100 件是 7/1 入的）
-
-【层级 B 入腿】private_log:
-  business_type = 1000, change_qty = +200, private_id = B
-  → B 层级新增的 200 件，批次日期<strong>照抄</strong>刚才 A 扣掉的那两批：6/15(100)、7/1(100)
-  → 而不是用「分配日」当批次日期</div>
-
-<div class="flow">
-  <span class="step">A 层最老批次<br>6/15 × 100 / 7/1 × 100</span>
-  <span class="arrow">→</span>
-  <span class="step accent">分配单 IA</span>
-  <span class="arrow">→</span>
-  <span class="step">B 层继承批次<br>6/15 × 100 / 7/1 × 100</span>
-  <span class="arrow">→</span>
-  <span class="step">库龄不变<br>该 150 天还是 150 天</span>
-</div>
-
-<div class="info info-accent">
-  <strong>关键点：</strong>行业内通常叫「层级库龄 / 逻辑库龄继承」。记住一句话——<strong>分配是「改标签」不是「搬货」，标签变了，货的年龄不能变。</strong>
-</div>
-</section>
-
-<!-- ===== 4. 调拨为什么不继承 ===== -->
-<section>
-<h2><span class="num">4</span> 调拨为什么「不继承」库龄</h2>
-
-<p><strong>调拨 = 跨仓库搬运</strong>。货从 A 仓发货（<code>-3</code> 调拨出库），在途一段时间，到 B 仓收货（<code>3</code> 调拨入库）。</p>
-
-<div class="code-block">【源仓 A】发货：business_type=-3，FIFO 扣掉 A 仓最老批次 200 件
-   （A 仓这 200 件的库龄到这里「终结」）
-
-【在途】... 2-3 周 ...
-
-【目标仓 B】到货：business_type=3，按 B 仓到货日 inbound_time 新起一批 200 件
-   （B 仓这 200 件的库龄从「到货日」开始算，0 天起）</div>
-
-<div class="info info-blue">
-  <strong>业务含义：</strong>对 B 仓而言，到货的是一批「新到可用库存」。库龄口径是<strong>分仓独立计算</strong>——B 仓从这批货进自己仓库起算它的年龄。在途时间不是「丢失」，而是 B 仓库龄的天经定义。这也是为什么调拨入库在数据上按普通入库一样处理，<strong>不需要</strong>关联源仓批次做继承。
-</div>
-</section>
-
-<!-- ===== 5. 技术落点：数据取数与推演 ===== -->
-<section>
-<h2><span class="num">5</span> 技术落点：数据取数与 FIFO 推演</h2>
-
-<p class="text-secondary" style="font-size:.875rem;color:var(--text-muted);">本节面向数据/开发，业务同学可跳过，只看结论即可。</p>
-
-<h3>5.1 数据源与业务时间锚点</h3>
-<p>层级库存变动的<strong>唯一数据源</strong>是 <code>t_wms_inventory_private_log</code>（层级库存流水表）。但它的 <code>create_time</code> 是<strong>系统写流水的时刻</strong>，比真实业务时间晚 15-40 小时，<strong>不能用来算库龄</strong>。</p>
-
-<div class="info info-accent">
-  <strong>业务时间必须回表取：</strong>入库取单据的 <code>inbound_time</code>（上架时间），出库取 <code>outbound_time</code>（发货时间）。关联方式：入库 <code>bound_no → t_wms_inbound.inbound_no</code>，出库 <code>bound_no → t_wms_outbound.outbound_no</code>。
-</div>
-
-<h3>5.2 出库流水 bound_no 大量为空（不是数据缺漏）</h3>
-<p>销售/调拨出库是「先占用、后发货」两段式，流水分多批写：</p>
+<h3>2.3 维度表：层级仓 <code>t_wms_inventory_level</code></h3>
 <div class="table-wrap">
 <table>
-  <thead><tr><th>阶段</th><th>inventory_type</th><th>change_qty</th><th>bound_no</th><th>对库龄</th></tr></thead>
+  <thead><tr><th>字段</th><th>说明</th></tr></thead>
   <tbody>
-    <tr><td>占用·扣可用</td><td>1（可用）</td><td>负</td><td>空</td><td>跳过（内部转移）</td></tr>
-    <tr><td>占用·加锁定</td><td>2（锁定）</td><td>正</td><td>空</td><td>跳过（内部转移）</td></tr>
-    <tr><td><strong>发货·扣锁定（真出库）</strong></td><td>2（锁定）</td><td>负</td><td><strong>有值</strong></td><td>FIFO 消耗</td></tr>
-    <tr><td>释放·退订</td><td>2→1</td><td>负→正</td><td>空</td><td>跳过（内部转移）</td></tr>
+    <tr><td><code>level_id</code></td><td>层级仓 ID（= 流水表 private_id）</td></tr>
+    <tr><td><code>level_name</code></td><td>层级仓名称，如「分销_FR_SPL」</td></tr>
+    <tr><td><code>level_code</code></td><td>层级仓编码</td></tr>
+    <tr><td><code>parent_id</code></td><td>父层级 ID（树结构）</td></tr>
+    <tr><td><code>enable_stock</code></td><td>是否可存货（1=是）</td></tr>
   </tbody>
 </table>
 </div>
+<p>SPL 仓示例：根节点 <code>level_id=138, level_name='SPL仓', parent_id=1</code>，其下约 33 个子层级（分销_XX_SPL、物料_XX_SPL、调拨_XX_SPL 等）。</p>
+
+<h3>2.4 快照表：层级库存 <code>t_wms_inventory_private</code></h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>字段</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td><code>private_id</code></td><td>层级仓 ID</td></tr>
+    <tr><td><code>wh_id</code></td><td>仓库 ID</td></tr>
+    <tr><td><code>sku</code></td><td>SKU 编码</td></tr>
+    <tr><td><code>available_qty</code></td><td>可用库存</td></tr>
+    <tr><td><code>booking_qty</code></td><td>锁定库存</td></tr>
+    <tr><td><code>allocate_onroad_qty</code></td><td>调拨在途</td></tr>
+  </tbody>
+</table>
+</div>
+<p>用途：取推演起始日（如 8/30）各层级仓 SKU 的结存，作为 FIFO 队列初始批次。SOH（现货）= 可用 + 锁定。</p>
+</section>
+
+<!-- ===== 3. 流水过滤：哪些取、哪些舍 ===== -->
+<section>
+<h2><span class="num">3</span> 流水过滤规则（取数核心）</h2>
+
 <div class="info info-red">
-  <strong>甄别真出库的唯一稳定口径：<code>in_out_type='2'</code> 且 <code>bound_no</code> 非空。</strong>占用/释放是「可用↔锁定」内部转移，总量不变，必须跳过，否则库存被提前扣掉、库龄整体偏新。
+  <strong>重要：</strong>流水表并非每条记录都代表「真正的入库/出库」。约一半为锁定/释放/冲正等<strong>内部转移</strong>，不改变库存总量，<strong>必须排除</strong>，否则结存会被提前扣减。
 </div>
 
-<h3>5.3 库存分配（IA）在数据上的识别</h3>
-<p>库存分配不走标准在库/在途出库模型，特征如下：</p>
+<h3>3.1 四类动作，取数只保留三类</h3>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>动作</th><th>判断条件</th><th>总量变吗</th><th>是否取</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>入库</strong></td>
+      <td><code>business_type</code> ∈ {2,3,4,6,7,100} 且 <code>in_out_type='1'</code>；调拨入库（3）另须 <code>inventory_type='1'</code> 且 <code>change_qty&gt;0</code>（见 3.5）</td>
+      <td>✅ 增加</td>
+      <td><span class="badge badge-green">取</span></td>
+    </tr>
+    <tr>
+      <td><strong>出库（真发货）</strong></td>
+      <td><code>business_type</code> ∈ {-2,-3,-4,-6,-100} 且 <code>in_out_type='2'</code> 且 <code>bound_no</code> 非空</td>
+      <td>✅ 减少</td>
+      <td><span class="badge badge-green">取</span></td>
+    </tr>
+    <tr>
+      <td><strong>库存分配 IA</strong></td>
+      <td><code>business_type='1000'</code></td>
+      <td>⚠️ 同仓层级间转移</td>
+      <td><span class="badge badge-green">取</span>（单独查询，见 5.2）</td>
+    </tr>
+    <tr>
+      <td>锁定 lock</td>
+      <td><code>business_type</code> ∈ {-200,-300,-400,-500,-600}</td>
+      <td>❌ 不变</td>
+      <td><span class="badge badge-gray">舍</span></td>
+    </tr>
+    <tr>
+      <td>占用 / 释放 / 冲正</td>
+      <td><code>bound_no</code> 为空</td>
+      <td>❌ 不变</td>
+      <td><span class="badge badge-gray">舍</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.2 business_type 编码对照（SPL 仓生产分布供参考）</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>business_type</th><th>含义</th><th>条数（约）</th><th>取/舍</th></tr></thead>
+  <tbody>
+    <tr><td>-200</td><td>订单锁定</td><td>~40,000</td><td>❌ 舍</td></tr>
+    <tr><td>-4</td><td>销售出库</td><td>~20,000</td><td>✅ 取（须 bound_no 非空）</td></tr>
+    <tr><td>-3</td><td>调拨出库</td><td>~700</td><td>✅ 取</td></tr>
+    <tr><td>-100 / -2 / -6</td><td>其他/盘点/加工出库</td><td>少量</td><td>✅ 取</td></tr>
+    <tr><td>3</td><td>调拨入库</td><td>~4,500</td><td>✅ 取</td></tr>
+    <tr><td>4 / 100 / 2 / 6 / 7</td><td>退货/其他/盘点/加工/移除入库</td><td>~1,000+</td><td>✅ 取</td></tr>
+    <tr><td>1000</td><td>库存分配 IA</td><td>~700</td><td>✅ 取（双流水）</td></tr>
+    <tr><td>-300 ~ -600</td><td>其他锁定</td><td>~300</td><td>❌ 舍</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.3 为什么出库必须加 <code>bound_no</code> 非空</h3>
+<p>销售（-4）、调拨（-3）等出库采用「先占用、后发货」两段式，同一类型下多种流水 <code>in_out_type</code> 均可能为 <code>'2'</code>：</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>阶段</th><th>inventory_type</th><th>change_qty</th><th>bound_no</th><th>取/舍</th></tr></thead>
+  <tbody>
+    <tr><td>占用·扣可用</td><td>1（可用）</td><td>负</td><td>空</td><td>❌ 舍</td></tr>
+    <tr><td>占用·加锁定</td><td>2（锁定）</td><td>正</td><td>空</td><td>❌ 舍</td></tr>
+    <tr><td><strong>发货·扣锁定</strong></td><td>2（锁定）</td><td>负</td><td><strong>有值</strong></td><td>✅ 取</td></tr>
+    <tr><td>释放·退订</td><td>2→1</td><td>负→正</td><td>空</td><td>❌ 舍</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="info info-accent">
+  <strong>稳定口径：真出库 = <code>in_out_type='2'</code> 且 <code>bound_no IS NOT NULL AND bound_no &lt;&gt; ''</code></strong>
+</div>
+
+<h3>3.4 直接可用的 WHERE 条件</h3>
+<p><strong>入库：</strong></p>
+<div class="code-block">WHERE wh_id = 21
+  AND del_flag = 0
+  AND in_out_type = '1'
+  AND (
+      business_type IN ('2','4','6','7','100')
+      OR (business_type = '3' AND inventory_type = '1' AND change_qty > 0)
+  )</div>
+
+<p><strong>出库（真发货）：</strong></p>
+<div class="code-block">WHERE wh_id = 21
+  AND del_flag = 0
+  AND business_type IN ('-2','-3','-4','-6','-100')
+  AND in_out_type = '2'
+  AND bound_no IS NOT NULL AND bound_no &lt;&gt; ''</div>
+
+<p><strong>库存分配 IA：</strong></p>
+<div class="code-block">WHERE wh_id = 21
+  AND del_flag = 0
+  AND business_type = '1000'</div>
+
+<h3>3.5 调拨入库：排除在途配对行</h3>
+<p>调拨收货（<code>business_type='3'</code>）时，同一 SKU 往往成对写两条流水：<strong>在途减少</strong>（<code>inventory_type='4'</code>，负向）+ <strong>可用增加</strong>（<code>inventory_type='1'</code>，正向）。两条均满足 <code>in_out_type='1'</code>，若不过滤会把在途行误当作入库批次。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>inventory_type</th><th>change_qty</th><th>含义</th><th>取/舍</th></tr></thead>
+  <tbody>
+    <tr><td>4（调拨在途）</td><td>负</td><td>在途减少，与可用增加配对</td><td><span class="badge badge-gray">舍</span></td></tr>
+    <tr><td>1（可用）</td><td>正</td><td>目的仓可用增加，新批次起点</td><td><span class="badge badge-green">取</span></td></tr>
+  </tbody>
+</table>
+</div>
+<p>生产样本 <code>AS26081200013 / IB260828680</code>：每个 SKU 均为「在途 -N + 可用 +N」配对，入库取数只保留 <code>inventory_type='1' AND change_qty&gt;0</code> 那条。</p>
+
+<h3>3.6 自有仓 / 平台仓始发调拨（无源仓出库流水）</h3>
+<div class="info info-blue">
+  <strong>业务前提：</strong>始发仓为<strong>自有仓</strong>（<code>wh_type=1</code>）或<strong>平台仓</strong>时，EVA 将其视为「无限库存、不做本地库存监管」——<strong>不写锁定、不写源仓可用/锁定出库流水</strong>。库龄取数<strong>不应期待</strong>在源仓 <code>private_log</code> 里找到 <code>-300</code> 锁定或 <code>-3</code> 真出库（<code>bound_no</code> 有值）记录。
+</div>
+
+<p>与第三方仓始发的标准四段式（锁定 → 真出库 → 目的在途↑）不同，自有仓始发链路如下：</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>阶段</th><th>始发仓（自有/平台）</th><th>目的仓（第三方）</th><th>private_log</th></tr></thead>
+  <tbody>
+    <tr><td>建发货单</td><td>不占用、无锁定流水</td><td>不变</td><td>通常无</td></tr>
+    <tr><td>发货</td><td><strong>无出库流水</strong></td><td>调拨在途↑（<code>inventory_type=4</code>）</td><td>仅目的仓；<code>bound_no</code> 常为空</td></tr>
+    <tr><td>收货</td><td>—</td><td>在途↓ + 可用↑（调拨入库 IB）</td><td>目的仓；按 3.5 取可用+</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>生产样本 <code>AS26082500007</code>：始发 <strong>立讯发货仓</strong>（自有仓）→ 目的 <strong>筋斗云DWA仓</strong>（第三方仓）。流水<strong>全部落在目的仓</strong>（34 条），特征为 <code>business_type=-3</code>、<code>inventory_type=4</code>、<code>change_qty&gt;0</code>、<code>bound_no</code> 空——这是在途增加，<strong>不是源仓出库</strong>，现有 <code>bound_no</code> 非空过滤会正确排除，无需额外规则。</p>
+
+<div class="info info-accent">
+  <strong>库龄推演含义：</strong>自有仓始发时，源仓 private 层<strong>无出库可取</strong>，库龄不在源仓终结；目的仓侧等 IB 收货后按 <code>inbound_time</code> <strong>新起批次</strong>（与调拨入库口径一致，不继承源仓）。
+</div>
+
+<p>对比：第三方仓始发样本 <code>AS26082700002</code>（NAVER_KR → 公共）有完整 <code>-300</code> 锁定 2 条 + <code>-3</code> 真出库 1 条（源仓 <code>inventory_type=2</code>，<code>bound_no=OB260828295</code>）+ 目的在途 1 条（<code>inventory_type=4</code>，正向，不算源仓出库）。</p>
+</section>
+
+<!-- ===== 4. 业务时间锚点 ===== -->
+<section>
+<h2><span class="num">4</span> 业务时间怎么取（不能直接用 create_time）</h2>
+
+<div class="info info-red">
+  流水表 <code>create_time</code> 是<strong>系统写流水的时刻</strong>，通常比真实业务时间晚 15–40 小时，<strong>不能用于库龄计算</strong>。须通过 <code>bound_no</code> 回标准出入库单取实际时间。
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>流向</th><th>business_type</th><th>取哪个时间</th><th>来源表</th><th>关联方式</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>入库</td>
+      <td>2/3/4/6/7/100 等</td>
+      <td><code>inbound_time</code></td>
+      <td><code>t_wms_inbound</code></td>
+      <td>流水 <code>bound_no = inbound_no</code></td>
+    </tr>
+    <tr>
+      <td>出库</td>
+      <td>-2/-3/-4/-6/-100 等</td>
+      <td><code>outbound_time</code></td>
+      <td><code>t_wms_outbound</code></td>
+      <td>流水 <code>bound_no = outbound_no</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="info info-amber">
+  <strong>注意 other 单时间字段：</strong><code>t_wms_other_inbound</code> / <code>t_wms_other_outbound</code> 上有两套时间——<code>other_*_time</code> 是制单时间（<strong>不能用</strong>），<code>inbound_time</code> / <code>outbound_time</code> 才是实际出入仓时间。建议直接回标准单 <code>t_wms_inbound</code> / <code>t_wms_outbound</code> 取时间，无需关联 other 表。
+</div>
+
+<p>库存分配（1000）无标准出入库单，时间锚点在数据组推演层处理（附录 A.3 说明继承规则）。</p>
+</section>
+
+<!-- ===== 5. 参考 SQL ===== -->
+<section>
+<h2><span class="num">5</span> 参考 SQL 与建议输出字段</h2>
+
+<h3>5.1 出入库流水 + 层级仓（主查询）</h3>
+<div class="code-block">SELECT
+    l.private_id,
+    lv.level_name        AS level_name,
+    lv.parent_id,
+    l.wh_id,
+    l.sku_id,
+    l.sku,
+    l.change_qty,
+    l.result_qty,
+    l.business_type,
+    l.inventory_type,
+    l.in_out_type,
+    l.bound_no,
+    l.business_no,
+    l.create_time
+FROM eva_wms.t_wms_inventory_private_log l
+LEFT JOIN eva_wms.t_wms_inventory_level lv
+    ON l.private_id = lv.level_id AND lv.del_flag = 0
+WHERE l.wh_id = 21
+  AND l.del_flag = 0
+  AND (
+      (l.business_type IN ('2','4','6','7','100') AND l.in_out_type = '1')
+      OR (l.business_type = '3' AND l.in_out_type = '1'
+          AND l.inventory_type = '1' AND l.change_qty > 0)
+      OR
+      (l.business_type IN ('-2','-3','-4','-6','-100') AND l.in_out_type = '2'
+        AND l.bound_no IS NOT NULL AND l.bound_no &lt;&gt; '')
+  )
+ORDER BY l.sku, l.private_id, l.create_time;</div>
+
+<h3>5.2 库存分配 IA 双流水（单独查）</h3>
+<div class="code-block">SELECT
+    l.private_id, l.wh_id, l.sku_id, l.sku,
+    l.change_qty,          -- 负=出腿(from)，正=入腿(to)
+    l.business_no,         -- 分配单号，出/入同号
+    l.inventory_type,
+    l.create_time
+FROM eva_wms.t_wms_inventory_private_log l
+WHERE l.wh_id = 21
+  AND l.del_flag = 0
+  AND l.business_type = '1000'
+ORDER BY l.business_no, l.change_qty DESC, l.create_time;</div>
+<p>一次分配 = 同 <code>business_no</code> 下一条 <code>change_qty&lt;0</code>（from 出）+ 一条 <code>change_qty&gt;0</code>（to 入）。</p>
+
+<h3>5.3 起始日库存快照（初始化）</h3>
+<div class="code-block">SELECT
+    p.private_id, lv.level_name, p.wh_id, p.sku,
+    p.available_qty, p.booking_qty, p.allocate_onroad_qty
+FROM eva_wms.t_wms_inventory_private p
+LEFT JOIN eva_wms.t_wms_inventory_level lv
+    ON p.private_id = lv.level_id AND lv.del_flag = 0
+WHERE p.wh_id = 21
+  AND p.del_flag = 0
+  AND (p.available_qty > 0 OR p.booking_qty > 0);</div>
+
+<h3>5.4 建议输出字段</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>输出字段</th><th>来源</th><th>说明</th></tr></thead>
+  <tbody>
+    <tr><td>private_id</td><td>流水表</td><td>层级仓 ID</td></tr>
+    <tr><td>level_name</td><td>关联 level 表</td><td>层级仓名称</td></tr>
+    <tr><td>wh_id</td><td>流水表</td><td>仓库 ID</td></tr>
+    <tr><td>sku</td><td>流水表</td><td>SKU 编码</td></tr>
+    <tr><td>change_qty</td><td>流水表</td><td>变动数量（正入负出）</td></tr>
+    <tr><td>result_qty</td><td>流水表</td><td>结存（勾稽用）</td></tr>
+    <tr><td>business_type</td><td>流水表</td><td>业务类型</td></tr>
+    <tr><td>in_out_type</td><td>流水表</td><td>出入方向</td></tr>
+    <tr><td>bound_no</td><td>流水表</td><td>回表取业务时间</td></tr>
+    <tr><td>business_no</td><td>流水表</td><td>IA 配对用</td></tr>
+    <tr><td>biz_time</td><td>回表 inbound/outbound</td><td><strong>库龄时间锚点</strong>（非 create_time）</td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<!-- ===== 6. 取数注意事项 ===== -->
+<section>
+<h2><span class="num">6</span> 取数注意事项</h2>
+
+<div class="grid-2">
+  <div class="card">
+    <h4>① 时间锚点</h4>
+    <p style="margin:0;font-size:.875rem">入库取 <code>inbound_time</code>，出库取 <code>outbound_time</code>；不用流水 <code>create_time</code>。</p>
+  </div>
+  <div class="card">
+    <h4>② IA 单独查</h4>
+    <p style="margin:0;font-size:.875rem"><code>business_type=1000</code> 双流水不在普通过滤里混排，建议单独导出后在推演层合并。</p>
+  </div>
+  <div class="card">
+    <h4>③ 整仓结果复用</h4>
+    <p style="margin:0;font-size:.875rem">整仓逻辑库龄（FIFO）已存在；本取数仅用于<strong>层级拆分</strong>，不必重算整仓。</p>
+  </div>
+  <div class="card">
+    <h4>④ 不良品</h4>
+    <p style="margin:0;font-size:.875rem">当前 SPL 仓 <code>defect_qty</code> 全为 0，暂不纳入；后续启用再扩展。</p>
+  </div>
+  <div class="card">
+    <h4>⑤ 数据量</h4>
+    <p style="margin:0;font-size:.875rem">SPL 仓流水约 7.5 万条（2025-06 ~ 2026-08），可全量导出。</p>
+  </div>
+  <div class="card">
+    <h4>⑥ 层级改造影响</h4>
+    <p style="margin:0;font-size:.875rem">库存层级改造后树结构会变，但 <code>level_id</code> 可保持不变；取数关联仍以 <code>private_id = level_id</code> 为准。</p>
+  </div>
+  <div class="card">
+    <h4>⑦ 调拨入库过滤</h4>
+    <p style="margin:0;font-size:.875rem">type=3 须加 <code>inventory_type='1' AND change_qty&gt;0</code>，排除在途配对行（见 3.5）。</p>
+  </div>
+  <div class="card">
+    <h4>⑧ 自有仓始发</h4>
+    <p style="margin:0;font-size:.875rem">自有仓/平台仓始发调拨无源仓出库流水，只关注目的仓在途→入库（见 3.6、7.8）。</p>
+  </div>
+</div>
+
+<div class="info info-red">
+  <strong>取数阶段最需验证的两点：</strong><br>
+  1. 出库过滤是否误含占用/释放（须 <code>bound_no</code> 非空）；<br>
+  2. IA（1000）双流水是否完整配对（同 <code>business_no</code> 一正一负）。<br>
+  详见第 7 节生产单据逐项核验结果。
+</div>
+</section>
+
+<!-- ===== 7. 生产单据验证 ===== -->
+<section>
+<h2><span class="num">7</span> 生产单据验证（2026-08-28）</h2>
+
+<p>以下样本均来自 EVA 生产库 <code>eva_wms.t_wms_inventory_private_log</code>，按「近期完结、各类型各一单」抽样，对照第 3 节过滤规则逐项标注取/舍。验证时间：2026-08-28。</p>
+
+<h3>7.1 验证总览</h3>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>单据类型</th><th>样本单号</th><th>仓库 / 层级</th><th>流水条数</th><th>规则应取</th><th>结论</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SO 销售出库</td>
+      <td><code>SO260827008804</code><br><code>OB2608281100</code></td>
+      <td>万邑通澳洲仓 · Shopify_AU</td>
+      <td>3</td>
+      <td>1</td>
+      <td><span class="badge badge-green">通过</span></td>
+    </tr>
+    <tr>
+      <td>RT 退货入库</td>
+      <td><code>RT260818000128</code><br><code>IB260828685</code></td>
+      <td>AU-澳洲TSC售后仓</td>
+      <td>1</td>
+      <td>1</td>
+      <td><span class="badge badge-green">通过</span></td>
+    </tr>
+    <tr>
+      <td>AS 调拨出库（第三方始发）</td>
+      <td><code>AS26082700002</code><br><code>OB260828295</code></td>
+      <td>NAVER_KR → 公共</td>
+      <td>4</td>
+      <td>1（源仓真发货）</td>
+      <td><span class="badge badge-green">通过</span></td>
+    </tr>
+    <tr>
+      <td>AS 调拨入库</td>
+      <td><code>AS26081200013</code><br><code>IB260828680</code></td>
+      <td>—</td>
+      <td>每 SKU 2 条</td>
+      <td>1 / SKU（可用+）</td>
+      <td><span class="badge badge-amber">须 3.5 过滤</span></td>
+    </tr>
+    <tr>
+      <td>IA 库存分配</td>
+      <td><code>IA260828008</code></td>
+      <td>官网_KR ↔ 售后_KR</td>
+      <td>4</td>
+      <td>4</td>
+      <td><span class="badge badge-green">通过</span></td>
+    </tr>
+    <tr>
+      <td>OOB 其他出库</td>
+      <td><code>OOB260828055</code><br><code>OB260828535</code></td>
+      <td>万邑通德国售后仓 · 公共</td>
+      <td>1</td>
+      <td>1</td>
+      <td><span class="badge badge-green">通过</span></td>
+    </tr>
+    <tr>
+      <td>AS 调拨（自有仓始发）</td>
+      <td><code>AS26082500007</code></td>
+      <td>立讯发货仓 → 筋斗云DWA仓</td>
+      <td>34（仅目的仓）</td>
+      <td>0（在途中间态）</td>
+      <td><span class="badge badge-green">通过</span>（见 3.6）</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>7.2 SO 销售出库 — SO260827008804</h3>
+<p>SKU <code>S820-ST-EK-AU-000</code>，同一业务动作 3 条流水：</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>阶段</th><th>business_type</th><th>inventory_type</th><th>change_qty</th><th>bound_no</th><th>判定</th></tr></thead>
+  <tbody>
+    <tr><td>占用·扣可用</td><td>-200</td><td>1</td><td>-1</td><td>空</td><td>❌ 舍</td></tr>
+    <tr><td>占用·加锁定</td><td>-200</td><td>2</td><td>+1</td><td>空</td><td>❌ 舍</td></tr>
+    <tr><td><strong>真发货</strong></td><td><strong>-4</strong></td><td>2</td><td><strong>-1</strong></td><td><strong>OB2608281100</strong></td><td>✅ 取</td></tr>
+  </tbody>
+</table>
+</div>
+<p>时间：<code>outbound_time</code> = 2026-08-28 14:19:04，<code>create_time</code> = 14:35:06（差约 16 分钟）→ 证实<strong>必须用 outbound_time</strong>。</p>
+
+<h3>7.3 RT 退货入库 — RT260818000128</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>字段</th><th>值</th></tr></thead>
+  <tbody>
+    <tr><td>business_type / in_out_type</td><td>4 / 1（退货入库）</td></tr>
+    <tr><td>inventory_type / change_qty</td><td>1（可用）/ +1</td></tr>
+    <tr><td>bound_no</td><td>IB260828685</td></tr>
+    <tr><td>inbound_time / create_time</td><td>2026-08-28 13:54:31 / 14:35:05</td></tr>
+  </tbody>
+</table>
+</div>
+<p>符合入库规则 → ✅ 取，时间回 <code>inbound_time</code>。</p>
+
+<h3>7.4 AS 调拨出库（第三方始发）— AS26082700002</h3>
+<p>SKU <code>E210-ST-PR-KR-000</code>：</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>阶段</th><th>business_type</th><th>inventory_type</th><th>change_qty</th><th>bound_no</th><th>层级</th><th>判定</th></tr></thead>
+  <tbody>
+    <tr><td>锁定·扣可用</td><td>-300</td><td>1</td><td>-36</td><td>空</td><td>NAVER_KR</td><td>❌ 舍</td></tr>
+    <tr><td>锁定·加锁定</td><td>-300</td><td>2</td><td>+36</td><td>空</td><td>NAVER_KR</td><td>❌ 舍</td></tr>
+    <tr><td><strong>真发货·扣锁定</strong></td><td><strong>-3</strong></td><td>2</td><td><strong>-36</strong></td><td><strong>OB260828295</strong></td><td>NAVER_KR</td><td>✅ 取</td></tr>
+    <tr><td>在途增加</td><td>-3</td><td>4</td><td>+36</td><td>OB260828295</td><td>公共</td><td>⚠️ 不算源仓出库</td></tr>
+  </tbody>
+</table>
+</div>
+<p><code>outbound_time</code> = 2026-08-28 07:26:41。源仓 FIFO 出库只取第 3 条；第 4 条是目的侧在途记账。</p>
+
+<h3>7.5 AS 调拨入库 — AS26081200013</h3>
+<p>以 SKU <code>8020300513</code> 为例，成对流水：</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>inventory_type</th><th>change_qty</th><th>bound_no</th><th>inbound_time</th><th>判定</th></tr></thead>
+  <tbody>
+    <tr><td>4（在途）</td><td>-120</td><td>IB260828680</td><td>2026-08-27 18:00:00</td><td>❌ 舍（配对行）</td></tr>
+    <tr><td>1（可用）</td><td>+120</td><td>IB260828680</td><td>2026-08-27 18:00:00</td><td>✅ 取</td></tr>
+  </tbody>
+</table>
+</div>
+<p><code>create_time</code> 比 <code>inbound_time</code> 晚约 15 小时，再次印证业务时间须回 IB 单。</p>
+
+<h3>7.6 IA 库存分配 — IA260828008</h3>
+<p>2 个 SKU，各一正一负，<code>bound_no</code> 均为空：</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>SKU</th><th>出腿（负）</th><th>入腿（正）</th></tr></thead>
+  <tbody>
+    <tr><td>E320-ST-GY-KR-000</td><td>官网_KR −1</td><td>售后_KR +1</td></tr>
+    <tr><td>T010-ST-BK-KR-000</td><td>官网_KR −1</td><td>售后_KR +1</td></tr>
+  </tbody>
+</table>
+</div>
+<p>4 条均取（<code>business_type=1000</code>），推演层做库龄继承。</p>
+
+<h3>7.7 OOB 其他出库 — OOB260828055</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>字段</th><th>值</th></tr></thead>
+  <tbody>
+    <tr><td>business_type / in_out_type</td><td>-100 / 2</td></tr>
+    <tr><td>change_qty / bound_no</td><td>-12 / OB260828535</td></tr>
+    <tr><td>outbound_time</td><td>2026-08-28 00:00:00</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>7.8 AS 调拨（自有仓始发）— AS26082500007</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>字段</th><th>值</th></tr></thead>
+  <tbody>
+    <tr><td>始发仓</td><td>立讯发货仓（<code>wh_type=1</code> 自有仓）</td></tr>
+    <tr><td>目的仓</td><td>筋斗云DWA仓（<code>wh_type=2</code> 第三方仓）</td></tr>
+    <tr><td>流水所在</td><td><strong>仅目的仓 wh_id=23</strong>，共 34 条；始发仓无流水</td></tr>
+    <tr><td>流水特征</td><td><code>business_type=-3</code>、<code>inventory_type=4</code>、<code>change_qty&gt;0</code>、<code>bound_no</code> 空</td></tr>
+    <tr><td>业务含义</td><td>发货后在目的仓记「调拨在途↑」，非源仓出库</td></tr>
+    <tr><td>取数结论</td><td>34 条均 ❌ 舍；等 IB 收货后按 3.5 取可用+入库</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>7.9 验证结论汇总</h3>
+<div class="grid-2">
+  <div class="card">
+    <h4>✅ 已验证通过</h4>
+    <ul style="margin:.5rem 0 0 1rem;font-size:.875rem">
+      <li>锁定/占用（-200/-300，bound_no 空）正确排除</li>
+      <li>真出库（-4/-3/-100 + bound_no 有值）正确纳入</li>
+      <li>退货入库（type=4, in_out_type=1）正确纳入</li>
+      <li>IA 分配（1000）双流水完整</li>
+      <li>bound_no 兜底区分占用/释放/在途与真发货</li>
+      <li>业务时间须回 IB/OB 单，不能用 create_time</li>
+      <li>自有仓始发无源仓出库流水，符合 3.6 预期</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>⚠️ 取数须额外注意</h4>
+    <ul style="margin:.5rem 0 0 1rem;font-size:.875rem">
+      <li>调拨入库须 <code>inventory_type='1' AND change_qty&gt;0</code>（3.5）</li>
+      <li>第三方调拨发货时 inventory_type=4 正向流水不算源仓出库</li>
+      <li>自有仓/平台仓始发：不期待源仓 -3 真出库流水（3.6）</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ===== 附录：计算逻辑参考 ===== -->
+<div class="divider">以下供数据组推演参考 · 具体计算在数据组侧实现</div>
+
+<section>
+<h2 class="ref"><span class="num">A</span> 附录：库龄计算逻辑参考</h2>
+
+<p>本节说明 EVA 侧业务口径，供数据组设计 FIFO 推演时使用。<strong>不作为取数强制约束</strong>，实现细节由数据组自行决定。</p>
+
+<h3>A.1 基本口径</h3>
 <ul>
-  <li><code>business_type = '1000'</code>（<code>INVENTORY_ASSIGN</code>）；</li>
-  <li>一次分配是<strong>两条</strong>流水，同 <code>business_no</code>（= 分配单号 assignNo）：一条 <code>change_qty&lt;0</code>（from 层级出）、一条 <code>change_qty&gt;0</code>（to 层级入）；</li>
-  <li>两条都在<strong>同一仓库</strong>内，仓库总量不变，只变层级。</li>
+  <li>推演维度：<strong>仓库 × 层级仓 × SKU × 批次</strong></li>
+  <li>库龄天数 = 目标日 − 批次入库日（用<strong>业务时间</strong> biz_time）</li>
+  <li>出库按 <strong>FIFO</strong>：先消耗最早入库的批次</li>
+  <li>起始日快照作为各层级 FIFO 队列初始批次（批次日期可用起始日前一天近似）</li>
 </ul>
 
-<h3>5.4 FIFO 推演伪代码</h3>
-<div class="code-block">// batch_queue: Map&lt;(wh_id, private_id, sku_id), Deque&lt;Batch&gt;&gt;  按批次日期升序
-// assign_consumed: Map&lt;assignNo, [批次]&gt;   库存分配的「出腿消耗」缓存
+<h3>A.2 业务操作与库龄后果（对照表）</h3>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>业务操作</th><th>business_type</th><th>库龄后果（推演层）</th></tr></thead>
+  <tbody>
+    <tr><td>采购/盘点/退货/维修/加工/移除/其他入库</td><td>1/2/4/5/6/7/100</td><td><span class="badge badge-green">新起批次</span>，从 inbound_time 计龄</td></tr>
+    <tr><td>调拨入库</td><td>3</td><td><span class="badge badge-green">新起批次</span>，按目标仓到货日计龄（<strong>不继承</strong>源仓）</td></tr>
+    <tr><td>销售/调拨/盘点/加工/其他出库</td><td>-4/-3/-2/-6/-100</td><td><span class="badge badge-blue">FIFO 消耗</span>最老批次</td></tr>
+    <tr><td>库存分配 IA</td><td>1000</td><td><span class="badge badge-amber">继承库龄</span>（唯一继承场景）</td></tr>
+    <tr><td>下单占用 / 取消释放</td><td>-200 ~ -600</td><td><span class="badge badge-gray">不影响</span>（已在上游过滤排除）</td></tr>
+  </tbody>
+</table>
+</div>
 
-// 1. 初始化：起始日快照作为各层级初始批次（批次日期用起始日前一天近似）
+<h3>A.3 库存分配 IA —— 唯一继承库龄的场景</h3>
+<p>同仓内层级 A → 层级 B 转移，货物理未动，仅改记账层级。若按分配日重新计龄，旧库存库龄会被「洗白」。</p>
+<div class="code-block">【出腿】business_type=1000, change_qty&lt;0, private_id=A
+  → A 层级 FIFO 消耗最老批次，按 business_no 缓存消耗批次及日期
 
-// 2. 逐笔推演（按 biz_time 升序，同时刻入在前出在后）
-FOR EACH doc IN docs:
-    IF doc.business_type == '1000':            // —— 库存分配（唯一继承场景）——
-        IF doc.change_qty &lt; 0:                 // 出腿：from 层级 FIFO 消耗
-            assign_consumed[doc.business_no] = FIFO_deduct(from_key, |change_qty|)
-        ELSE:                                  // 入腿：to 层级继承 from 消耗的批次
-            FOR EACH batch IN assign_consumed[doc.business_no]:
-                batch_queue[to_key].push({date: batch.date, qty: batch.qty})
+【入腿】business_type=1000, change_qty&gt;0, private_id=B
+  → B 层级新增批次，日期<strong>照抄</strong>出腿消耗的批次日期（非分配日）</div>
 
-    ELSE IF doc.in_out_type == '1':            // —— 普通入库（含调拨入库）——
-        batch_queue[key].push({date: doc.inbound_time, qty: doc.change_qty})  // 新起批次
+<h3>A.4 调拨为什么不继承</h3>
+<p>调拨（-3/3）是跨仓搬运：源仓出库终结该批次库龄，目标仓按 <code>inbound_time</code> 新起批次。与 IA（1000）同仓改标签不同，<strong>不要混用继承逻辑</strong>。</p>
+<p><strong>自有仓始发例外：</strong>始发为自有仓/平台仓时源仓无 private 出库流水（见正文 3.6），库龄只在目的仓侧从 IB 收货日起算；不存在源仓 FIFO 扣减。</p>
 
-    ELSE IF doc.in_out_type == '2' AND doc.bound_no 非空:   // —— 真出库 ——
-        FIFO_deduct(key, doc.change_qty)       // 消耗最老批次
+<h3>A.5 FIFO 推演伪代码（参考）</h3>
+<div class="code-block">// batch_queue: Map&lt;(wh_id, private_id, sku), Deque&lt;Batch&gt;&gt;
+// assign_consumed: Map&lt;business_no, [批次]&gt;
 
-    // 其他（占用/释放/调拨出库的占用腿等）：一律跳过
+FOR EACH doc IN docs ORDER BY biz_time ASC:
+    IF doc.business_type == '1000':
+        IF doc.change_qty &lt; 0:
+            assign_consumed[doc.business_no] = FIFO_deduct(from_key, |qty|)
+        ELSE:
+            push cached batches to to_key (inherit dates)
+    ELSE IF doc.in_out_type == '1':
+        batch_queue[key].push({date: inbound_time, qty: change_qty})
+    ELSE IF doc.in_out_type == '2' AND bound_no 非空:
+        FIFO_deduct(key, |change_qty|)
 
-// 3. 算库龄：对每个 (wh, private, sku) 的每个 batch，aging = 目标日 − batch.date</div>
+// aging = 目标日 − batch.date</div>
 
-<h3>5.5 库龄区间</h3>
+<h3>A.6 库龄区间（参考）</h3>
 <div class="table-wrap">
 <table>
   <thead><tr><th>区间</th><th>范围</th></tr></thead>
@@ -395,35 +949,17 @@ FOR EACH doc IN docs:
   </tbody>
 </table>
 </div>
-</section>
 
-<!-- ===== 6. 风险与交付 ===== -->
-<section>
-<h2><span class="num">6</span> 关键风险与交付</h2>
-
+<h3>A.7 推演阶段关键风险</h3>
 <div class="info info-red">
-  <strong>风险1：误把「库存分配」当普通出库+入库。</strong>如果数据组不识别 <code>business_type=1000</code> 的双流水继承关系，分配的货会被「出库一条 + 重新入库一条」拆开重算，库龄被洗白。这是本方案最核心的一处，务必第一优先验证。
+  <strong>风险1：</strong>误把 IA（1000）当普通出库+入库 → 库龄被洗白。须识别双流水继承关系。
 </div>
-
 <div class="info info-amber">
-  <strong>风险2：占用/释放混入真出库。</strong>销售/调拨的「占用、取消释放」流水 <code>in_out_type</code> 也是 '2'，仅靠方向判断会误扣库存，必须用 <code>bound_no</code> 非空兜底。
+  <strong>风险2：</strong>占用/释放混入真出库 → 须在上游取数已用 bound_no 非空过滤；推演层勿重复扣减。
 </div>
-
 <div class="info info-amber">
-  <strong>风险3：SPL中转仓层级缺失。</strong>SPL中转仓（wh_id=68）目前仅配「公共」层级，若要拆分中转仓库龄，需先完成层级初始化。
+  <strong>风险3：</strong>初始快照批次日期为近似值（起始日前一天），对 180 天+ 长库龄分类影响有限。
 </div>
-
-<div class="info info-amber">
-  <strong>风险4：初始库存批次日期为近似值。</strong>起始日库存统一按「起始日前一天」作为批次日期，对 180 天+ 长库龄的分类无影响，精确批次需从历史快照恢复。
-</div>
-
-<h3>交付节奏</h3>
-<div class="flow">
-  <span class="step">9/2 前<br>SPL仓数据验证<br>重点：库存分配继承</span>
-  <span class="arrow">→</span>
-  <span class="step accent">9/20 前<br>整体交付</span>
-</div>
-
 </section>
 
 </div>
