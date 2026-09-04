@@ -153,7 +153,7 @@
         <div class="page-head">
           <div>
             <h1>库存层级</h1>
-            <p class="desc">本期：树顶部新增「全部」聚合根（虚拟节点）；本页为纯基础配置，不展示库存数量（库存数量在「汇总库存/层级库存」页查看）；列表不再展示层级编码列；二层节点新增时必选仓库，名称与编码自动取仓库主数据。</p>
+            <p class="desc">本期：树顶部新增「全部」聚合根（虚拟节点）；本页为纯基础配置，不展示库存数量（库存数量在「汇总库存/层级库存」页查看）；本期去掉层级编码（level_code），层级一律以层级 ID（level_id）定位；二层节点新增时必选仓库，名称自动取仓库主数据。</p>
           </div>
           <button class="toggle-notes" id="toggleNotes" onclick="toggleNotes()">隐藏交互提示</button>
         </div>
@@ -172,7 +172,7 @@
           <table>
             <thead>
               <tr>
-                <th>层级名称<i class="note" data-note="本期列表不再展示层级编码列；层级编码只在新增/编辑/查看层级时展示，由系统自动生成（R1-R3）。">2</i></th>
+                <th>层级名称<i class="note" data-note="本期去掉层级编码（level_code），层级一律以层级 ID（level_id）定位；列表不展示编码列。">2</i></th>
                 <th>创建人</th>
                 <th>创建时间</th>
                 <th>更新人</th>
@@ -198,7 +198,6 @@
             <select id="fWarehouse" onchange="onWarehouseChange()"></select>
           </div>
         </div>
-        <div class="m-row"><label class="req">层级编码</label><div class="ctl"><input type="text" id="fCode" readonly><div class="hint">系统自动生成，不可编辑</div></div></div>
         <div class="m-row"><label class="req">层级名称</label><div class="ctl"><input type="text" id="fName" placeholder="请输入层级名称" maxlength="128"></div></div>
         <div class="m-row"><label>显示排序</label><div class="ctl"><input type="number" id="fSort" min="0" value="1"></div></div>
         <div class="m-row"><label class="req">是否售后库存层级<i class="note" data-note="保留现有字段「是否售后库存层级」（level_type：1=售后层级/0=正常层级，新增默认「否」）：标记为「是」的层级用于售后库存查询接口（供顺丰 SF 查库存），未配则接口返回空；与本期「公共层级标记」is_public 是不同字段。">6</i></label><div class="ctl"><div class="radio-group">
@@ -253,28 +252,28 @@ const whOf = id => WAREHOUSES.find(w => w.id === id);
 
 /* ============ 层级树数据（目标结构：全部 → 公共/仓库 → 虚拟层级） ============ */
 let seq = 100;
-const mk = (o) => Object.assign({code:'', type:'virtual', whId:null, enableStock:true, levelType:0, createBy:'', createTime:'', updateBy:'', updateTime:'', stock:{avail:0,lock:0,onroad:0}, children:[]}, o, {id:o.id || ('n'+(seq++))});
+const mk = (o) => Object.assign({type:'virtual', whId:null, enableStock:true, levelType:0, createBy:'', createTime:'', updateBy:'', updateTime:'', stock:{avail:0,lock:0,onroad:0}, children:[]}, o, {id:o.id || ('n'+(seq++))});
 
 let treeData = [ mk({
   id:'root', name:'全部', type:'all', enableStock:false, stock:{avail:0,lock:0,onroad:0},
   children: [
-    mk({id:'pub', name:'公共', type:'special', code:'', createBy:'admin', createTime:'2025-01-17 10:23:45', stock:{avail:4372,lock:0,onroad:0}, children:[]}),
-    mk({id:'w7', name:'德国万邑通仓', type:'warehouse', whId:7, code:'WYT001', createBy:'Stone', createTime:'2025-03-05 14:02:11', stock:{avail:0,lock:0,onroad:0}, children:[
-      mk({id:'c7a', name:'德国万邑通仓_公共', code:'WYT001_01', createBy:'Stone', createTime:'2025-03-05 14:03:00', stock:{avail:980,lock:0,onroad:0}}),
-      mk({id:'c7b', name:'售后_EU', code:'WYT001_02', createBy:'Stone', createTime:'2025-03-06 09:30:00', stock:{avail:210,lock:12,onroad:30}}),
-      mk({id:'c7c', name:'Shopify_UK', code:'WYT001_03', createBy:'015675', createTime:'2025-05-11 16:45:00', stock:{avail:96,lock:20,onroad:66}})
+    mk({id:'pub', name:'公共', type:'special', createBy:'admin', createTime:'2025-01-17 10:23:45', stock:{avail:4372,lock:0,onroad:0}, children:[]}),
+    mk({id:'w7', name:'德国万邑通仓', type:'warehouse', whId:7, createBy:'Stone', createTime:'2025-03-05 14:02:11', stock:{avail:0,lock:0,onroad:0}, children:[
+      mk({id:'c7a', name:'德国万邑通仓_公共', createBy:'Stone', createTime:'2025-03-05 14:03:00', stock:{avail:980,lock:0,onroad:0}}),
+      mk({id:'c7b', name:'售后_EU', createBy:'Stone', createTime:'2025-03-06 09:30:00', stock:{avail:210,lock:12,onroad:30}}),
+      mk({id:'c7c', name:'Shopify_UK', createBy:'015675', createTime:'2025-05-11 16:45:00', stock:{avail:96,lock:20,onroad:66}})
     ]}),
-    mk({id:'w6', name:'谷仓英国仓', type:'warehouse', whId:6, code:'GC001', createBy:'Stone', createTime:'2025-02-18 11:20:33', stock:{avail:0,lock:0,onroad:0}, children:[
-      mk({id:'c6a', name:'谷仓英国仓_公共', code:'GC001_01', createBy:'Stone', createTime:'2025-02-18 11:21:00', stock:{avail:1540,lock:0,onroad:0}}),
-      mk({id:'c6b', name:'谷仓英国仓_售后', code:'GC001_02', createBy:'Stone', createTime:'2025-02-20 08:12:00', stock:{avail:473,lock:40,onroad:120}})
+    mk({id:'w6', name:'谷仓英国仓', type:'warehouse', whId:6, createBy:'Stone', createTime:'2025-02-18 11:20:33', stock:{avail:0,lock:0,onroad:0}, children:[
+      mk({id:'c6a', name:'谷仓英国仓_公共', createBy:'Stone', createTime:'2025-02-18 11:21:00', stock:{avail:1540,lock:0,onroad:0}}),
+      mk({id:'c6b', name:'谷仓英国仓_售后', createBy:'Stone', createTime:'2025-02-20 08:12:00', stock:{avail:473,lock:40,onroad:120}})
     ]}),
-    mk({id:'w1', name:'英国仓', type:'warehouse', whId:1, code:'UK001', createBy:'Stone', createTime:'2025-01-20 09:00:00', stock:{avail:1512,lock:0,onroad:0}}),
-    mk({id:'w2', name:'法国仓', type:'warehouse', whId:2, code:'FR001', createBy:'Stone', createTime:'2025-01-20 09:05:00', stock:{avail:876,lock:0,onroad:0}}),
-    mk({id:'w3', name:'SPL仓', type:'warehouse', whId:3, code:'SPL001', createBy:'Stone', createTime:'2025-01-22 10:11:00', stock:{avail:1234,lock:0,onroad:0}}),
-    mk({id:'w4', name:'SPL售后仓', type:'warehouse', whId:4, code:'SPL002', createBy:'Stone', createTime:'2025-02-01 15:30:00', stock:{avail:342,lock:0,onroad:0}}),
-    mk({id:'w8', name:'澳洲TSC仓', type:'warehouse', whId:8, code:'TSC001', createBy:'015675', createTime:'2025-04-12 13:22:00', stock:{avail:720,lock:0,onroad:0}}),
-    mk({id:'w10', name:'KR-韩国菜鸟仓', type:'warehouse', whId:10, code:'KR001', createBy:'015675', createTime:'2025-04-25 09:44:00', stock:{avail:293,lock:0,onroad:0}}),
-    mk({id:'w11', name:'JP-POP UP活动销售仓', type:'warehouse', whId:11, code:'JP001', createBy:'015675', createTime:'2025-06-01 18:02:00', enableStock:false, stock:{avail:0,lock:0,onroad:0}})
+    mk({id:'w1', name:'英国仓', type:'warehouse', whId:1, createBy:'Stone', createTime:'2025-01-20 09:00:00', stock:{avail:1512,lock:0,onroad:0}}),
+    mk({id:'w2', name:'法国仓', type:'warehouse', whId:2, createBy:'Stone', createTime:'2025-01-20 09:05:00', stock:{avail:876,lock:0,onroad:0}}),
+    mk({id:'w3', name:'SPL仓', type:'warehouse', whId:3, createBy:'Stone', createTime:'2025-01-22 10:11:00', stock:{avail:1234,lock:0,onroad:0}}),
+    mk({id:'w4', name:'SPL售后仓', type:'warehouse', whId:4, createBy:'Stone', createTime:'2025-02-01 15:30:00', stock:{avail:342,lock:0,onroad:0}}),
+    mk({id:'w8', name:'澳洲TSC仓', type:'warehouse', whId:8, createBy:'015675', createTime:'2025-04-12 13:22:00', stock:{avail:720,lock:0,onroad:0}}),
+    mk({id:'w10', name:'KR-韩国菜鸟仓', type:'warehouse', whId:10, createBy:'015675', createTime:'2025-04-25 09:44:00', stock:{avail:293,lock:0,onroad:0}}),
+    mk({id:'w11', name:'JP-POP UP活动销售仓', type:'warehouse', whId:11, createBy:'015675', createTime:'2025-06-01 18:02:00', enableStock:false, stock:{avail:0,lock:0,onroad:0}})
   ]
 })];
 
@@ -326,7 +325,7 @@ function render(){
     // 标注：三层公共层级手动建（对第一个仓_公共行）；关联仓库说明（对第一个仓库节点）
     let nameNote = '';
     if(n.type==='all') nameNote = '<i class="note" data-note="「全部」为本期新增的虚拟聚合根：前端/查询层合成、不落数据行，公共与各仓库归入二层（R12）。">1</i>';
-    else if(n.type==='warehouse' && !warehouseAnnotated){ warehouseAnnotated = true; nameNote = '<i class="note" data-note="二层节点与仓库主数据关联：新增时必选仓库，名称/编码自动取仓库主数据且只读置灰；同一仓库仅一个二层节点（R14、R18-R19）。">3</i>'; }
+    else if(n.type==='warehouse' && !warehouseAnnotated){ warehouseAnnotated = true; nameNote = '<i class="note" data-note="二层节点与仓库主数据关联：新增时必选仓库，名称自动取仓库主数据且只读置灰；同一仓库仅一个二层节点（R14、R18-R19）。">3</i>'; }
     else if(n.name && /_公共$/.test(n.name) && !pubAnnotated){ pubAnnotated = true; nameNote = '<i class="note" data-note="三层公共层级不再默认建，由业务手动新增；公共标记字段本期只加定义、不填值（R14、R4）。">5</i>'; }
     const ops = opsHtml(n);
     html += `<tr class="${n.type==='all'?'root-row':''}">
@@ -347,7 +346,7 @@ function opsHtml(n){
   out.push(`<button class="link" onclick="openForm('view','${n.id}')">查看</button>`);
   // 新增按钮：全部可新增二层；仓库可新增三层；公共/三层虚拟层级不允许新增子级
   if(n.type==='all'){
-    out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增<i class="note" data-note="点击新增：在「全部」下新增二层节点，弹窗中必须选择仓库，否则无法保存；新增时父层级、名称/编码均只读置灰，不提供能否存货选项（R14、R19）。">4</i></button>`);
+    out.push(`<button class="link" onclick="openForm('add','${n.id}')">新增<i class="note" data-note="点击新增：在「全部」下新增二层节点，弹窗中必须选择仓库，否则无法保存；新增时父层级、名称均只读置灰，不提供能否存货选项（R14、R19）。">4</i></button>`);
   } else if(n.type==='special'){
     // 二层公共：不允许新增子级
   } else if(n.type==='virtual'){
@@ -390,18 +389,21 @@ function buildParentOptions(){
   sel.innerHTML = opts.map(o => `<option value="${o.id}">${'　'.repeat(o.depth)}${esc(o.name)}</option>`).join('');
   return opts;
 }
-function buildWarehouseOptions(){
+function buildWarehouseOptions(keepId){
   const sel = document.getElementById('fWarehouse');
   const enabled = WAREHOUSES.filter(w=>w.status==='启用');
-  const has = id => !!findNode(String(id)) || treeData[0].children.some(c => c.type==='warehouse' && c.whId===id);
-  sel.innerHTML = enabled.map(w => `<option value="${w.id}">${esc(w.name)}（${w.code}）${has(w.id)?' · 已建层级':''}</option>`).join('');
+  // 已关联层级的仓库不再出现在下拉中（新增时过滤）；编辑态保留当前节点自己的仓库以便回显
+  const bound = new Set(treeData[0].children.filter(c => c.type==='warehouse').map(c => c.whId));
+  sel.innerHTML = enabled
+    .filter(w => !bound.has(w.id) || w.id===keepId)
+    .map(w => `<option value="${w.id}">${esc(w.name)}（${w.code}）</option>`).join('');
 }
 
 function openForm(mode, id){
   const node = id? findNode(id) : treeData[0];
   form.mode = mode; form.node = node;
   buildParentOptions();
-  buildWarehouseOptions();
+  buildWarehouseOptions(node && node.type==='warehouse' ? node.whId : undefined);
   const parentSel = document.getElementById('fParent');
   const isView = mode==='view';
   document.getElementById('formTitle').textContent = (mode==='view'?'查看':mode==='edit'?'编辑':'新增')+'层级';
@@ -412,13 +414,11 @@ function openForm(mode, id){
     form.parent = node;
     const par = findNode(node.id);
     // 仅当父层级=「全部」时，需要选仓库（新增二层）
-    document.getElementById('fName').value=''; document.getElementById('fCode').value='';
+    document.getElementById('fName').value='';
     if(par && par.type==='all'){
       document.getElementById('whRow').style.display='';
       document.getElementById('fWarehouse').value='';
       onWarehouseChange(true);
-    } else if(par && (par.type==='warehouse' || par.whId || par.type==='special')){
-      document.getElementById('fCode').value = nextSeq(par);
     }
     document.getElementById('formOk').style.display='';
   } else {
@@ -426,7 +426,6 @@ function openForm(mode, id){
     const par = findParent(node.id);
     parentSel.value = par ? par.id : '';
     document.getElementById('fParent').disabled = true;
-    document.getElementById('fCode').value = node.code || '';
     document.getElementById('fName').value = node.name || '';
     if(node.type==='warehouse'){
       document.getElementById('whRow').style.display='';
@@ -444,25 +443,16 @@ function openForm(mode, id){
   setLevelType(mode==='add' ? 0 : (form.node.levelType!=null ? form.node.levelType : 0));
   // 只读态：查看全禁；编辑/新增可编辑（仓库与父层级按需锁定）
   document.querySelectorAll('#formMask input, #formMask textarea, #formMask select').forEach(el => { el.disabled = isView; el.readOnly = isView; });
-  // 层级编码一律系统自动生成、不可编辑：新增/编辑/查看均置灰
-  document.getElementById('fCode').disabled = true;
   if(isView){ document.getElementById('fWarehouse').disabled = true; document.getElementById('fParent').disabled = true; }
   if(mode==='edit'){ document.getElementById('fParent').disabled = true; }
   if(mode==='edit' && form.node && form.node.type==='warehouse'){ document.getElementById('fWarehouse').disabled = true; document.getElementById('fName').disabled = true; }
-  // 新增态：父层级、二层名称/编码只读置灰（二层名称随仓库主数据自动带出）；三层名称可编辑
+  // 新增态：父层级、二层名称只读置灰（二层名称随仓库主数据自动带出）；三层名称可编辑
   if(mode==='add'){
     document.getElementById('fParent').disabled = true;
     if(form.parent && form.parent.type==='all') document.getElementById('fName').disabled = true;
   }
   document.getElementById('formMask').classList.add('show');
 }
-
-const nextSeq = par => {
-  const base = par.code ? par.code+'_' : '';
-  const existing = (par.children||[]).map(c=>c.code).filter(c=>c&&c.includes('_'));
-  const n = existing.length+1;
-  return base+String(n).padStart(2,'0');
-};
 
 const getLevelType = () => document.getElementById('fLevelType1').checked ? 1 : 0;
 const setLevelType = v => { document.getElementById('fLevelType1').checked = (v===1); document.getElementById('fLevelType0').checked = (v===0); };
@@ -471,7 +461,6 @@ function onWarehouseChange(first){
   const wId = document.getElementById('fWarehouse').value;
   const w = wId ? whOf(parseInt(wId)) : null;
   if(w && form.mode==='add' && form.parent && form.parent.type==='all'){
-    document.getElementById('fCode').value = w.code;
     document.getElementById('fName').value = w.name;
   }
 }
@@ -482,15 +471,14 @@ function onParentChange(){
   form.parent = par;
   const whRow = document.getElementById('whRow');
   const fName = document.getElementById('fName');
-  const fCode = document.getElementById('fCode');
   if(par && par.type==='all'){
     whRow.style.display='';
     document.getElementById('fWarehouse').value='';
     document.getElementById('fWarehouse').disabled=false;
-    fName.value=''; fCode.value='';
+    fName.value='';
   } else if(par){
     whRow.style.display='none';
-    fName.value=''; fCode.value = nextSeq(par);
+    fName.value='';
   }
 }
 
@@ -499,7 +487,6 @@ function handleSave(){
   if(mode==='view') return;
   const parent = mode==='add' ? form.parent : findParent(form.node);
   const name = document.getElementById('fName').value.trim();
-  const code = document.getElementById('fCode').value.trim();
   const sort = document.getElementById('fSort').value;
   const remark = document.getElementById('fRemark').value;
   if(!name){ toast('层级名称不能为空','err'); return; }
@@ -513,12 +500,12 @@ function handleSave(){
       const dup = treeData[0].children.find(c => c.type==='warehouse' && c.whId===parseInt(wId));
       if(dup){ toast('该仓库已存在二层节点，不能重复新增（同一仓库仅一个二层节点）','err'); return; }
       const w = whOf(parseInt(wId));
-      const nn = mk({name:w.name, code:w.code, type:'warehouse', whId:w.id, enableStock:true, levelType:getLevelType(), levelSort:parseInt(sort)||1, remark, createBy:'017163', createTime:now(), stock:{avail:0,lock:0,onroad:0}});
+      const nn = mk({name:w.name, type:'warehouse', whId:w.id, enableStock:true, levelType:getLevelType(), levelSort:parseInt(sort)||1, remark, createBy:'017163', createTime:now(), stock:{avail:0,lock:0,onroad:0}});
       parent.children.push(nn);
       expanded.add(parent.id);
       toast('新增成功：已为该仓库创建二层节点','ok');
     } else {
-      const nn = mk({name, code: code || nextSeq(parent), type:'virtual', whId: parent.whId||null, enableStock:true, levelType:getLevelType(), levelSort:parseInt(sort)||1, remark, createBy:'017163', createTime:now(), stock:{avail:0,lock:0,onroad:0}});
+      const nn = mk({name, type:'virtual', whId: parent.whId||null, enableStock:true, levelType:getLevelType(), levelSort:parseInt(sort)||1, remark, createBy:'017163', createTime:now(), stock:{avail:0,lock:0,onroad:0}});
       parent.children.push(nn);
       expanded.add(parent.id);
       toast('新增成功','ok');
