@@ -387,6 +387,49 @@
     .btn.plain-primary{color:var(--primary);border-color:#a0cfff;background:#ecf5ff}
     .btn.plain-primary:hover{background:#d9ecff}
     .table-header .btn{margin-left:0}
+    .search-form.search-form-wide{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .search-form.search-form-wide .search-actions{grid-column:1/-1}
+    .list-footer{
+      display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;
+      padding:10px 16px;border-top:1px solid var(--line);background:#fafbfd;font-size:12px;color:var(--sub);
+    }
+    .list-summary{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center}
+    .list-summary b{color:var(--text);font-weight:600}
+    .demo-bar button.on{background:var(--primary);border-color:var(--primary)}
+    /* 多选下拉（对齐 Element Plus el-select multiple + collapse-tags） */
+    .el-msel{position:relative;width:100%;font-size:13px}
+    .el-msel-trigger{
+      display:flex;align-items:center;min-height:32px;padding:2px 30px 2px 8px;
+      border:1px solid #dcdfe6;border-radius:4px;background:#fff;cursor:pointer;box-sizing:border-box;
+    }
+    .el-msel.is-open .el-msel-trigger{border-color:var(--primary)}
+    .el-msel-tags{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0}
+    .el-msel-placeholder{color:#a8abb2;line-height:26px;flex:1}
+    .el-msel-placeholder.hidden{display:none}
+    .el-msel-tag{
+      display:inline-flex;align-items:center;max-width:100%;height:22px;padding:0 6px;
+      background:#f0f2f5;border:1px solid #e4e7ed;border-radius:4px;color:#606266;font-size:12px;
+    }
+    .el-msel-tag-more{background:#f0f2f5;border-color:#e4e7ed;color:#606266;padding:0 8px}
+    .el-msel-tag-close{
+      margin-left:4px;border:0;background:none;color:#909399;font-size:14px;line-height:1;padding:0;cursor:pointer;
+    }
+    .el-msel-suffix{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:4px;color:#a8abb2}
+    .el-msel-clear{font-style:normal;cursor:pointer;font-size:14px}
+    .el-msel-clear.hidden{display:none}
+    .el-msel-arrow{font-size:12px;pointer-events:none}
+    .el-msel-popper{
+      position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:40;
+      background:#fff;border:1px solid #e4e7ed;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.1);
+      max-height:220px;overflow:auto;
+    }
+    .el-msel-popper.hidden{display:none}
+    .el-msel-item{
+      display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:13px;color:#606266;
+    }
+    .el-msel-item:hover{background:#f5f7fa}
+    .el-msel-item input{accent-color:var(--primary)}
+    .table-header.annotated{position:relative}
   </style>
 </head>
 <body>
@@ -395,7 +438,8 @@
     <button type="button" id="simMkPass">模拟：MK 审批通过回调</button>
     <button type="button" id="simMkReject">模拟：MK 驳回</button>
     <span class="sep"></span>
-    <button type="button" id="simJump">模拟：私有库存跳转预填</button>
+    <button type="button" id="simJump">模拟：预填新建（历史入口已下线）</button>
+    <button type="button" id="simRoleView">演示：切换为仅查看</button>
     <button type="button" id="simSecond">模拟：同SKU再建第二张单</button>
     <span class="sep"></span>
     <span style="opacity:.85">测试数据：SPL仓 · 生产库快照 2026-09-22</span>
@@ -407,10 +451,14 @@
     <aside class="side">
       <div class="side-brand">WMS 仓储管理</div>
       <div class="menu-group">库存管理</div>
-      <div class="menu-item muted">私有库存</div>
+      <div class="menu-item muted annotated">
+        <span class="anno-no" tabindex="0">·</span>
+        <span class="anno-tip">私有库存页「分配库存 / 分配过程」本期下线，不再作为入口。</span>
+        私有库存
+      </div>
       <div class="menu-item active annotated" id="annoMenu">
         <span class="anno-no" tabindex="0">1</span>
-        <span class="anno-tip">入口：私有库存「分配库存」跳转本页（可预填仓库、SKU、调入层）；或销售直接新建分配单。不展示来源业务单；商务确认在途后，销售选择借出国家/层级。</span>
+        <span class="anno-tip">主入口：库存管理 → 库存分配。列表全员可见；新建/编辑/撤回/还货/导入按角色权限（演示条可切换「仅查看」）。不展示来源业务单。新建时先选 SKU，再对照各层级库存填写调出/调入与数量。</span>
         库存分配
       </div>
       <div class="menu-item muted">库存变更日志</div>
@@ -419,20 +467,16 @@
     <main class="main">
       <div class="page-hd">
         <h1>库存分配</h1>
-        <p>分配与还货同一列表。新建时先选 SKU，再查看该仓各层级可用、锁定、调拨在途后填写借货明细。</p>
       </div>
 
       <div class="card table-box annotated" id="annoList">
         <span class="anno-no" tabindex="0">2</span>
-        <span class="anno-tip">分配与还货同一列表展示。已执行且勾选需还货、待还&gt;0 的行在操作列显示「还货」；还货无审批。筛选区样式对齐私有库存 ProTable 搜索表单。</span>
+        <span class="anno-tip">分配与还货同一列表。筛选含调出/调入层级、申请人；底部汇总当前结果的总分配量、总待还。还货状态：未还/部分已还/已还清。待还&gt;0 可还货（需操作权限）。</span>
         <div class="table-title">库存分配单列表</div>
-        <div class="search-form" id="searchForm">
+        <div class="search-form search-form-wide" id="searchForm">
           <div class="search-item">
             <label>仓库名称</label>
-            <select class="control" id="filterWh">
-              <option value="">全部</option>
-              <option value="SPL仓" selected>SPL仓</option>
-            </select>
+            <div class="control" id="filterWhMsel" style="padding:0;border:0;min-height:0;background:transparent"></div>
           </div>
           <div class="search-item">
             <label>SKU</label>
@@ -444,19 +488,21 @@
           </div>
           <div class="search-item">
             <label>单据状态</label>
-            <select class="control" id="filterStatus">
-              <option value="">全部</option>
-              <option value="mk_draft">待提交</option>
-              <option value="mk_wait">MK审批中</option>
-              <option value="pass">已通过</option>
-              <option value="reject">已驳回</option>
-            </select>
+            <div class="control" id="filterStatusMsel" style="padding:0;border:0;min-height:0;background:transparent"></div>
+          </div>
+          <div class="search-item">
+            <label>调出层级</label>
+            <select class="control" id="filterFrom"></select>
+          </div>
+          <div class="search-item">
+            <label>调入层级</label>
+            <select class="control" id="filterTo"></select>
           </div>
           <div class="search-item">
             <label>还货状态</label>
             <select class="control" id="filterRetStatus">
               <option value="">全部</option>
-              <option value="pending">待还清</option>
+              <option value="pending">未还</option>
               <option value="part">部分已还</option>
               <option value="done">已还清</option>
               <option value="na">无需还货</option>
@@ -471,7 +517,10 @@
             <button type="button" class="btn" id="btnReset">重置</button>
           </div>
         </div>
-        <div class="table-header">
+        <div class="table-header annotated" id="annoImport">
+          <span class="anno-no" tabindex="0">5</span>
+          <span class="anno-tip">导出按当前筛选条件提交后台生成文件（原型演示为下载 CSV）。导入为库存分配专用模板（含是否还货、备注等），与层级库存「批量分配」老模板不同；成功生成待提交单。特殊 SKU（EOL）若应还却选否，审批人驳回后申请人改字段再提。</span>
+          <button type="button" class="btn plain-primary" id="btnExport">导出</button>
           <button type="button" class="btn plain-primary" id="btnImport">导入</button>
           <button type="button" class="btn primary" id="btnCreate">新建分配单</button>
         </div>
@@ -481,6 +530,7 @@
               <tr>
                 <th>分配单号</th>
                 <th>创建时间</th>
+                <th>申请人</th>
                 <th>仓库名称</th>
                 <th>SKU</th>
                 <th>调出层级</th>
@@ -497,7 +547,13 @@
             <tbody id="mainBody"></tbody>
           </table>
         </div>
-        <div class="pager">共 <b id="mainCount">0</b> 条</div>
+        <div class="list-footer">
+          <div class="list-summary" id="listSummary">
+            <span>本页筛选：<b id="sumQty">0</b> 件分配数量</span>
+            <span>总待还：<b id="sumPending">0</b> 件</span>
+          </div>
+          <div class="pager">共 <b id="mainCount">0</b> 条</div>
+        </div>
       </div>
     </main>
   </div>
@@ -519,7 +575,7 @@
 
           <div class="assign-grid annotated" id="assignGrid">
             <span class="anno-no" tabindex="0">3</span>
-            <span class="anno-tip">分配明细三行：① 仓库、SKU、是否还货；② 调出/调入层级、分配数量；③ 备注通栏。</span>
+            <span class="anno-tip">分配明细三行：① 仓库、SKU、是否还货；② 调出/调入层级、分配数量；③ 备注通栏。MK 审批中不可改「是否还货」等字段，须驳回后重提。</span>
             <div class="form-cell" id="cellWh">
               <label class="req">仓库</label>
               <select class="control" id="formWh"><option value="21">SPL仓</option></select>
@@ -595,6 +651,19 @@
   </div>
 
   <!-- 导入（样式对齐层级库存 → 批量分配 → ImportExcel） -->
+  <div class="mask" id="dlgConfirm">
+    <div class="dialog sm">
+      <div class="dialog-hd"><b id="confirmTitle">温馨提示</b></div>
+      <div class="dialog-bd" style="background:#fff">
+        <p id="confirmMsg" style="margin:0;font-size:14px;color:#606266;line-height:1.6"></p>
+      </div>
+      <div class="dialog-ft">
+        <button type="button" class="btn" id="confirmCancel">取消</button>
+        <button type="button" class="btn primary" id="confirmOk">确定</button>
+      </div>
+    </div>
+  </div>
+
   <div class="mask" id="dlgImport">
     <div class="dialog import-dialog">
       <div class="dialog-hd">
@@ -606,7 +675,7 @@
           <div class="import-row">
             <label>模板下载 :</label>
             <div>
-              <button type="button" class="btn link" id="btnImportTpl">点击下载</button>
+              <button type="button" class="btn link" id="btnImportTpl" title="库存分配专用导入模板">点击下载</button>
             </div>
           </div>
           <div class="import-row">
@@ -702,6 +771,17 @@
     const REF_STOCK_ROW_H = 30;
 
     const WH_NAME = 'SPL仓';
+    const FILTER_WH_OPTS=[
+      { value:'SPL仓', label:'SPL仓' },
+      { value:'UK仓', label:'UK仓' },
+      { value:'DE仓', label:'DE仓' }
+    ];
+    const FILTER_STATUS_OPTS=[
+      { value:'mk_draft', label:'待提交' },
+      { value:'mk_wait', label:'MK审批中' },
+      { value:'pass', label:'已通过' },
+      { value:'reject', label:'已驳回' }
+    ];
     /** 生产库 SPL仓 各层级可用量快照（2026-09-22）；avail 为账面可用，锁定另计 */
     const SKU_NAMES = {
       'S711-ST-GY-EU-000':'GY EU 卫衣',
@@ -737,6 +817,7 @@
       '分销_DE_SPL', '分销_FR_SPL', '分销_NEU_SPL', '分销_ES_SPL', '分销_IT/GR/ROU_SPL',
       '调拨_MKT_SPL', '调拨_德国万邑通官网_SPL', '物料_GR_SPL'
     ];
+    const LEVEL_FILTER_OPTS=[...new Set([...LEVEL_FROM_OPTS,...LEVEL_TO_OPTS,'公共','SPL仓_公共'])].sort();
     const SKUS = ['S711-ST-GY-EU-000', 'S820-ST-OR-EU-000', 'S711-ST-RD-EU-000', 'E320-ST-GY-EU-000', '8030000307'];
     const DEMO_USER = '文康';
 
@@ -887,13 +968,19 @@
           { time:'2026-09-09 15:02', title:'执行分配', user:'系统', remark:'库存分配已执行，写库存日志' }
         ]},
       { id:'a3', no:'IA260915017', time:'2026-09-10 15:11', wh:WH_NAME, user:'陈斯',
-        sku:'8030000307', from:'公共', to:'物料_GR_SPL', qty:1, needReturn:false, remark:'',
+        sku:'8030000307', from:'公共', to:'物料_GR_SPL', qty:1, needReturn:false, remark:'未映射四区→MK默认模板',
         status:'pass', exec:'已执行', locked:false, mkSync:'MK 已通过并执行',
         assignLogs:[
           { time:'2026-09-10 15:11', title:'创建分配单', user:'陈斯', remark:'保存分配明细' },
           { time:'2026-09-10 15:15', title:'提交 MK 审批', user:'陈斯', remark:'调出层锁定 1 件' },
           { time:'2026-09-10 16:20', title:'MK 审批通过', user:'MK 审批人', remark:'同意' },
           { time:'2026-09-10 16:20', title:'执行分配', user:'系统', remark:'库存分配已执行' }
+        ]},
+      { id:'a4', no:'IA261013088', time:'2026-10-13 09:20', wh:WH_NAME, user:'DP孙文',
+        sku:'S820-ST-OR-EU-000', from:'公共', to:'分销_DE_SPL', qty:80, needReturn:true, remark:'跨主体演示：直销向分销借货',
+        crossSubject:true, status:'mk_draft', exec:'—', locked:false, mkSync:'—',
+        assignLogs:[
+          { time:'2026-10-13 09:20', title:'创建分配单', user:'DP孙文', remark:'跨主体场景待 MK 模板配置' }
         ]}
     ];
 
@@ -911,9 +998,43 @@
     ];
 
     function toast(msg){ const t=$('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2200); }
+    function showConfirm(message, title='温馨提示'){
+      return new Promise(resolve=>{
+        $('#confirmTitle').textContent=title;
+        $('#confirmMsg').textContent=message;
+        const okBtn=$('#confirmOk'), cancelBtn=$('#confirmCancel');
+        const finish=v=>{
+          hideMask('#dlgConfirm');
+          okBtn.onclick=null;
+          cancelBtn.onclick=null;
+          resolve(v);
+        };
+        okBtn.onclick=()=>finish(true);
+        cancelBtn.onclick=()=>finish(false);
+        showMask('#dlgConfirm');
+      });
+    }
+    function csvEscape(v){
+      const s=String(v??'');
+      return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+    }
+    function downloadTextFile(filename, text, mime='text/csv;charset=utf-8'){
+      const blob=new Blob(['\ufeff'+text], { type:mime });
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    function exportStamp(){
+      const d=new Date();
+      const p=n=>String(n).padStart(2,'0');
+      return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+    }
     function tagStatus(s){
       return { mk_draft:['待提交','draft'], mk_wait:['MK审批中','wait'], pass:['已通过','pass'], reject:['已驳回','reject'], exec_fail:['执行失败','reject'],
-        pending:['待还清','pending'], part:['部分已还','part'], done:['已还清','pass'] }[s] || [s,'draft'];
+        pending:['未还','pending'], part:['部分已还','part'], done:['已还清','pass'] }[s] || [s,'draft'];
     }
     function showMask(id){ $(id).classList.add('show'); }
     function hideMask(id){ $(id).classList.remove('show'); }
@@ -952,12 +1073,14 @@
       const states=assignMkNodeStates(nodes, ctx.status, ctx);
       const scope=$('#mkFlowScope');
       if(scope){
-        if(profile.sameRegion){
-          scope.textContent=`同区域（${profile.rFrom}）· 商务组长 → 区域 GTM → 区长（审批/抄送按区域配置）→ 结束并抄送国家商务`;
+        if(ctx.crossSubject){
+          scope.textContent='跨主体借还：MK 扩展模板（与分销四区链可能不同，以配置为准）';
+        }else if(profile.sameRegion){
+          scope.textContent=`同区域（${profile.rFrom}）· 区域 GTM → 区长（审批/抄送按区域配置）→ 结束并抄送国家商务`;
         }else if(profile.rFrom!=='其他'&&profile.rTo!=='其他'){
           scope.textContent=`跨区域（${profile.rFrom} → ${profile.rTo}）· 双 GTM + 双区长（审批/抄送按路线个性化）→ 结束并抄送国家商务`;
         }else{
-          scope.textContent='调出/调入层级未映射分销区域时，MK 侧走默认模板（上线前须补全映射）';
+          scope.textContent='层级未映射分销四区 · MK 默认模板（示例：公共↔物料类层级）';
         }
       }
       tbody.innerHTML=nodes.map((r,i)=>{
@@ -1252,16 +1375,132 @@
       $('#btnSubmitMk').classList.toggle('hidden', viewMode || mkWait || detail.mkStatus==='pass');
     }
 
-    function renderMainList(){
-      const st=$('#filterStatus').value, wh=$('#filterWh').value, skuF=$('#filterSku').value.trim().toLowerCase();
+    function canOperate(){ return window.__demoCanOperate!==false; }
+    function applyOperateChrome(){
+      const on=canOperate();
+      $('#btnCreate')?.classList.toggle('hidden', !on);
+      $('#btnImport')?.classList.toggle('hidden', !on);
+      const rb=$('#simRoleView');
+      if(rb){
+        rb.textContent=on?'演示：切换为仅查看':'演示：切换为可操作';
+        rb.classList.toggle('on', !on);
+      }
+    }
+    function mountMsel(rootId, options, defaultValues=[], collapseTags=1){
+      const root=document.getElementById(rootId);
+      if(!root) return null;
+      root.classList.add('el-msel');
+      root.innerHTML=`
+        <div class="el-msel-trigger" tabindex="0" role="combobox" aria-expanded="false">
+          <div class="el-msel-tags"></div>
+          <span class="el-msel-placeholder">请选择</span>
+          <span class="el-msel-suffix"><i class="el-msel-clear hidden" title="清空">×</i><span class="el-msel-arrow">▾</span></span>
+        </div>
+        <div class="el-msel-popper hidden">
+          ${options.map(o=>`<label class="el-msel-item"><input type="checkbox" value="${o.value}"> ${o.label}</label>`).join('')}
+        </div>`;
+      const tagsEl=root.querySelector('.el-msel-tags');
+      const ph=root.querySelector('.el-msel-placeholder');
+      const pop=root.querySelector('.el-msel-popper');
+      const trigger=root.querySelector('.el-msel-trigger');
+      const clearBtn=root.querySelector('.el-msel-clear');
+      options.forEach(o=>{
+        const cb=root.querySelector(`input[value="${o.value}"]`);
+        if(cb&&defaultValues.includes(o.value)) cb.checked=true;
+      });
+      function syncTags(){
+        const sel=[...root.querySelectorAll('input:checked')].map(x=>{
+          const o=options.find(t=>t.value===x.value);
+          return { v:x.value, l:o?o.label:x.value };
+        });
+        tagsEl.innerHTML='';
+        if(!sel.length){
+          ph.classList.remove('hidden');
+          clearBtn.classList.add('hidden');
+          return;
+        }
+        ph.classList.add('hidden');
+        clearBtn.classList.remove('hidden');
+        sel.slice(0,collapseTags).forEach(s=>{
+          const t=document.createElement('span');
+          t.className='el-msel-tag';
+          t.innerHTML=`${s.l}<button type="button" class="el-msel-tag-close" data-v="${s.v}" aria-label="移除">×</button>`;
+          tagsEl.appendChild(t);
+        });
+        if(sel.length>collapseTags){
+          const more=document.createElement('span');
+          more.className='el-msel-tag el-msel-tag-more';
+          more.textContent=`+ ${sel.length-collapseTags}`;
+          more.title=sel.slice(collapseTags).map(s=>s.l).join('、');
+          tagsEl.appendChild(more);
+        }
+      }
+      root.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+        cb.onchange=syncTags;
+      });
+      tagsEl.addEventListener('click',e=>{
+        const btn=e.target.closest('.el-msel-tag-close');
+        if(!btn) return;
+        e.stopPropagation();
+        const cb=root.querySelector(`input[value="${btn.dataset.v}"]`);
+        if(cb) cb.checked=false;
+        syncTags();
+      });
+      clearBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        root.querySelectorAll('input[type=checkbox]').forEach(x=>{ x.checked=false; });
+        syncTags();
+      });
+      trigger.addEventListener('click',e=>{
+        if(e.target.closest('.el-msel-tag-close')||e.target===clearBtn) return;
+        const open=pop.classList.toggle('hidden');
+        root.classList.toggle('is-open', !open);
+        trigger.setAttribute('aria-expanded', String(!open));
+      });
+      if(!root.dataset.mselDocBound){
+        root.dataset.mselDocBound='1';
+        document.addEventListener('click',e=>{
+          if(!root.contains(e.target)){
+            pop.classList.add('hidden');
+            root.classList.remove('is-open');
+            trigger.setAttribute('aria-expanded','false');
+          }
+        });
+      }
+      syncTags();
+      root.getValues=()=>[...root.querySelectorAll('input:checked')].map(x=>x.value);
+      root.setValues=vals=>{
+        root.querySelectorAll('input[type=checkbox]').forEach(x=>{ x.checked=vals.includes(x.value); });
+        syncTags();
+      };
+      return root;
+    }
+    function mselGet(rootId){
+      const el=document.getElementById(rootId);
+      return el?.getValues?el.getValues():[];
+    }
+    function initLevelFilters(){
+      const opts='<option value="">全部</option>'+LEVEL_FILTER_OPTS.map(v=>`<option value="${v}">${v}</option>`).join('');
+      const ff=$('#filterFrom'), ft=$('#filterTo');
+      if(ff) ff.innerHTML=opts;
+      if(ft) ft.innerHTML=opts;
+      mountMsel('filterWhMsel', FILTER_WH_OPTS, ['SPL仓'], 1);
+      mountMsel('filterStatusMsel', FILTER_STATUS_OPTS, [], 1);
+    }
+    function getFilteredApplications(){
+      const stSel=mselGet('filterStatusMsel'), whSel=mselGet('filterWhMsel');
+      const skuF=$('#filterSku').value.trim().toLowerCase();
       const noF=$('#filterNo').value.trim().toLowerCase(), userF=$('#filterUser').value.trim().toLowerCase();
+      const fromF=$('#filterFrom')?.value||'', toF=$('#filterTo')?.value||'';
       const retF=$('#filterRetStatus').value;
-      const rows=applications.filter(a=>{
-        if(wh && a.wh!==wh) return false;
-        if(st && a.status!==st) return false;
+      return applications.filter(a=>{
+        if(whSel.length && !whSel.includes(a.wh)) return false;
+        if(stSel.length && !stSel.includes(a.status)) return false;
         if(skuF && !a.sku.toLowerCase().includes(skuF)) return false;
         if(noF && !a.no.toLowerCase().includes(noF)) return false;
         if(userF && !(a.user||'').toLowerCase().includes(userF)) return false;
+        if(fromF && a.from!==fromF) return false;
+        if(toF && a.to!==toF) return false;
         const rm=returnMeta(a);
         if(retF==='na') return !a.needReturn;
         if(retF){
@@ -1269,18 +1508,62 @@
         }
         return true;
       });
+    }
+    function rowReturnLabel(a, rm){
+      if(rm) return tagStatus(rm.status)[0];
+      if(!a.needReturn) return '无需还货';
+      return a.status==='pass'?'未还':'—';
+    }
+    function buildExportCsv(rows){
+      const headers=['分配单号','创建时间','申请人','仓库名称','SKU','调出层级','调入层级','分配数量','需还货','已还','待还','还货状态','单据状态'];
+      const lines=[headers.map(csvEscape).join(',')];
+      rows.forEach(a=>{
+        const rm=returnMeta(a);
+        const line=[
+          a.no, a.time, a.user||'—', a.wh, a.sku, a.from, a.to, a.qty,
+          a.needReturn?'是':'否',
+          rm?rm.returned:'—', rm?rm.pending:'—',
+          rowReturnLabel(a, rm),
+          tagStatus(a.status)[0]
+        ];
+        lines.push(line.map(csvEscape).join(','));
+      });
+      return lines.join('\r\n');
+    }
+    async function handleExportList(){
+      const rows=getFilteredApplications();
+      const ok=await showConfirm(`确认导出当前筛选条件下的库存分配单数据？共 ${rows.length} 条。`);
+      if(!ok) return;
+      if(!rows.length){ toast('当前筛选无数据，未生成导出文件'); return; }
+      const name=`库存分配单列表_${exportStamp()}.csv`;
+      downloadTextFile(name, buildExportCsv(rows));
+      toast(`已导出 ${rows.length} 条（演示：${name}）`);
+    }
+    function renderMainList(){
+      const rows=getFilteredApplications();
+      let sumQty=0, sumPending=0;
+      rows.forEach(a=>{
+        sumQty+=a.qty||0;
+        const rm=returnMeta(a);
+        if(rm) sumPending+=rm.pending||0;
+      });
       $('#mainCount').textContent=rows.length;
+      $('#sumQty').textContent=sumQty;
+      $('#sumPending').textContent=sumPending;
+      const op=canOperate();
       $('#mainBody').innerHTML=rows.map(a=>{
         const [lbl,cls]=tagStatus(a.status);
         const rm=returnMeta(a);
-        const retLbl=rm?tagStatus(rm.status)[0]:(a.needReturn?(a.status==='pass'?'待还清':'—'):'无需还货');
+        const retLbl=rm?tagStatus(rm.status)[0]:(a.needReturn?(a.status==='pass'?'未还':'—'):'无需还货');
         const retCls=rm?tagStatus(rm.status)[1]:'pending';
         const ops=[`<button type="button" class="btn link" data-view="${a.id}">查看</button>`];
-        if(a.status==='mk_draft'||a.status==='reject') ops.push(`<button type="button" class="btn link" data-edit="${a.id}">编辑</button>`);
-        if(a.status==='mk_wait') ops.push(`<button type="button" class="btn link" data-withdraw="${a.id}">撤回</button>`);
-        if(canReturnRow(a)) ops.push(`<button type="button" class="btn link" data-return-app="${a.id}">还货</button>`);
+        if(op){
+          if(a.status==='mk_draft'||a.status==='reject') ops.push(`<button type="button" class="btn link" data-edit="${a.id}">编辑</button>`);
+          if(a.status==='mk_wait') ops.push(`<button type="button" class="btn link" data-withdraw="${a.id}">撤回</button>`);
+          if(canReturnRow(a)) ops.push(`<button type="button" class="btn link" data-return-app="${a.id}">还货</button>`);
+        }
         return `<tr>
-          <td>${a.no}</td><td>${a.time}</td><td>${a.wh}</td><td>${a.sku}</td>
+          <td>${a.no}</td><td>${a.time}</td><td>${a.user||'—'}</td><td>${a.wh}</td><td>${a.sku}</td>
           <td>${a.from}</td><td>${a.to}</td><td class="num">${a.qty}</td>
           <td>${a.needReturn?'是':'否'}</td>
           <td class="num">${rm?rm.returned:'—'}</td><td class="num">${rm?rm.pending:'—'}</td>
@@ -1395,9 +1678,22 @@
 
     $('#btnSearch').onclick=renderMainList;
     $('#btnReset').onclick=()=>{
-      $('#filterStatus').value=''; $('#filterSku').value=''; $('#filterNo').value='';
-      $('#filterRetStatus').value=''; $('#filterUser').value=''; $('#filterWh').value='SPL仓';
+      $('#filterSku').value=''; $('#filterNo').value='';
+      $('#filterRetStatus').value=''; $('#filterUser').value='';
+      $('#filterWhMsel')?.setValues?.(['SPL仓']);
+      $('#filterStatusMsel')?.setValues?.([]);
+      if($('#filterFrom')) $('#filterFrom').value='';
+      if($('#filterTo')) $('#filterTo').value='';
       renderMainList();
+    };
+    window.__demoCanOperate=true;
+    initLevelFilters();
+    applyOperateChrome();
+    $('#simRoleView').onclick=()=>{
+      window.__demoCanOperate=!window.__demoCanOperate;
+      applyOperateChrome();
+      renderMainList();
+      toast(window.__demoCanOperate?'已切换为可操作角色（可新建/编辑/还货）':'已切换为仅查看（列表仍全员可见）');
     };
 
     const IMPORT_MAX_MB=5;
@@ -1457,8 +1753,12 @@
       renderImportFileItem(file);
       setTimeout(()=>simulateImportAssign(file),400);
     }
-    $('#btnImport').onclick=()=>{ resetImportDialog(); showMask('#dlgImport'); };
-    $('#btnImportTpl').onclick=()=>toast('演示：下载「库存分配导入模板.xlsx」');
+    $('#btnExport').onclick=()=>{ handleExportList(); };
+    $('#btnImport').onclick=()=>{
+      if(!canOperate()){ toast('当前为仅查看演示，无导入权限'); return; }
+      resetImportDialog(); showMask('#dlgImport');
+    };
+    $('#btnImportTpl').onclick=()=>toast('演示：下载库存分配导入模板');
     $('#btnImportErrorDl').onclick=()=>toast('演示：下载导入错误数据');
     const drop=$('#importDropzone');
     const inp=$('#importFile');
@@ -1473,7 +1773,10 @@
     }));
     inp.onchange=()=>handleImportFiles(inp.files);
 
-    $('#btnCreate').onclick=()=>openApplyDialog('create');
+    $('#btnCreate').onclick=()=>{
+      if(!canOperate()){ toast('当前为仅查看演示，无新建权限'); return; }
+      openApplyDialog('create');
+    };
     $('#secRefStock').addEventListener('click', e=>{
       const pageBtn=e.target.closest('[data-ref-page]');
       if(pageBtn&&!pageBtn.disabled){
@@ -1491,7 +1794,7 @@
     $('#simJump').onclick=()=>{
       window.__jumpPrefill={ from:'分销_FR_SPL', sku:SKUS[0], qty:500, needReturn:true, to:'分销_DE_SPL', remark:'私有库存跳转预填' };
       openApplyDialog('create');
-      toast('已模拟私有库存跳转（DE 层缺货场景）');
+      toast('演示：URL/参数预填新建（原私有库存入口已下线）');
     };
     $('#simSecond').onclick=()=>{
       window.__jumpPrefill={ from:'分销_NEU_SPL', sku:SKUS[0], qty:273, needReturn:true, to:'分销_DE_SPL', remark:'同SKU第二张单' };
